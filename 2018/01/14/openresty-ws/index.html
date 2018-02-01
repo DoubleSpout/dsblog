@@ -1,0 +1,90 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><meta name="keywords" content="snoopyxdy, doublespout, OpenResty, Lua, Nginx, python, node.js"><title>openresty实现websocket的全双工接收推送 | snoopyxdy的博客</title><link rel="stylesheet" type="text/css" href="//fonts.neworld.org/css?family=Source+Code+Pro"><link rel="stylesheet" type="text/css" href="/css/style.css?v=2.0.1"><link rel="stylesheet" type="text/css" href="/css/highlight.css?v=2.0.1"><link rel="Shortcut Icon" href="/favicon.ico"><link rel="bookmark" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">openresty实现websocket的全双工接收推送</h1><a id="logo" href="/.">snoopyxdy的博客</a><p class="description">不要用执行上的勤奋来掩盖思考上的懒惰</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于我</i></a></div><div id="search-form"><div id="result-mask" class="hide"></div><label><input id="search-key" type="text" autocomplete="off" placeholder="Arama"></label><div id="result-wrap" class="hide"><div id="search-result"></div></div><div class="hide"><template id="search-tpl"><div class="item"><a href="/{path}" title="{title}"><div class="title">{title}</div><div class="time">{date}</div><div class="tags">{tags}</div></a></div></template></div></div></div><div id="layout" class="layout-g"><div class="layout-l"><div class="content_container"><div class="post"><h1 class="post-title">openresty实现websocket的全双工接收推送</h1><div class="post-meta"><a href="/2018/01/14/openresty-ws/#comments" class="comment-count"></a><p><span class="date">Jan 14, 2018</span><span><a href="/categories/网站架构/" class="category">网站架构</a></span><span><i id="busuanzi_container_page_pv"><i id="busuanzi_value_page_pv"></i><i>点击</i></i></span></p></div><div class="post-content"><p>很早就知道春哥有这个 <a href="https://github.com/openresty/lua-resty-websocket" target="_blank" rel="noopener">lua-resty-websocket</a> 的包了，可以让openresty具备websocket的通信能力，一直也以为这个包和node.js或者golang等其他语言的websocket包一样好用，可以很容易的实现全双工的操作，单播，多播，广播等功能。</p>
+<p>但是事实证明，我的想法错误了，简单的搭建了 openresty 的websocket服务之后，发现我们只能进行简单的单播，甚至我一开始连挂起连接，等待客户端继续发送消息都不会。至于想要根据其他数据源来主动推送给某个链接，更加不敢想了。<br><a id="more"></a><br>一，我们需要解决的问题就是，如何挂起连接，让or能够持续的接受客户端的ws消息，并作出不同的响应。比如，发送一个ping，我响应一个pong，发送一个hello，我响应一个world之类的。</p>
+<p>代码其实很简单，只需要在春哥的示例代码上加一段 while 1 do  … end 即可，如下：</p>
+<pre><code>while 1 do
+     local data, typ, err = wb:recv_frame()
+    ...
+end
+</code></pre><p>这个 wb:recv_frame() 方法会自动帮我挂起链接，非阻塞式的挂起，这样我们就能够持续的接收客户端的消息。</p>
+<p>二，现在需要解决的就是，如何在挂起请求的时候，通过外部的另外一个HTTP请求来对这个链接进行推送消息。<br>因为openresty是不允许lua跨进程读取变量的，所以我们先把nginx配置开成1核。<br>我首先想到的是，可以通过保存 wbServer 这个实例，来做到在Http请求示例的推送，预想的架构如下图：</p>
+<p><img src="/img/orws/s1.png" alt="错误的系统架构图"></p>
+<p>但是现实是残酷的，经过测试发现，其他Coroutine里是无法去操作ws的Coroutine里的推送消息的。于是方案1宣告失败了。</p>
+<p>后来，突然想起来，春哥新发布了一个 <a href="https://github.com/openresty/lua-resty-core/blob/master/lib/ngx/semaphore.md" target="_blank" rel="noopener">semaphore</a> 的包，这个包能解决单worker进程内的各个coroutine的通信问题。</p>
+<p>于是我们的伪代码，就写成了这样：</p>
+<pre><code>local sendText = function()
+    while 1 do
+        local ok, err = sema:wait(60)  -- wait for a second at most
+        if ok then
+            wb:send_text(string.format(&quot;[%s][%s] ycfuck&quot;, uuid, ngx.now()))
+            wb:set_timeout(6000)
+        end
+    end
+end
+ngx.thread.spawn(sendText)
+
+-- 下面还是不变
+while 1 do
+     local data, typ, err = wb:recv_frame()
+    ...
+end
+</code></pre><p>这时候，我们只需要对全局的 sema 实例，进行推送，就可以实现消息推送了，当然对于多播，广播，单播的各种需求都可以通过这样的思路来解决。然后是我们接受http请求的伪代码：</p>
+<pre><code>...
+local c = g.sema:count()
+if c &lt; 0 then
+    g.sema:post(math.abs(c))
+end
+...
+</code></pre><p>三、我们现在已经实现了单Worker的Http推送ws的功能了，问题又来了，openresty是多Worker的模型，所以单Worker的模型还不足以能够支持业务，因为非常有可能，客户端的WS连接连接到了worker1上，而我们推送的HTTP请求被worker2接收了。</p>
+<p>对于跨Worker通信，我们能想到的肯定就是ngx.shared.dict了，我们通过在 initWorker 阶段启动一个永远不退出的方法，循环的去判断 sharedict 中的某一个key数组是否存在内容，伪代码如下：</p>
+<pre><code>function loopWS(premature)
+    local wsBc = require(&apos;wsBc&apos;)
+
+    if premature then    -- 如果提前触发,忽略掉
+        return
+    end
+
+    local key = string.format(&apos;ws_%s&apos;, ngxWorkerId)
+
+    local stateDict = ngx.shared.stateDict
+    local data = stateDict:rpop(key)
+    if data then    
+        local wb = wsBc.getServer(data)
+
+        if wb then
+            local c = g.sema:count()
+            if c &lt; 0 then
+                g.sema:post(math.abs(c))
+            end
+
+        end
+    end
+
+    return ngx.timer.at(0.001, loopWS)
+end
+</code></pre><p>而我们接收用户Http的请求的伪代码如下：</p>
+<pre><code>local args = ngx.req.get_uri_args()
+local uuid = args[&apos;uuid&apos;]
+local stateDict = ngx.shared.stateDict
+
+if uuid then
+
+    local stateDict = ngx.shared.stateDict
+
+    local count = ngx.worker.count() - 1
+    for i=0, count do 
+        local key = string.format(&apos;ws_%s&apos;, i)
+        stateDict:lpush(key, uuid)
+    end
+
+    ngx.say(string.format(&apos;broadcast ok [%s]&apos;, ngx.now()))
+
+else
+    ngx.say(&apos;invalid uuid&apos;)
+end
+</code></pre><p>这样，如果想要单播，我们就需要对每一个websocket的链接进行编号，然后控制者通过发送uuid这个编号，来推送信息。所以我们最终的模型如下图：</p>
+<p><img src="/img/orws/s2.png" alt="最终系统架构图"></p>
+<p>最终，我们实现了在多Worker下，不依赖Redis等其他第三方依赖，可以自由的收发 WS 的消息了。简单了下压测，这套模型，在配置文件仅开16cpu的情况下，C100K的连接没有任何问题，其中还夹杂着单播，同样配置的NETTY服务器，能支持4W5左右，感觉openresty还没有被压到头。对于大量的多播和广播性能应该会有所下降，就没有做性能压测了</p>
+<p>性能压测结果如下图：</p>
+<p><img src="/img/orws/s3.png" alt="压测图片"></p>
+</div><div class="tags"><a href="/tags/接口限流/">接口限流</a><a href="/tags/OpenResty/">OpenResty</a><a href="/tags/lua/">lua</a></div><div class="post-share"><div class="bdsharebuttonbox"><span style="float:left;line-height: 28px;height: 28px;font-size:16px;font-weight:blod">分享到：</span><a href="#" data-cmd="more" class="bds_more"></a><a href="#" data-cmd="mshare" title="分享到一键分享" class="bds_mshare"></a><a href="#" data-cmd="fbook" title="分享到Facebook" class="bds_fbook"></a><a href="#" data-cmd="twi" title="分享到Twitter" class="bds_twi"></a><a href="#" data-cmd="linkedin" title="分享到linkedin" class="bds_linkedin"></a><a href="#" data-cmd="youdao" title="分享到有道云笔记" class="bds_youdao"></a><a href="#" data-cmd="evernotecn" title="分享到印象笔记" class="bds_evernotecn"></a><a href="#" data-cmd="weixin" title="分享到微信" class="bds_weixin"></a><a href="#" data-cmd="qzone" title="分享到QQ空间" class="bds_qzone"></a><a href="#" data-cmd="tsina" title="分享到新浪微博" class="bds_tsina"></a></div></div><div id="comments"></div></div></div></div><div class="layout-r"><div id="sidebar"><div class="search-pla"></div><div id="toc" class="widget"><div class="widget-title"><i class="fa fa-fei">文章目录</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-xie"> 最新文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/01/14/openresty-ws/">openresty实现websocket的全双工接收推送</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-gui"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/网站架构/">网站架构</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-biao"> 标签</i></div><div class="tagcloud"><a href="/tags/接口限流/" style="font-size: 15px;">接口限流</a> <a href="/tags/OpenResty/" style="font-size: 15px;">OpenResty</a> <a href="/tags/lua/" style="font-size: 15px;">lua</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-archive"> 归档</i></div><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-you"> 友情链接</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div></div><a id="totop" href="#top"></a><div id="footer"><div class="footer-info"><p><a href="/baidusitemap.xml">Baidu Site Haritası</a> |  <a href="/atom.xml">订阅</a> |  <a href="/about/">关于</a></p><p>本站总访问量：<i id="busuanzi_container_site_pv"><i id="busuanzi_value_site_pv"></i></i>次</p><p><span> Copyright &copy;<a href="/." rel="nofollow">snoopyxdy.</a></span><span> Theme by<a rel="nofollow" target="_blank" href="https://github.com/chaooo/hexo-theme-BlueLake"> BlueLake.</a></span><span> Count by<a href="http://busuanzi.ibruce.info/"> busuanzi.</a></span><span> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a></span></p></div></div></div><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><script type="text/javascript" src="/js/search.json.js?v=2.0.1"></script><script type="text/javascript" src="/js/toctotop.js?v=2.0.1" async></script><script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":["mshare","weixin","tsina","qzone","linkedin","fbook","twi","print","renren","sqq","evernotecn","bdysc","tqq","tqf","bdxc","kaixin001","tieba","douban","bdhome","thx","ibaidu","meilishuo","mogujie","diandian","huaban","duitang","hx","fx","youdao","sdo","qingbiji","people","xinhua","mail","isohu","yaolan","wealink","ty","iguba","h163","copy"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"],"viewText":"分享到：","viewSize":"16"},"selectShare":{"bdContainerClass":null,"bdSelectMiniList":["tsina","qzone","weixin","fbook","twi","linkedin","youdao","evernotecn","mshare"]}};with(document)0[(getElementsByTagName('head')[0]||head).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+</script></body></html>

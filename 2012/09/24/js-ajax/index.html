@@ -108,24 +108,18 @@
 
 
 
-  <meta name="description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
+  <meta name="description" content="最近cnode上很多TX在问关于node的异步回调以及单线程的事情，今天看了libuv的一些api和demo，自己简单写了一个利用libuv实现异步多线程的addon的例子，真心希望大牛指正啊。">
 <meta name="keywords" content="node.js">
 <meta property="og:type" content="article">
 <meta property="og:title" content="http请求头的顺序">
 <meta property="og:url" content="http://yoursite.com/2012/09/24/js-ajax/index.html">
 <meta property="og:site_name" content="snoopyxdy的博客">
-<meta property="og:description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
+<meta property="og:description" content="最近cnode上很多TX在问关于node的异步回调以及单线程的事情，今天看了libuv的一些api和demo，自己简单写了一个利用libuv实现异步多线程的addon的例子，真心希望大牛指正啊。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://yoursite.com/img/header/h1.gif">
-<meta property="og:image" content="http://yoursite.com/img/header/h2.gif">
-<meta property="og:image" content="http://yoursite.com/img/header/h3.gif">
-<meta property="og:image" content="http://yoursite.com/img/header/h4.gif">
-<meta property="og:image" content="http://yoursite.com/img/header/h5.gif">
-<meta property="og:updated_time" content="2018-11-26T03:48:18.861Z">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.881Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="http请求头的顺序">
-<meta name="twitter:description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
-<meta name="twitter:image" content="http://yoursite.com/img/header/h1.gif">
+<meta name="twitter:description" content="最近cnode上很多TX在问关于node的异步回调以及单线程的事情，今天看了libuv的一些api和demo，自己简单写了一个利用libuv实现异步多线程的addon的例子，真心希望大牛指正啊。">
 
 
 
@@ -431,27 +425,21 @@
       
 
       
-        <p>http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？</p>
+        <p>最近cnode上很多TX在问关于node的异步回调以及单线程的事情，今天看了libuv的一些api和demo，自己简单写了一个利用libuv实现异步多线程的addon的例子，真心希望大牛指正啊。</p>
 <a id="more"></a>
-<p>最近在做爬虫程序时发现了这个问题，在爬到某某网站时，发现之前的爬虫程序一直被爆40X错误，很是纳闷，我都是按照浏览器的请求头来伪造的，加上了referr还是如此。</p>
-<p>怀疑是因为利用算法禁止了ip地址，于是单独请求，发现还是有部分请求被挡住了，爬虫程序无法正常工作了。</p>
-<p>但是浏览器端刷新一直很正常，于是将浏览器的请求头按照原封不动的顺序拷入爬虫程序，发现其可以正常使用了。</p>
-<p>http请求头真的有顺序吗？下面我们看一下各个浏览器的http请求头情况。</p>
-<p>准备投稿cnode，使用nodejs代码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">var http = require(&apos;http&apos;),</span><br><span class="line">    server = http.createServer(function (req, res)&#123;</span><br><span class="line">  var body = JSON.stringify(req.headers) + &apos;\n&apos; + Object.keys(req.headers);</span><br><span class="line">  res.end(body);</span><br><span class="line"> &#125;).listen(3000);</span><br></pre></td></tr></table></figure>
-<p> 我们分别看下chrome、ff还有IE下的截屏：</p>
-<p><img src="/img/header/h1.gif" alt=""></p>
-<p><img src="/img/header/h2.gif" alt=""></p>
-<p><img src="/img/header/h3.gif" alt=""></p>
-<p>然后我们利用node构造一个请求，把请求头顺序打乱：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">var getfn = function(path, cb)&#123;</span><br><span class="line"> var request  =  http.request(&#123;</span><br><span class="line">   host:&apos;192.168.1.220&apos;,</span><br><span class="line">   port:3000,</span><br><span class="line">   path:&apos;/&apos;+path,</span><br><span class="line">   method:&apos;GET&apos;,</span><br><span class="line">   headers:&#123;&apos;Accept&apos;:&apos;text/html&apos;,</span><br><span class="line">      &apos;Content-Type&apos;:&apos;application/x-www-form-urlencoded&apos;, </span><br><span class="line">      &apos;Content-Length&apos;:&apos;19&apos;,</span><br><span class="line">      &apos;User-Agent&apos;:&apos;node.js-v0.8.8&apos;, </span><br><span class="line">      &apos;cookie&apos;:&apos;userid=123456; mycookie2=abcdefg&apos;, </span><br><span class="line">      &apos;X-Requested-With&apos;:&apos;xmlhttprequest&apos;,</span><br><span class="line">      &apos;Connection&apos;:&apos;keep-alive&apos;,</span><br><span class="line">      &apos;Referer&apos;:&apos;http://www.cnodejs.org/&apos;&#125;</span><br><span class="line">  &#125;, function(res)&#123;</span><br><span class="line">    var body = &apos;&apos;;</span><br><span class="line">    res.on(&apos;data&apos;, function(chunk) &#123;</span><br><span class="line">      // convert chunk to utf8 text:</span><br><span class="line">       body += chunk;</span><br><span class="line">      // process utf8 text chunk</span><br><span class="line">     &#125;);</span><br><span class="line">    res.on(&apos;end&apos;, function() &#123;</span><br><span class="line">      cb(res, body);</span><br><span class="line">     &#125;);</span><br><span class="line">  &#125;).on(&apos;err&apos;, function(e)&#123;</span><br><span class="line">   throw e;</span><br><span class="line">  &#125;);</span><br><span class="line">  request.end();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">getfn(&apos;/&apos;, function(res, body)&#123;</span><br><span class="line"> console.log(body)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
-<p>第一次请求头顺序如下：</p>
-<p><img src="/img/header/h4.gif" alt=""></p>
-<p>我们变化了host，accept还有referer的位置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">headers:&#123;</span><br><span class="line">  &apos;host&apos;:&apos;192.168.1.220&apos;,</span><br><span class="line">  &apos;Referer&apos;:&apos;http://www.cnodejs.org/&apos;,</span><br><span class="line"> &apos;Content-Type&apos;:&apos;application/x-www-form-urlencoded&apos;, </span><br><span class="line">  &apos;Content-Length&apos;:&apos;19&apos;,</span><br><span class="line">  &apos;User-Agent&apos;:&apos;node.js-v0.8.8&apos;, </span><br><span class="line"> &apos;cookie&apos;:&apos;userid=123456; mycookie2=abcdefg&apos;, </span><br><span class="line">  &apos;X-Requested-With&apos;:&apos;xmlhttprequest&apos;,</span><br><span class="line"> &apos;Connection&apos;:&apos;keep-alive&apos;,</span><br><span class="line">  &apos;Accept&apos;:&apos;text/html&apos;,&#125;</span><br></pre></td></tr></table></figure></p>
-<p>第二次顺序如下：</p>
-<p><img src="/img/header/h5.gif" alt=""></p>
-<p>我们看到，请求头的顺序根据我们发送headers的顺序改变了，所以http请求头是有顺序的。原因么因为http协议是基于TCP的，而tcp协议有一个重要的准则，它会严格的根据你发送的数据顺序传输数据，这也就保证了http请求头的顺序。</p>
-<p>所以我们也可以利用这一点来对付爬虫程序，因为一般的浏览器都有一定的http请求头顺序，</p>
-<p>比如accept 必须在accpet-language和accpet-encoding之前</p>
+<p>demo例子的地址：<br><a href="https://github.com/DoubleSpout/libuv_ex" target="_blank" rel="noopener">https://github.com/DoubleSpout/libuv_ex</a><br>也可以<br>npm install libuv_ex<br>请保证您的node版本在0.10.x</p>
+<p>首先介绍下libuv，libuv 是一个高性能事件驱动的程序库，封装了 Windows 和 Unix 平台一些底层特性，为开发者提供了统一的 API。libuv 采用了 异步 (asynchronous), 事件驱动 (event-driven)的编程风格, 其主要任务是为开人员提供了一套事件循环和基于I/O(或其他活动)通知的回调函数, libuv 提供了一套核心的工具集, 例如定时器, 非阻塞网络编程的支持, 异步访问文件系统, 子进程以及其他功能。<br>可见nodejs的一切异步操作都是基于libuv来实现的，有了它的这些api我们也就可以编写出异步的nodejs模块了。</p>
+<p>最好结合github上的test和liuv.h来看，更加容易弄懂<br>中文版的libuv手册：<a href="http://forhappy.github.io/uvbook/index.html" target="_blank" rel="noopener">http://forhappy.github.io/uvbook/index.html</a><br>libuv项目地址：<a href="https://github.com/joyent/libuv" target="_blank" rel="noopener">https://github.com/joyent/libuv</a></p>
+<p>简单介绍一下这个demo实例把，我在demo里写了5个例子，分别用了不同的技术，执行了10次fibo(40)，最后所得到的结果也各不相同。<br>c++代码都在 ./src  文件夹中，Asyn类中定义了下述5种不同情况的方法和一些libuv的api所需要的回调函数，在job类中，定义了执行fibo的任务函数，和一些相关设置，在线程中或者异步回调中传递的都是job类的指针。<br>例子执行代码如下：<br>//do fibo 10 times<br>var i = 40;<br>var times = 10;</p>
+<p>asyn.sync(times,i,function(err, result){ //1、这里执行10次fibo(40)的函数，分别用不同的技术<br>    console.log(‘fibo(‘+i+’):’ + result)<br>})</p>
+<p>var d1 = Date.now();<br>while(Date.now() - d1 &lt;= 1000*1){ //2、这里将主线程sleep 1秒，模拟js的执行工作<br>    //sleeping 10sec simulate the js work<br>}</p>
+<p>我们分别以5种不同的方式执行10次fibo(40)，看看测试结果会是什么样子的，我们主要记录全部执行任务的时间和模拟的js任务执行的时间。</p>
+<p>1、完全同步，在c++代码中直接10次循环执行fibo(40)<br>执行测试代码：<br><a href="https://github.com/DoubleSpout/libuv_ex/blob/master/test/sync.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/libuv_ex/blob/master/test/sync.js</a><br>main_thread_js_work: 4568ms<br>sync_all_the_work: 4568ms<br>可见js执行完毕和所有任务执行完成是同一时间的，这个结果合情合理</p>
+<p>2、使用libuv创建同步线程来计算fibo，然后将结果回调主线程<br>执行测试代码：<br><a href="https://github.com/DoubleSpout/libuv_ex/blob/master/test/sync_thread.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/libuv_ex/blob/master/test/sync_thread.js</a><br>main_thread_js_work: 4595ms<br>sync_thread_all_the_work: 4595ms<br>由于整个程序都是同步的，所以和之前一样，同步的多线程没有明显提升结果</p>
+<p>3、使用libuv的async异步回调方式，将所有任务注册到事件循环中，这样将先执行js的sleep，然后在主线程中分别计算fibo的结果，这种情况有点像我们使用process.nextTick来让一个计算异步执行，保证当前主线程的工作不被阻塞，最后进行耗时计算。<br>执行测试代码：<br><a href="https://github.com/DoubleSpout/libuv_ex/blob/master/test/asyn.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/libuv_ex/blob/master/test/asyn.js</a><br>main_thread_js_work: 1003ms<br>asyn_all_the_work: 4457ms<br>因为我们将fibo放在了异步去执行，所以js的任务将被先执行，js任务执行了1秒（我们模拟sleep了1秒）之后就是fibo的任务，总时间和上面两种情况大致相同。</p>
+<p>4、使用libuv的async异步回调的方式，我们先注册fibo执行完毕的异步回调函数，然后创建异步的线程去执行fibo，这样js的任务将和fibo线程同时进行工作.<br>执行测试代码：<a href="https://github.com/DoubleSpout/libuv_ex/blob/master/test/asyn_thread.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/libuv_ex/blob/master/test/asyn_thread.js</a><br>main_thread_js_work: 1017ms<br>asyn_thread_all_the_work: 1897ms<br>因为js任务抢占着主线程，同时也是因为js任务执行时间比较短，所以js任务结束提示先打印到了屏幕上，然后各异步线程也执行完毕，总耗时1897ms，比上面几种情况要快一倍，这主要归功于多核CPU的同时计算</p>
+<p>5、使用libuv自带的线程池进行异步计算fibo，我们先向线程池注册工作回调，然后再注册主线程的完成回调<br>执行测试代码：<a href="https://github.com/DoubleSpout/libuv_ex/blob/master/test/asyn_pool.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/libuv_ex/blob/master/test/asyn_pool.js</a><br>main_thread_js_work: 1002ms<br>asyn_pool_all_the_work: 2382ms<br>这种情况和上述情况一样，不过我们不是为每个计算生成一个线程，而是使用了libuv内部的线程池，所以制约了并行计算的能力，但是这样更加安全，不容易因为不可控的线程数量导致程序崩溃，事实上libuv为我们提供了4个线程的线程池。</p>
+<p>总结一下，使用libuv我们最好采用可控的异步线程配合异步回调来做一些事情，这样可以不阻塞主的js线程，还能并行执行任务，当任务结束后记得一定要回调主线程去执行js的回调函数，不能在其他线程去执行js的回调，因为在v8的一个isolate中，不可以多个线程同时操作一个isolate。当我们在线程中操作共享变量时记得加锁和解锁。在异步任务执行完毕后记得执行uv_close，将其关闭，同时因为我们都是将指针作为参数传递的，不要忘记delete掉之前new的指针，这样通过libuv的异步多线程api，我们就可以很轻松的为nodejs编写一些跨平台非阻塞扩展了。<br>PS，经过在win8 64位 和 linux 2.6.4 32bit虚拟机的测试中，我发现win8真是弱爆了，linux虚拟机执行上述任务的所消耗时间比我真机win8还要少一些。</p>
 
       
     </div>
@@ -488,8 +476,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2012/09/24/go/" rel="next" title="golang入门(1)">
-                <i class="fa fa-chevron-left"></i> golang入门(1)
+              <a href="/2012/09/12/js-ajax/" rel="next" title="XSRF攻击实例，注入cnodejs.org官网">
+                <i class="fa fa-chevron-left"></i> XSRF攻击实例，注入cnodejs.org官网
               </a>
             
           </div>
@@ -498,8 +486,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2012/09/24/js-ajax/" rel="prev" title="关于MYSQL Innodb 锁行还是锁表">
-                关于MYSQL Innodb 锁行还是锁表 <i class="fa fa-chevron-right"></i>
+              <a href="/2012/09/24/js-ajax/" rel="prev" title="http请求头的顺序">
+                http请求头的顺序 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -842,7 +830,7 @@
     
         
         <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
-        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=2"></script>
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
     
 <!-- END LOCAL -->
 

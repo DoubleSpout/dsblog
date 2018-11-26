@@ -108,18 +108,18 @@
 
 
 
-  <meta name="description" content="转载： http://blog.nosqlfan.com/html/3097.html">
+  <meta name="description" content="bigpipe虽然也是分布加载网页，达到让用户边浏览，边加载的效果，但是bigpipe同以往ajax异步加载不同，它不会产生额外的http请求，当然避免了请求建立和释放的时间，同时也没有了多余的请求响应头，当然也减轻了服务器的压力。 更可以做到部分页面缓存，部分数据缓存，部分不缓存的状态。">
 <meta name="keywords" content="javascript">
 <meta property="og:type" content="article">
-<meta property="og:title" content="不可忽略的缓存重建">
+<meta property="og:title" content="node.js搭建bigpipe demo时碰到的雷">
 <meta property="og:url" content="http://yoursite.com/2011/11/24/js-ajax/index.html">
 <meta property="og:site_name" content="snoopyxdy的博客">
-<meta property="og:description" content="转载： http://blog.nosqlfan.com/html/3097.html">
+<meta property="og:description" content="bigpipe虽然也是分布加载网页，达到让用户边浏览，边加载的效果，但是bigpipe同以往ajax异步加载不同，它不会产生额外的http请求，当然避免了请求建立和释放的时间，同时也没有了多余的请求响应头，当然也减轻了服务器的压力。 更可以做到部分页面缓存，部分数据缓存，部分不缓存的状态。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-26T03:48:18.878Z">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.870Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="不可忽略的缓存重建">
-<meta name="twitter:description" content="转载： http://blog.nosqlfan.com/html/3097.html">
+<meta name="twitter:title" content="node.js搭建bigpipe demo时碰到的雷">
+<meta name="twitter:description" content="bigpipe虽然也是分布加载网页，达到让用户边浏览，边加载的效果，但是bigpipe同以往ajax异步加载不同，它不会产生额外的http请求，当然避免了请求建立和释放的时间，同时也没有了多余的请求响应头，当然也减轻了服务器的压力。 更可以做到部分页面缓存，部分数据缓存，部分不缓存的状态。">
 
 
 
@@ -136,7 +136,7 @@
   };
 </script>
 
-  <title>不可忽略的缓存重建 | snoopyxdy的博客</title>
+  <title>node.js搭建bigpipe demo时碰到的雷 | snoopyxdy的博客</title>
   
 
 
@@ -322,7 +322,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">不可忽略的缓存重建
+          <h1 class="post-title" itemprop="name headline">node.js搭建bigpipe demo时碰到的雷
               
             
           </h1>
@@ -425,22 +425,19 @@
       
 
       
-        <p>转载：</p>
-<p><a href="http://blog.nosqlfan.com/html/3097.html" target="_blank" rel="noopener">http://blog.nosqlfan.com/html/3097.html</a><br><a id="more"></a></p>
-<p>本文的主要内容来源于MongoDB官方博客，由NoSQLFan补充说明，本文对传统的分布式Cache系统进行了分析，指出了其在缓存重建中会对数据库产生巨大压力的问题。并分析了MongoDB的mmap方案是如何规避这一问题的。</p>
-<p>如下图的架构，在数据库前端加上分布式的Cache（比如我们常用的Memcached），让客户端在访问时先查找Cache，Cache不命中再读数据库并将结构缓存在Cache中。这是目前比较常用的一种分担读压力的方法。</p>
-<p>但是这个方法存在一个问题，如果前端的Cache挂掉，或者比较极端的整个机房断电了，那么在机器重启后，原来Cache机器在内存中的缓存会全部清空，在客户端访问过程中，会百分之百的不命中，这样数据库会在瞬间接受巨大的读压力。</p>
-<p>试想如果一个64GB的缓存失效了，在其重建时，假设与数据库连接的千兆网卡，假设其以极限速度100M每秒从数据库取数据过来重建缓存，那么也需要10分钟才能建完。更何况这是理想情况，对于客户端触发式的随机缓存重建，可能会花掉更长的时间。这还是在数据库能提供100M每秒的数据读请求的前提下。</p>
-<p>我们经常看到一些网站挂掉后又恢复，恢复后又挂掉，如此反复几次才能真正恢复，原因就在于其第一次Cache倒了，数据库无法承受相应的读压力，在 缓存重建了一小部分后被压死。相当于数据库每重启一次，可以恢复部分缓存，直到缓存的非命中率到达数据库可承受的压力时，才能够真正恢复服务。</p>
-<p>这个问题可以用一些可以提供持久化功能的缓存来实现，比如Redis，在未开启aof的情况下，其定期dump出来的rdb文件出能自动恢复出绝大部分数据，当然，在有的时候这可能导致缓存和数据库数据不一致的情况，需要根据应用场景选择性的使用。</p>
-<p>上面是对分布式Cache的问题，而对于很多数据库存储，实际上也几乎都是将热数据尽量放在内存中的。但很多数据库在实现上是自己在内存中实现了 Cache机制，这样在数据库重启（非操作系统重启）时，这些Cache可能也就随之被清空了，对于数据库来说，也需要重建缓存，而数据库这时所有的操作 可能都落在磁盘IO上，带来了同样的问题。</p>
-<p>而MongoDB与上面的方式不太一样，MongoDB采用mmap来将数据文件映射到内存中，所以当MongoDB重启时，这些映射的内存并不会 清掉，因为它们是由操作系统维护的（所以当操作系统重启时，MongoDB才会有相同问题）。相对于其它一些自己维护Cache的数据库，MongoDB 在重启后并不需要进行缓存重建与预热。</p>
-<p>另外，新浪微博的timyang也曾经提出过一种缓存重建加锁的方式，也能部分解决此问题。简单来说就是缓存重建时，当多个客户端对同一个缓存数据 发起请求时，会在客户端采用加锁等待的方式，对同一个Cache的重建需要获取到相应的锁才行，只有一个客户端能拿到锁，并且只有拿到锁的客户端才能访问 数据库重建缓存，其它的客户端都需要等待这个拿到锁的客户端重建好缓存后直接读缓存，其结果是对同一个缓存数据，只进行一次数据库重建访问。但是如果访问 分散比较严重，还是会瞬间对数据库造成非常大的压力。</p>
-<p>下面是几点比较实用的知识：</p>
-<p>无论使用哪个存储，都最好先搞清楚其缓存重建的过程，如果一次重启就可能导致数据库崩溃，还是小心为好，最好把重启时间选在访问量比较小的时候。</p>
-<p>重启MongoDB不会导致MongoDB的缓存失效（除非重启服务器）</p>
-<p>当你重新mount磁盘时，文件系统的缓存会失效，这和重启机器时一样，MongoDB也无法避免</p>
-<p>一个使用MongoDB的小技巧，当MongoDB服务器刚启动时，你可以将其所有文件copy到/dev/null中，这会触发操作系统对这些 文件的读操作，从而在内存允许的条件下，会将尽可能多的MongoDB数据文件映射到物理内存中。当然，如果在MongoDB运行过程中，你能够判断哪些 文件保存的数据是热数据，也可以将这些文件copy到/dev/null 来为其争取更多的物理内存。</p>
+        <p>bigpipe虽然也是分布加载网页，达到让用户边浏览，边加载的效果，但是bigpipe同以往ajax异步加载不同，它不会产生额外的http请求，当然避免了请求建立和释放的时间，同时也没有了多余的请求响应头，当然也减轻了服务器的压力。</p>
+<p>更可以做到部分页面缓存，部分数据缓存，部分不缓存的状态。</p>
+<a id="more"></a>
+<p>在用node.js搭建demo时发现了一个小问题，当直接写如下代码后，前端页面并没有直接输出，而是等res.end()调用后再一起输出。</p>
+<p>看代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">res.write(&apos;1234567890&apos;);</span><br><span class="line">res.write(&apos;abcdefghijklmn&apos;);</span><br><span class="line">res.end();</span><br></pre></td></tr></table></figure></p>
+<p>一开始以为类似php+nginx，需要调整缓冲区的大小才能正常输出，因为php+nginx当时搭建bigpipe时，需要将nginx的缓冲区设置为很小，并且要将gzip关闭，具体可以参考相关文档。（其实关键就在这里，如果一开始没有去搭php+nginx那个环境，不会花这么多时间！5555~~）</p>
+<p>于是找node.js v0.65 的api文档，发现没有找到相关可以设置的地方，于是去找node.js源码的http模块部分。</p>
+<p>找到这一段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">OutgoingMessage.prototype._writeRaw = function(data, encoding) &#123;</span><br><span class="line">  if (this.connection &amp;&amp;</span><br><span class="line">      this.connection._httpMessage === this &amp;&amp;</span><br><span class="line">      this.connection.writable) &#123;</span><br><span class="line">    // There might be pending data in the this.output buffer.</span><br><span class="line">    while (this.output.length) &#123;</span><br><span class="line">      if (!this.connection.writable) &#123;</span><br><span class="line">        this._buffer(data, encoding);</span><br><span class="line">        return false;</span><br><span class="line">      &#125;</span><br><span class="line">      var c = this.output.shift();</span><br><span class="line">      var e = this.outputEncodings.shift();</span><br><span class="line">      this.connection.write(c, e);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Directly write to socket.</span><br><span class="line">    return this.connection.write(data, encoding);</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    this._buffer(data, encoding);</span><br><span class="line">    return false;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>也就是说，只有当 this.connection &amp;&amp;  this.connection._httpMessage === this &amp;&amp;  this.connection.writable 这个条件为false时会将data存入buffer，而这个_buffer（国际惯例，加下划线是私有方法的约定）方法就是将响应内容和encode放入两个数组中。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">OutgoingMessage.prototype._buffer = function(data, encoding) &#123;</span><br><span class="line">  if (data.length === 0) return;</span><br><span class="line">  var length = this.output.length;</span><br><span class="line">  if (length === 0 || typeof data != &apos;string&apos;) &#123;</span><br><span class="line">    this.output.push(data);</span><br><span class="line">    this.outputEncodings.push(encoding);</span><br><span class="line">    return false;</span><br><span class="line">  &#125;</span><br><span class="line">  var lastEncoding = this.outputEncodings[length - 1];</span><br><span class="line">  var lastData = this.output[length - 1];</span><br><span class="line">  if ((encoding &amp;&amp; lastEncoding === encoding) ||</span><br><span class="line">      (!encoding &amp;&amp; data.constructor === lastData.constructor)) &#123;</span><br><span class="line">    this.output[length - 1] = lastData + data;</span><br><span class="line">    return false;</span><br><span class="line">  &#125;</span><br><span class="line">  this.output.push(data);</span><br><span class="line">  this.outputEncodings.push(encoding);</span><br><span class="line">  return false;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>但是并没有提到需要判断缓存数组的bytelength啊，于是重新打开浏览器，查看网络传输，发现已经响应给客户端了，恍然大悟，原来是浏览器缓存干掉了输出。</p>
+<p>顺便提一句，node.js源码写的很巧妙，当发现有同类型的string和utf-8响应给客户端，node.js并不是直接push到各自的数组，而是将字符串拼接，encoding数组不push的方式，可以减少一些开销。</p>
+<p>后来发现ff会缓存512b的内容，chrome缓存1024b的内容，但是都只会缓存一次，以后都可以正常输出。</p>
+<p>也就是说，只要服务器第一次响应的大小超过1kb就可以被上述2个浏览器正常输出了。以后再次响应无关大小，都可以正常输出。</p>
 
       
     </div>
@@ -487,8 +484,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2011/11/24/js-ajax/" rel="prev" title="node.js搭建bigpipe demo时碰到的雷">
-                node.js搭建bigpipe demo时碰到的雷 <i class="fa fa-chevron-right"></i>
+              <a href="/2011/11/24/js-ajax/" rel="prev" title="不可忽略的缓存重建">
+                不可忽略的缓存重建 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -831,7 +828,7 @@
     
         
         <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
-        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=2"></script>
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
     
 <!-- END LOCAL -->
 

@@ -108,18 +108,24 @@
 
 
 
-  <meta name="description" content="关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。转载原文：http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html">
+  <meta name="description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
 <meta name="keywords" content="node.js">
 <meta property="og:type" content="article">
-<meta property="og:title" content="关于MYSQL Innodb 锁行还是锁表">
+<meta property="og:title" content="http请求头的顺序">
 <meta property="og:url" content="http://yoursite.com/2012/09/24/js-ajax/index.html">
 <meta property="og:site_name" content="snoopyxdy的博客">
-<meta property="og:description" content="关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。转载原文：http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html">
+<meta property="og:description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-26T03:48:18.854Z">
+<meta property="og:image" content="http://yoursite.com/img/header/h1.gif">
+<meta property="og:image" content="http://yoursite.com/img/header/h2.gif">
+<meta property="og:image" content="http://yoursite.com/img/header/h3.gif">
+<meta property="og:image" content="http://yoursite.com/img/header/h4.gif">
+<meta property="og:image" content="http://yoursite.com/img/header/h5.gif">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.861Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="关于MYSQL Innodb 锁行还是锁表">
-<meta name="twitter:description" content="关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。转载原文：http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html">
+<meta name="twitter:title" content="http请求头的顺序">
+<meta name="twitter:description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
+<meta name="twitter:image" content="http://yoursite.com/img/header/h1.gif">
 
 
 
@@ -136,7 +142,7 @@
   };
 </script>
 
-  <title>关于MYSQL Innodb 锁行还是锁表 | snoopyxdy的博客</title>
+  <title>http请求头的顺序 | snoopyxdy的博客</title>
   
 
 
@@ -322,7 +328,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">关于MYSQL Innodb 锁行还是锁表
+          <h1 class="post-title" itemprop="name headline">http请求头的顺序
               
             
           </h1>
@@ -425,24 +431,27 @@
       
 
       
-        <p>关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。<br>转载原文：<a href="http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html" target="_blank" rel="noopener">http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html</a></p>
+        <p>http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？</p>
 <a id="more"></a>
-<p>做项目时由于业务逻辑的需要，必须对数据表的一行或多行加入行锁，举个最简单的例子，图书借阅系统。假设 id=1 的这本书库存为 1 ，但是有 2 个人同时来借这本书，此处的逻辑为</p>
-<p>Select   restnum from book where id =1 ;<br>– 如果 restnum 大于 0 ，执行 update<br>Update   book set restnum=restnum-1 where id=1 ;  </p>
-<p>问题就来了，当 2 个人同时来借的时候，有可能第一个人执行 select 语句的时候，第二个人插了进来，在第一个人没来得及更新 book 表的时候，第二个人查到数据了，其实是脏数据，因为第一个人会把 restnum 值减 1 ，因此第二个人本来应该是查到 id=1 的书 restnum 为 0 了，因此不会执行 update ，而会告诉它 id=1 的书没有库存了，可是数据库哪懂这些，数据库只负责执行一条条 SQL 语句，它才不管中间有没有其他 sql 语句插进来，它也不知道要把一个 session 的 sql 语句执行完再执行另一个 session 的。因此会导致并发的时候 restnum 最后的结果为 -1 ，显然这是不合理的，所以，才出现锁的概念， Mysql 使用 innodb 引擎可以通过索引对数据行加锁。以上借书的语句变为：</p>
-<p>Begin;<br>Select   restnum from book where id =1 for   update ;<br>– 给 id=1 的行加上排它锁且 id 有索引<br>Update   book set restnum=restnum-1 where id=1 ;<br>Commit;  </p>
-<p>这样，第二个人执行到 select 语句的时候就会处于等待状态直到第一个人执行 commit 。从而保证了第二个人不会读到第一个人修改前的数据。</p>
-<p>那这样是不是万无一失了呢，答案是否定的。看下面的例子。</p>
-<p>跟我一步一步来，先建立表<br>CREATE TABLE <code>book</code> (<br><code>id</code> int(11) NOT NULL auto_increment,<br><code>num</code> int(11) default NULL,<br><code>name</code> varchar(0) default NULL,<br>PRIMARY KEY (<code>id</code>),<br>KEY <code>asd</code> (<code>num</code>)<br>) ENGINE=InnoDB DEFAULT CHARSET=gbk<br>其中 num 字段加了索引</p>
-<p>然后插入数据，运行，<br>insert into book(num) values(11),(11),(11),(11),(11);<br>insert into book(num) values(22),(22),(22),(22),(22);<br>然后打开 2 个 mysql 控制台窗口，其实就是建立 2 个 session 做并发操作</p>
-<hr>
-<p>在第一个 session 里运行：<br>begin;<br>select <em> from book where num=11 for update;<br>出现结果：<br>+—-+—–+——+<br>| id | num | name |<br>+—-+—–+——+<br>| 11 | 11 | NULL |<br>| 12 | 11 | NULL |<br>| 13 | 11 | NULL |<br>| 14 | 11 | NULL |<br>| 15 | 11 | NULL |<br>+—-+—–+——+<br>5 rows in set<br>然后在第二个 session 里运行：<br>begin;<br>select </em> from book where num=22 for update;<br>出现结果：<br>+—-+—–+——+<br>| id | num | name |<br>+—-+—–+——+<br>| 16 | 22 | NULL |<br>| 17 | 22 | NULL |<br>| 18 | 22 | NULL |<br>| 19 | 22 | NULL |<br>| 20 | 22 | NULL |<br>+—-+—–+——+<br>5 rows in set<br>好了，到这里什么问题都没有，是吧，可是接下来问题就来了，大家请看：<br>回到第一个 session ，运行：<br>update book set name=’abc’ where num=11;<br>“<strong><strong><strong><strong><strong>***</strong></strong></strong></strong></strong>”<br>问题来了， session 竟然处于等待状态 ，可是 num=11 的行不是被第一个 session 自己锁住的么，为什么不能更新呢？好了，打这里大家也许有自己的答案，先别急，再请看一下操作。</p>
-<p>把 2 个 session 都关闭，然后运行：<br>delete from book where num=11 limit 3;<br>delete from book where num=22 limit 3;  </p>
-<p>其实就是把 num=11 和 22 的记录各删去 3 行，<br>然后重复 “<strong><strong><strong><strong><strong>***</strong></strong></strong></strong></strong>” 之间的操作<br>竟然发现，运行 update book set name=’abc’ where num=11; 后，有结果出现了，说明没有被锁住，<br>这是为什么呢，难道 2 行数据和 5 行数据，对 MySQL 来说，会产生锁行和锁表两种情况吗。经过跟网友讨论和翻阅资料，仔细分析后发现：</p>
-<p>在以上实验数据作为测试数据的情况下，由于 num 字段重复率太高，只有 2 个值，分别是 11 和 12. 而数据量相对于这两个值来说却是比较大的，是 10 条， 5 倍的关系。<br>那么 mysql 在解释 sql 的时候，会忽略索引，因为它的优化器发现：即使使用了索引，还是要做全表扫描，故而放弃了索引，也就没有使用行锁，却使用了表锁。简单的讲，就是 MYSQL 无视了你的索引，它觉得与其行锁，还不如直接表锁，毕竟它觉得表锁所花的代价比行锁来的小。以上问题即便你使用了 force index 强制索引，结果还是一样，永远都是表锁。</p>
-<p>所以 mysql 的行锁用起来并不是那么随心所欲的，必须要考虑索引。再看下面的例子。<br>select id from items where id in (select id from items where id &lt;6) for update;<br>–id字段加了索引<br>select id from items where id in (1,2,3,4,5) for update;<br>大部分会认为结果一样没什么区别，其实差别大了，区别就是第一条 sql 语句会产生表锁，而第二个 sql 语句是行锁，为什么呢？因为第一个 sql 语句用了子查询外围查询故而没使用索引，导致表锁。</p>
-<p>好了，回到借书的例子，由于 id 是唯一的，所以没什么问题，但是如果有些表出现了索引有重复值，并且 mysql 会强制使用表锁的情况，那怎么办呢？一般来说只有重新设计表结构和用新的 SQL 语句实现业务逻辑，但是其实上面借书的例子还有一种办法。请看下面代码：<br>Set   sql_mode=<br>‘STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION’;<br>Begin;<br>Select restnum from book where id =1   ; – 取消排它锁 , 设置 restnum 为 unsigned<br>Update   book set restnum=restnum-1 where id=1 ;<br>If(update 执行成功 ) commit;<br>Else   rollback;<br> 上面是个小技巧，通过把数据库模式临时设置为严格模式，当 restnum 被更新为 -1 的时候，由于 restnum 是 unsigned 类型的，因此 update 会执行失败，无论第二个 session 做了什么数据库操作，都会被回滚，从而确保了数据的正确性，这个目的只是为了防止并发的时候极小概率出现的 2 个 session 的 sql 语句嵌套执行导致数据脏读。当然最好的办法还是修改表结构和 sql 语句，让 MYSQL 通过索引来加行锁, MySQL 测试版本为 5.0.75-log 和 5.1.36-community</p>
-<p>所以，可以总结出。Mysql innodb虽是锁行的，但是如果没有索引，或者索引如上，那就要锁表了。</p>
+<p>最近在做爬虫程序时发现了这个问题，在爬到某某网站时，发现之前的爬虫程序一直被爆40X错误，很是纳闷，我都是按照浏览器的请求头来伪造的，加上了referr还是如此。</p>
+<p>怀疑是因为利用算法禁止了ip地址，于是单独请求，发现还是有部分请求被挡住了，爬虫程序无法正常工作了。</p>
+<p>但是浏览器端刷新一直很正常，于是将浏览器的请求头按照原封不动的顺序拷入爬虫程序，发现其可以正常使用了。</p>
+<p>http请求头真的有顺序吗？下面我们看一下各个浏览器的http请求头情况。</p>
+<p>准备投稿cnode，使用nodejs代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">var http = require(&apos;http&apos;),</span><br><span class="line">    server = http.createServer(function (req, res)&#123;</span><br><span class="line">  var body = JSON.stringify(req.headers) + &apos;\n&apos; + Object.keys(req.headers);</span><br><span class="line">  res.end(body);</span><br><span class="line"> &#125;).listen(3000);</span><br></pre></td></tr></table></figure>
+<p> 我们分别看下chrome、ff还有IE下的截屏：</p>
+<p><img src="/img/header/h1.gif" alt=""></p>
+<p><img src="/img/header/h2.gif" alt=""></p>
+<p><img src="/img/header/h3.gif" alt=""></p>
+<p>然后我们利用node构造一个请求，把请求头顺序打乱：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">var getfn = function(path, cb)&#123;</span><br><span class="line"> var request  =  http.request(&#123;</span><br><span class="line">   host:&apos;192.168.1.220&apos;,</span><br><span class="line">   port:3000,</span><br><span class="line">   path:&apos;/&apos;+path,</span><br><span class="line">   method:&apos;GET&apos;,</span><br><span class="line">   headers:&#123;&apos;Accept&apos;:&apos;text/html&apos;,</span><br><span class="line">      &apos;Content-Type&apos;:&apos;application/x-www-form-urlencoded&apos;, </span><br><span class="line">      &apos;Content-Length&apos;:&apos;19&apos;,</span><br><span class="line">      &apos;User-Agent&apos;:&apos;node.js-v0.8.8&apos;, </span><br><span class="line">      &apos;cookie&apos;:&apos;userid=123456; mycookie2=abcdefg&apos;, </span><br><span class="line">      &apos;X-Requested-With&apos;:&apos;xmlhttprequest&apos;,</span><br><span class="line">      &apos;Connection&apos;:&apos;keep-alive&apos;,</span><br><span class="line">      &apos;Referer&apos;:&apos;http://www.cnodejs.org/&apos;&#125;</span><br><span class="line">  &#125;, function(res)&#123;</span><br><span class="line">    var body = &apos;&apos;;</span><br><span class="line">    res.on(&apos;data&apos;, function(chunk) &#123;</span><br><span class="line">      // convert chunk to utf8 text:</span><br><span class="line">       body += chunk;</span><br><span class="line">      // process utf8 text chunk</span><br><span class="line">     &#125;);</span><br><span class="line">    res.on(&apos;end&apos;, function() &#123;</span><br><span class="line">      cb(res, body);</span><br><span class="line">     &#125;);</span><br><span class="line">  &#125;).on(&apos;err&apos;, function(e)&#123;</span><br><span class="line">   throw e;</span><br><span class="line">  &#125;);</span><br><span class="line">  request.end();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">getfn(&apos;/&apos;, function(res, body)&#123;</span><br><span class="line"> console.log(body)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>第一次请求头顺序如下：</p>
+<p><img src="/img/header/h4.gif" alt=""></p>
+<p>我们变化了host，accept还有referer的位置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">headers:&#123;</span><br><span class="line">  &apos;host&apos;:&apos;192.168.1.220&apos;,</span><br><span class="line">  &apos;Referer&apos;:&apos;http://www.cnodejs.org/&apos;,</span><br><span class="line"> &apos;Content-Type&apos;:&apos;application/x-www-form-urlencoded&apos;, </span><br><span class="line">  &apos;Content-Length&apos;:&apos;19&apos;,</span><br><span class="line">  &apos;User-Agent&apos;:&apos;node.js-v0.8.8&apos;, </span><br><span class="line"> &apos;cookie&apos;:&apos;userid=123456; mycookie2=abcdefg&apos;, </span><br><span class="line">  &apos;X-Requested-With&apos;:&apos;xmlhttprequest&apos;,</span><br><span class="line"> &apos;Connection&apos;:&apos;keep-alive&apos;,</span><br><span class="line">  &apos;Accept&apos;:&apos;text/html&apos;,&#125;</span><br></pre></td></tr></table></figure></p>
+<p>第二次顺序如下：</p>
+<p><img src="/img/header/h5.gif" alt=""></p>
+<p>我们看到，请求头的顺序根据我们发送headers的顺序改变了，所以http请求头是有顺序的。原因么因为http协议是基于TCP的，而tcp协议有一个重要的准则，它会严格的根据你发送的数据顺序传输数据，这也就保证了http请求头的顺序。</p>
+<p>所以我们也可以利用这一点来对付爬虫程序，因为一般的浏览器都有一定的http请求头顺序，</p>
+<p>比如accept 必须在accpet-language和accpet-encoding之前</p>
 
       
     </div>
@@ -479,8 +488,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2012/09/12/js-ajax/" rel="next" title="XSRF攻击实例，注入cnodejs.org官网">
-                <i class="fa fa-chevron-left"></i> XSRF攻击实例，注入cnodejs.org官网
+              <a href="/2012/09/24/go/" rel="next" title="golang入门(1)">
+                <i class="fa fa-chevron-left"></i> golang入门(1)
               </a>
             
           </div>
@@ -489,8 +498,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2012/09/24/js-ajax/" rel="prev" title="windows系统增加或删除d-n-s设置">
-                windows系统增加或删除d-n-s设置 <i class="fa fa-chevron-right"></i>
+              <a href="/2012/09/24/js-ajax/" rel="prev" title="关于MYSQL Innodb 锁行还是锁表">
+                关于MYSQL Innodb 锁行还是锁表 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -833,7 +842,7 @@
     
         
         <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
-        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=2"></script>
     
 <!-- END LOCAL -->
 

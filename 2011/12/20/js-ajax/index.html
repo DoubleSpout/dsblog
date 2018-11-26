@@ -108,18 +108,18 @@
 
 
 
-  <meta name="description" content="此方法兼容ie6，7，8，9，ff，chrome；用以获得textarea光标的位置">
+  <meta name="description" content="前面介绍了connect.js的源代码和工作原理，除了route.js实现比较复杂外，其他的例如middleware实现都非常巧妙，值得学习。 我们来看下3.0版本的expressjs有什么新东西，初看3.0 版本的expressjs比起2.4版本代码变化不少，值得我们学习的route模块也全部重新改写了，我们来简单看下：">
 <meta name="keywords" content="javascript">
 <meta property="og:type" content="article">
-<meta property="og:title" content="textarea获得光标位置">
+<meta property="og:title" content="expressjs源码解读(四) —— 3.0版本expressjs">
 <meta property="og:url" content="http://yoursite.com/2011/12/20/js-ajax/index.html">
 <meta property="og:site_name" content="snoopyxdy的博客">
-<meta property="og:description" content="此方法兼容ie6，7，8，9，ff，chrome；用以获得textarea光标的位置">
+<meta property="og:description" content="前面介绍了connect.js的源代码和工作原理，除了route.js实现比较复杂外，其他的例如middleware实现都非常巧妙，值得学习。 我们来看下3.0版本的expressjs有什么新东西，初看3.0 版本的expressjs比起2.4版本代码变化不少，值得我们学习的route模块也全部重新改写了，我们来简单看下：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-26T03:48:18.876Z">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.858Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="textarea获得光标位置">
-<meta name="twitter:description" content="此方法兼容ie6，7，8，9，ff，chrome；用以获得textarea光标的位置">
+<meta name="twitter:title" content="expressjs源码解读(四) —— 3.0版本expressjs">
+<meta name="twitter:description" content="前面介绍了connect.js的源代码和工作原理，除了route.js实现比较复杂外，其他的例如middleware实现都非常巧妙，值得学习。 我们来看下3.0版本的expressjs有什么新东西，初看3.0 版本的expressjs比起2.4版本代码变化不少，值得我们学习的route模块也全部重新改写了，我们来简单看下：">
 
 
 
@@ -136,7 +136,7 @@
   };
 </script>
 
-  <title>textarea获得光标位置 | snoopyxdy的博客</title>
+  <title>expressjs源码解读(四) —— 3.0版本expressjs | snoopyxdy的博客</title>
   
 
 
@@ -322,7 +322,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">textarea获得光标位置
+          <h1 class="post-title" itemprop="name headline">expressjs源码解读(四) —— 3.0版本expressjs
               
             
           </h1>
@@ -425,11 +425,61 @@
       
 
       
-        <p>此方法兼容ie6，7，8，9，ff，chrome；用以获得textarea光标的位置</p>
+        <p>前面介绍了connect.js的源代码和工作原理，除了route.js实现比较复杂外，其他的例如middleware实现都非常巧妙，值得学习。</p>
+<p>我们来看下3.0版本的expressjs有什么新东西，初看3.0 版本的expressjs比起2.4版本代码变化不少，值得我们学习的route模块也全部重新改写了，我们来简单看下：</p>
 <a id="more"></a>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">function getCaret(ZysrID)&#123;</span><br><span class="line">var txb = document.getElementById(ZysrID);//根据ID获得对象</span><br><span class="line">  if(typeof(txb.selectionStart) == &quot;number&quot;)   return pos = txb.selectionStart; //兼容FF,CHROME</span><br><span class="line">var pos = 0;//设置初始位置</span><br><span class="line">txb.focus();//输入框获得焦点,这句也不能少,不然后面会出错,血的教训啦.</span><br><span class="line">var s = txb.scrollTop;//获得滚动条的位置</span><br><span class="line">var r = document.selection.createRange();//创建文档选择对象</span><br><span class="line">var t = txb.createTextRange();//创建输入框文本对象</span><br><span class="line">t.collapse(true);//将光标移到头</span><br><span class="line">t.select();//显示光标,这个不能少,不然的话,光标没有移到头.当时我不知道,搞了十几分钟</span><br><span class="line">var j = document.selection.createRange();//为新的光标位置创建文档选择对象</span><br><span class="line">r.setEndPoint(&quot;StartToStart&quot;,j);//在以前的文档选择对象和新的对象之间创建对象,妈的,不好解释,我表达能力不算太好.有兴趣自己去看msdn的资料</span><br><span class="line">var str = r.text;//获得对象的文本</span><br><span class="line">var re = new RegExp(&quot;[\\n]&quot;,&quot;g&quot;);//过滤掉换行符,不然你的文字会有问题,会比你的文字实际长度要长一些.搞死我了.我说我得到的数字怎么总比我的实际长度要长.</span><br><span class="line">str = str.replace(re,&quot;&quot;);//过滤</span><br><span class="line">pos = str.length;//获得长度.也就是光标的位置</span><br><span class="line">r.collapse(false);</span><br><span class="line">r.select();//把光标恢复到以前的位置</span><br><span class="line">txb.scrollTop = s;//把滚动条恢复到以前的位置</span><br><span class="line">return pos;</span><br><span class="line">&#125;</span><br><span class="line">//设置光标函数</span><br><span class="line">function setCaret(id,pos)&#123;</span><br><span class="line">　　var textbox = document.all(id);</span><br><span class="line">　　var r = textbox.createTextRange();</span><br><span class="line">　　r.collapse(true);</span><br><span class="line">　　r.moveStart(&apos;character&apos;,pos);</span><br><span class="line">　　r.select();</span><br><span class="line">&#125;</span><br><span class="line">//以上是获取光标的函数</span><br></pre></td></tr></table></figure>
-<p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;textarea id=&quot;ta&quot;&gt;</span><br><span class="line"> 我日你ad范德萨岁的发达省份的萨芬双方的首发</span><br><span class="line">&lt;/textarea&gt;</span><br><span class="line">&lt;button onclick=alert(getCaret(&apos;ta&apos;)) &gt;获取光标位置&lt;/button&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="1、express-js"><a href="#1、express-js" class="headerlink" title="1、express.js"></a>1、express.js</h2><p>文件输出 createApplication 方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">function createApplication() &#123;</span><br><span class="line">  var app = connect();</span><br><span class="line">  utils.merge(app, proto);</span><br><span class="line">  app.request = &#123; __proto__: req &#125;;</span><br><span class="line">  app.response = &#123; __proto__: res &#125;;</span><br><span class="line">  app.init();</span><br><span class="line">  return app;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>app继承自 connect，并且app合并proto对象，然后将app.requset对象的原型链指向req,同理respose。最后初始化，返回app对象。下面是一些输出对象，值得关注的是这一段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (var key in connect.middleware) &#123;</span><br><span class="line">  Object.defineProperty(exports, key , Object.getOwnPropertyDescriptor(connect.middleware, key));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们先看  Object.defineProperty(obj, prop, descriptor)  这个方法，这是javaScript 1.8.5的功能之一，是用来给obj参数定义属性或是方法的，参数解释如下：（以下例子拷贝自司徒正美，原文地址）</p>
+<p>1、obj:目标对象</p>
+<p>2、prop:需要定义的属性或方法的名字。</p>
+<p>3、descriptor:目标属性所拥有的特性，可以为如下几种：</p>
+<p>value:属性的值</p>
+<p>writable:如果为false，属性的值就不能被重写。</p>
+<p>get: 一旦目标属性被访问就会调回此方法，并将此方法的运算结果返回用户。</p>
+<p>set:一旦目标属性被赋值，就会调回此方法。</p>
+<p>configurable:如果为false，则任何尝试删除目标属性或修改属性以下特性（writable, configurable, enumerable）的行为将被无效化。</p>
+<p>enumerable:是否能在for…in循环中遍历出来或在Object.keys中列举出来</p>
+<p>举个例子：</p>
+<p>1、Object.defineProperty(a,”bloger”,{get:function(){return “司徒正美”}});   //a.bloger是司徒正美</p>
+<p>2、Object.defineProperty(b, “p”, {value:”这是不可改变的默认值” ,writable: false }); //这样定义的p是不可以被修改的</p>
+<p>其他的例子不列举了，可以自己尝试下。</p>
+<p>而 Object.getOwnPropertyDescriptor(object, propertyname) 方法是配合上述方法使用的，获取obj参数的对应key的值，并且以上述 descriptor的方式返回一个data property 或 Accessor Properties 对象， 此方法接收2个参数：</p>
+<p>1、object：Required. The object that contains the property. This can be a native JavaScript object or a Document Object Model (DOM) object.</p>
+<p>2、propertyname ：Required. A string that contains the name of the property.</p>
+<p>返回的结果可能是以下2种：</p>
+<p>1、Data descriptor attribute：{value :value, writable:writable, enumerable:enumerable, configurable:configurable}</p>
+<p>2、Accessor descriptor attribute：{get:function(){}, set:function(value){}, enumerable:enumerable, configurable:configurable}</p>
+<p>言归正传，那段for循环就是给exports对象定义和connect.middleware一样的属性和方法的，并且复制同样的数据属性和访问属性，上面那些新特性可以让我们不必再定义闭包，轻松实现对象的私有变量和可读可写可枚举。</p>
+<h2 id="2、application-js"><a href="#2、application-js" class="headerlink" title="2、application.js"></a>2、application.js</h2><p>貌似expressjs的核心就在这个文件上了，我们简单看一下：</p>
+<p>methods = Router.methods.concat(‘del’, ‘all’)</p>
+<p>为methods数组添加两个新内容，methods数组存放就是get,post,option,head等http请求方法。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">methods.forEach(function(method)&#123;</span><br><span class="line">    self.lookup[method] = function(path)&#123;</span><br><span class="line">      return self._router.lookup(method, path);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    self.match[method] = function(path)&#123;</span><br><span class="line">      return self._router.match(method, path);</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    self.remove[method] = function(path)&#123;</span><br><span class="line">      return self._router.lookup(method, path).remove();</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure></p>
+<p>注册路由方法函数，具体 self._router 是什么，我们下一节讨论路由时再说。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">this._router = new Router(this);</span><br><span class="line">this.routes = this._router.routes;</span><br></pre></td></tr></table></figure></p>
+<p>实例化Router类，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.use = function(route, fn)&#123; ... &#125;</span><br></pre></td></tr></table></figure></p>
+<p>借助connect.js的use方法，做中间件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">methods.forEach(function(method)&#123; ... &#125;</span><br></pre></td></tr></table></figure></p>
+<p>对之前methods数组进行重组，让其支持app<a href="path,callback">method</a> 等于调用 app.router(method,path,callback)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">app.param = function(name, fn)&#123;</span><br><span class="line">  var self = this</span><br><span class="line">    , fns = [].slice.call(arguments, 1);</span><br><span class="line"></span><br><span class="line">  // array</span><br><span class="line">  if (Array.isArray(name)) &#123;</span><br><span class="line">    name.forEach(function(name)&#123;</span><br><span class="line">      fns.forEach(function(fn)&#123;</span><br><span class="line">        self.param(name, fn);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  // param logic</span><br><span class="line">  &#125; else if (&apos;function&apos; == typeof name) &#123;</span><br><span class="line">    this._router.param(name);</span><br><span class="line">  // single</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    if (&apos;:&apos; == name[0]) name = name.substr(1);</span><br><span class="line">    fns.forEach(function(fn)&#123;</span><br><span class="line">      self._router.param(name, fn);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  return this;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>这个方法是用来匹配或者获取参数的，借助的还是 _router.param 方法</p>
+<p>其他代码不多说了，主要是实现api的一些方法。</p>
+<h2 id="3、request-js"><a href="#3、request-js" class="headerlink" title="3、request.js"></a>3、request.js</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var req = exports = module.exports = &#123;</span><br><span class="line">  __proto__: http.IncomingMessage.prototype</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里定义的一些req的方法是直接在http.IncomingMessage原型链上定义的。</p>
+<p>这个文件大部分是方便获取客户端request过来的请求头信息的。</p>
+<h2 id="4、response-js"><a href="#4、response-js" class="headerlink" title="4、response.js"></a>4、response.js</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res.send = function(body)&#123;...&#125;</span><br></pre></td></tr></table></figure>
+<p>对请求的响应，我们来看一下这个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (2 == arguments.length) &#123;</span><br><span class="line">    this.statusCode = body;</span><br><span class="line">    body = arguments[1];</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果参数2个，则认为第一个参数是状态码，第二个是响应的主体内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">switch (typeof body) &#123;</span><br><span class="line">    // response status</span><br><span class="line">    case &apos;number&apos;:</span><br><span class="line">      this.header(&apos;Content-Type&apos;) || this.contentType(&apos;.txt&apos;);</span><br><span class="line">      this.statusCode = body;</span><br><span class="line">      body = http.STATUS_CODES[body];</span><br><span class="line">      break;</span><br><span class="line">    // string defaulting to html</span><br><span class="line">    case &apos;string&apos;:</span><br><span class="line">      if (!this.header(&apos;Content-Type&apos;)) &#123;</span><br><span class="line">        this.charset = this.charset || &apos;utf-8&apos;;</span><br><span class="line">        this.contentType(&apos;.html&apos;);</span><br><span class="line">      &#125;</span><br><span class="line">      break;</span><br><span class="line">    case &apos;boolean&apos;:</span><br><span class="line">    case &apos;object&apos;:</span><br><span class="line">      if (null == body) &#123;</span><br><span class="line">        body = &apos;&apos;;</span><br><span class="line">      &#125; else if (Buffer.isBuffer(body)) &#123;</span><br><span class="line">        this.header(&apos;Content-Type&apos;) || this.contentType(&apos;.bin&apos;);</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">        return this.json(body);</span><br><span class="line">      &#125;</span><br><span class="line">      break;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果是数字，认为是输出状态码，则body为： http.STATUS_CODES[num]，这里不得不再次批评写node.js api的人，STATUS_CODES也是 http模块对外exports的一个对象，里面记录了状态码和英文内容对应值。<br>如果是字符串，则认为是html，修改请求头信息mimetype值；<br>如果是buffer，则输出buffer，否则认为是json数据输出。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (undefined !== body &amp;&amp; !this.header(&apos;Content-Length&apos;)) &#123;</span><br><span class="line">  this.header(&apos;Content-Length&apos;, Buffer.isBuffer(body)</span><br><span class="line">    ? body.length</span><br><span class="line">    : Buffer.byteLength(body));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>定义Content-Length</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// respond</span><br><span class="line">this.end(head ? null : body);</span><br><span class="line">return this;</span><br></pre></td></tr></table></figure>
+<p>返回给客户端，并且关闭连接。这如果想多次调用res.send()恐怕不行了，这个方法很强大，可以做一些自动的处理，建议安装好expressjs第一件事情就是把这里的this.end改为this.write，然后我们可以手动调用res.end关闭连接，可能有些地方需要使用类似bigpipe的多次响应不关闭。</p>
+<p>我们来看下跳转的方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">res.redirect = function(url)&#123;...&#125;</span><br><span class="line"></span><br><span class="line"> if (!~url.indexOf(&apos;://&apos;)) &#123;</span><br><span class="line">    var path = app.path();</span><br><span class="line">// relative to path</span><br><span class="line">    if (0 == url.indexOf(&apos;./&apos;) || 0 == url.indexOf(&apos;..&apos;)) &#123;</span><br><span class="line">      url = req.path + &apos;/&apos; + url;</span><br><span class="line">    // relative to mount-point</span><br><span class="line">    &#125; else if (&apos;/&apos; != url[0]) &#123;</span><br><span class="line">      url = path + &apos;/&apos; + url;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // Absolute</span><br><span class="line">    var host = req.header(&apos;Host&apos;)</span><br><span class="line">      , proto = req.header(&apos;X-Forwarded-Proto&apos;)</span><br><span class="line">      , tls = &apos;https&apos; == proto || req.secure;</span><br><span class="line"></span><br><span class="line">    url = &apos;http&apos; + (tls ? &apos;s&apos; : &apos;&apos;) + &apos;://&apos; + host + url;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码是用来拼装 将要跳转的url的</p>
+<p>这又是作者装B的写法，如果没有找到://则将path设置为网站的域名目录</p>
+<p>如果是相对目录是 ./ 或者 ../ 开头的，则直接将当前路径与它拼上。</p>
+<p>如果不是/开头的，则拼上path+‘/’+url</p>
+<p>如果是绝对路径，就是以/开头的，则加上请求host头等信息拼上url</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">if (req.accepts(&apos;html&apos;)) &#123;</span><br><span class="line">   body = &apos;&lt;p&gt;&apos; + statusCodes[status] + &apos;. Redirecting to &lt;a href=&quot;&apos; + url + &apos;&quot;&gt;&apos; + url + &apos;&lt;/a&gt;&lt;/p&gt;&apos;;</span><br><span class="line">   this.header(&apos;Content-Type&apos;, &apos;text/html&apos;);</span><br><span class="line"> &#125; else &#123;</span><br><span class="line">   body = statusCodes[status] + &apos;. Redirecting to &apos; + url;</span><br><span class="line">   this.header(&apos;Content-Type&apos;, &apos;text/plain&apos;);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> // Respond</span><br><span class="line"> this.statusCode = status; </span><br><span class="line"> this.header(&apos;Location&apos;, url);</span><br><span class="line"> this.end(head ? null : body);</span><br></pre></td></tr></table></figure>
+<p>这里如果是访问html的，则返回一段html代码表示跳转，否则返回一段文字，最后设置Location头的url，表示跳转到此url地址，然后客户端重新请求此url地址，获取正确的内容。</p>
+<p>这里直接修改ServerResponse.prototype.statusCode属性，node.js的api里并不支持这么做，API推荐使用：response.setHeader(name, value) 来设置修改http请求状态码，看来作者在写expressjs时很详细的了解了node.js http模块的源码，改天我也来写份心得。</p>
+
       
     </div>
 
@@ -475,8 +525,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2011/12/20/js-ajax/" rel="prev" title="expressjs源码解读(四) —— 3.0版本expressjs">
-                expressjs源码解读(四) —— 3.0版本expressjs <i class="fa fa-chevron-right"></i>
+              <a href="/2011/12/20/js-ajax/" rel="prev" title="textarea获得光标位置">
+                textarea获得光标位置 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -529,8 +579,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -664,6 +723,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、express-js"><span class="nav-number">1.</span> <span class="nav-text">1、express.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、application-js"><span class="nav-number">2.</span> <span class="nav-text">2、application.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、request-js"><span class="nav-number">3.</span> <span class="nav-text">3、request.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、response-js"><span class="nav-number">4.</span> <span class="nav-text">4、response.js</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -819,7 +894,7 @@
     
         
         <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
-        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=2"></script>
     
 <!-- END LOCAL -->
 

@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="接上一节，继续SQLAlchemy的学习心得，本章介绍直接使用table的增删改查操作，还不是orm哦。">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLAlchemy学习教程（二）">
+<meta property="og:url" content="http://yoursite.com/2014/08/07/python/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="接上一节，继续SQLAlchemy的学习心得，本章介绍直接使用table的增删改查操作，还不是orm哦。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.853Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SQLAlchemy学习教程（二）">
+<meta name="twitter:description" content="接上一节，继续SQLAlchemy的学习心得，本章介绍直接使用table的增删改查操作，还不是orm哦。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/08/07/python/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>SQLAlchemy学习教程（二） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/08/07/python/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SQLAlchemy学习教程（二）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-08-07 14:07:41" itemprop="dateCreated datePublished" datetime="2014-08-07T14:07:41+08:00">2014-08-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/08/07/python/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/08/07/python/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>接上一节，继续SQLAlchemy的学习心得，本章介绍直接使用table的增删改查操作，还不是orm哦。</p>
+<a id="more"></a>
+<p>一、插入操作<br>from demo_define_table import user_table</p>
+<p>#第一种插入方式<br>stmt = user_table.insert(values=dict(user_name=u’富士达1’, password=u’富士达1’, email_address=u’Rick 富士达1’))<br>stmt.execute()</p>
+<p>#第二种插入方式<br>stmt = user_table.insert()<br>stmt.execute(user_name=u’富士达’, password=u’富士达’, email_address=u’Rick 富士达’)<br>我们从demo_define_table文件获取到定义的 user_table 表类型，然后直接就可以进行insert操作</p>
+<p>二、更新操作</p>
+<p>#第一种方式更新<br>stmt = user_table.update(<br> whereclause=text(“user_name=’富士达’”),<br> values=dict(password=u’passwd’))<br>stmt.execute()</p>
+<p>#第二种方式更新<br>stmt = user_table.update(<br> text(“user_name=’富士达1’”))<br>stmt.execute(password=u’passwd1’)<br>也可以从 user_table 实例进行update操作，下面是一个子查询的update操作，将 product_price_table 表内所有 sku 字段和 product_table 表内sku字段相同的，更新成product_table表的msrp字段值<br>msrp = select(<br> [product_table.c.msrp],<br> product_table.c.sku==product_price_table.c.sku,<br> limit=1)<br>stmt = product_price_table.update( values=dict(price=msrp))<br>stmt.execute()</p>
+<p>三、删除操作<br>stmt = user_table.delete(<br>    text(“user_name=’富士达’”))<br>stmt.execute()<br>删除操作比较简单，给一个查询条件即可</p>
+<p>四、查询<br>查询是SQL语句中最为复杂的也是最为强大的，我们可以使用select函数和select方法，两者是等价的：</p>
+<p>#使用select函数<br>stmt = select([user_table.c.user_name])<br>for row in stmt.execute():<br>    print row</p>
+<p>#使用select方法<br>stmt = user_table.select()<br>for row in stmt.execute():<br>    print row<br>1、select参数：<br>1、columns=None，表示要查找的列名<br>2、bind=None，数据库引擎，如果忽略这个设置，将会使用本表的绑定引擎<br>3、whereclause(whereclause)=None，where的条件，<br>4、from_obj=[]，设置from的条件，如果忽略它，那么将会由SQLAlchemy自动根据其他条件得出<br>5、order_by=None，排序条件<br>6、group_by=None，分组条件<br>7、having=None，having要素<br>8、distinct=False，增加distinct筛选<br>9、for_update=False，增加一个FOR UPDATE筛选，像mysql可以使用‘read’用来锁住表，保证接下来的update准确性<br>10、limit=None，限制行数<br>11、offset=None，偏移量<br>12、correlate=True，是否关联查询<br>13、use_labels=False，对列名数组生成唯一的标签，防止列名冲突<br>14、prefixes=None，将一数组的命令插入到SELECT关键字后和列名前</p>
+<p>2、where子句<br>用来构建where子句，我们可以使用text或者SQL 表达式语法。最简单的方法用来生成where子句就是使用SQLAlchemy提供的操作<br>stmt=user_table.select(user_table.c.user_name==u”富士达1”)<br>print stmt.execute().fetchall()<br>where操作符</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price == 12.34<br>product_price.price = ?</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price != 12.34<br>product_price.price != ?</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price &lt; 12.34<br>product_price.price &lt; ?</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price &gt; 12.34<br>product_price.price &gt; ?</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price &lt;= 12.34<br>product_price.price &lt;= ?</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price &gt;= 12.34<br>product_price.price &gt;= ?</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print product_price_table.c.price == None<br>product_price.price IS NULL</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>3、AND OR NOT<br>与操作，或操作，非操作<br>print (product_table.c.msrp &gt; 10.00) &amp; (product_table.c.msrp &lt; 20.00)<br>print and_(product_table.c.msrp &gt; 10.00, product_table.c.msrp &lt; 20.00)<br>print product_table.c.sku.like(‘12%’)<br>print not_(and_(product_table.c.msrp &gt; 10.00, product_table.c.msrp &lt; 20.00))</p>
+<p>4、其他条件操作符</p>
+<p>#其他条件操作符<br>between(cleft, cright)，在这个区间内<br>distinct()，distinct操作<br>startswith(other)，就像’other%’<br>endswith(other)，就像’%other’<br>in_(*other)，也可以是子查询，或者一个数组<br>like(other)，like操作<br>op(operator)，操作<br>label(name)，别名，相当于给列 as 名字</p>
+<p>5、绑定查询条件<br>可以加速查询，简洁代码，例子如下：<br>stmt = select([product_table.c.msrp], whereclause=product_table.c.sku==bindparam(‘sku’))<br>print stmt.execute(sku=’123’).fetchall()<br>[(12.34,)]<br>print stmt.execute(sku=’456’).fetchall()<br>[(22.120000000000001,)]<br>print stmt.execute(sku=’789’).scalar()<br>41.44<br>bindparam函数的参数说明<br>1、key，绑定的列名<br>2、value=None，默认列名的值<br>3、type=None，绑定的类型<br>4、shortname=None，列名别名<br>5、unique=False，产生所绑定的列名是唯一名称，通常伴随 value 参数一起使用</p>
+<p>6、使用字符串条件<br>stmt = select([‘product.msrp’],<br>   from_obj=[‘product’],<br>   whereclause=text(“product.sku==’123’”))</p>
+<p>7、排序order，分组groupby和消除重复distinct<br>1、排序<br>stmt = product_table.select(order_by=[product_table.c.msrp])<br>stmt = product_table.select(order_by=[desc(product_table.c.msrp)])<br>2、groupby 然后 count<br>stmt = select([product_price_table.c.sku,<br>   func.count(product_price_table.c.store_id)],<br>   group_by=[product_price_table.c.sku])<br>另外一个having的例子<br>stmt = select([product_price_table.c.sku,<br>   func.count(product_price_table.c.store_id)],<br>   group_by=[product_price_table.c.sku],<br>   having=func.count(product_price_table.c.store_id)<br>3、distinct的例子<br>stmt = select([product_price_table.c.sku,<br>   product_price_table.c.price],<br>   distinct=True)</p>
+<p>8、limit和offset<br>分页使用，limit和offset的例子<br>stmt = product_table.select(offset=1, limit=1)</p>
+<p>9、多表联合查询<br>1、创建from的对象<br>from_obj = store_table.join(product_price_table)<br>   .join(product_table)<br>query = store_table.select()<br>query = query.select_from(from_obj)<br>query = query.where(product_table.c.msrp<br>   != product_price_table.c.price)<br>print query</p>
+<p>#打印信息<br>SELECT store.id, store.name<br>FROM store JOIN product_price ON store.id = product_price.store_id<br>   JOIN product ON product.sku = product_price.sku<br>   WHERE product.msrp != product_price.price<br>将多表查询整合在一句里面的例子：<br> query2 = select([store_table, product_table.c.sku],<br>   from_obj=[from_obj],<br>   whereclause=(product_table.c.msrp<br>   !=product_price_table.c.price))<br> print query2</p>
+<p>#打印信息<br>SELECT store.id, store.name, product.sku<br>FROM store JOIN product_price ON store.id = product_price.store_id<br>JOIN product ON product.sku = product_price.sku<br>WHERE product.msrp != product_price.price<br>outerjoin的例子<br> from_obj = store_table.outerjoin(product_price_table)<br> from_obj = from_obj.outerjoin(product_table)<br> query = store_table.select()<br> query = query.select_from(from_obj)<br> query = query.column(‘product.msrp’)<br> print query</p>
+<p> #打印信息<br> SELECT store.id, store.name, product.msrp<br> FROM store LEFT OUTER JOIN product_price<br>  ON store.id = product_price.store_id<br>  LEFT OUTER JOIN product<br> ON product.sku = product_price.sku</p>
+<p>10、set 操作符 UNION, INTERSECT, EXCEPT<br>union(),  union_all(),<br>intersect(),  intersect_all(),<br>except_(), and  except_all()<br>下面2个语句是等价的<br>query = product_table.select(and_(product_table.c.msrp &gt; 10.00 , product_table.c.msrp &lt; 20.00))</p>
+<p>query0 = product_table.select(product_table.c.msrp &gt; 10.00)<br>query1 = product_table.select(product_table.c.msrp &lt; 20.00)<br>query = intersect(query0, query1)</p>
+<p>11、Subqueries 子查询<br>in_操作符<br>subquery = select([employee_table.c.id],<br>employee_table.c.manager_id==None)<br>stmt = employee_table.select(<br>   and_(employee_table.c.id.in_(subquery),<br>   employee_table.c.name.like(‘Ted%’)))</p>
+<p>下一节将真正的学习SQLAlchemy的对象关系映射技巧</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/08/06/python/" rel="next" title="SQLAlchemy学习教程（一）">
+                <i class="fa fa-chevron-left"></i> SQLAlchemy学习教程（一）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/08/08/python/" rel="prev" title="SQLAlchemy学习教程（三）">
+                SQLAlchemy学习教程（三） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

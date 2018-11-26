@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。转载原文：http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于MYSQL Innodb 锁行还是锁表">
+<meta property="og:url" content="http://yoursite.com/2012/09/24/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。转载原文：http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.854Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于MYSQL Innodb 锁行还是锁表">
+<meta name="twitter:description" content="关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。转载原文：http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2012/09/24/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>关于MYSQL Innodb 锁行还是锁表 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2012/09/24/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">关于MYSQL Innodb 锁行还是锁表
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2012-09-24 22:39:55" itemprop="dateCreated datePublished" datetime="2012-09-24T22:39:55+08:00">2012-09-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2012/09/24/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2012/09/24/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>关于mysql的锁行还是锁表，这个问题，今天算是有了一点头绪，mysql 中 innodb是锁行的，但是项目中居然出现了死锁，锁表的情况。为什么呢？先看一下这篇文章。<br>转载原文：<a href="http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html" target="_blank" rel="noopener">http://www.cnblogs.com/mingxuan/archive/2011/10/11/2207560.html</a></p>
+<a id="more"></a>
+<p>做项目时由于业务逻辑的需要，必须对数据表的一行或多行加入行锁，举个最简单的例子，图书借阅系统。假设 id=1 的这本书库存为 1 ，但是有 2 个人同时来借这本书，此处的逻辑为</p>
+<p>Select   restnum from book where id =1 ;<br>– 如果 restnum 大于 0 ，执行 update<br>Update   book set restnum=restnum-1 where id=1 ;  </p>
+<p>问题就来了，当 2 个人同时来借的时候，有可能第一个人执行 select 语句的时候，第二个人插了进来，在第一个人没来得及更新 book 表的时候，第二个人查到数据了，其实是脏数据，因为第一个人会把 restnum 值减 1 ，因此第二个人本来应该是查到 id=1 的书 restnum 为 0 了，因此不会执行 update ，而会告诉它 id=1 的书没有库存了，可是数据库哪懂这些，数据库只负责执行一条条 SQL 语句，它才不管中间有没有其他 sql 语句插进来，它也不知道要把一个 session 的 sql 语句执行完再执行另一个 session 的。因此会导致并发的时候 restnum 最后的结果为 -1 ，显然这是不合理的，所以，才出现锁的概念， Mysql 使用 innodb 引擎可以通过索引对数据行加锁。以上借书的语句变为：</p>
+<p>Begin;<br>Select   restnum from book where id =1 for   update ;<br>– 给 id=1 的行加上排它锁且 id 有索引<br>Update   book set restnum=restnum-1 where id=1 ;<br>Commit;  </p>
+<p>这样，第二个人执行到 select 语句的时候就会处于等待状态直到第一个人执行 commit 。从而保证了第二个人不会读到第一个人修改前的数据。</p>
+<p>那这样是不是万无一失了呢，答案是否定的。看下面的例子。</p>
+<p>跟我一步一步来，先建立表<br>CREATE TABLE <code>book</code> (<br><code>id</code> int(11) NOT NULL auto_increment,<br><code>num</code> int(11) default NULL,<br><code>name</code> varchar(0) default NULL,<br>PRIMARY KEY (<code>id</code>),<br>KEY <code>asd</code> (<code>num</code>)<br>) ENGINE=InnoDB DEFAULT CHARSET=gbk<br>其中 num 字段加了索引</p>
+<p>然后插入数据，运行，<br>insert into book(num) values(11),(11),(11),(11),(11);<br>insert into book(num) values(22),(22),(22),(22),(22);<br>然后打开 2 个 mysql 控制台窗口，其实就是建立 2 个 session 做并发操作</p>
+<hr>
+<p>在第一个 session 里运行：<br>begin;<br>select <em> from book where num=11 for update;<br>出现结果：<br>+—-+—–+——+<br>| id | num | name |<br>+—-+—–+——+<br>| 11 | 11 | NULL |<br>| 12 | 11 | NULL |<br>| 13 | 11 | NULL |<br>| 14 | 11 | NULL |<br>| 15 | 11 | NULL |<br>+—-+—–+——+<br>5 rows in set<br>然后在第二个 session 里运行：<br>begin;<br>select </em> from book where num=22 for update;<br>出现结果：<br>+—-+—–+——+<br>| id | num | name |<br>+—-+—–+——+<br>| 16 | 22 | NULL |<br>| 17 | 22 | NULL |<br>| 18 | 22 | NULL |<br>| 19 | 22 | NULL |<br>| 20 | 22 | NULL |<br>+—-+—–+——+<br>5 rows in set<br>好了，到这里什么问题都没有，是吧，可是接下来问题就来了，大家请看：<br>回到第一个 session ，运行：<br>update book set name=’abc’ where num=11;<br>“<strong><strong><strong><strong><strong>***</strong></strong></strong></strong></strong>”<br>问题来了， session 竟然处于等待状态 ，可是 num=11 的行不是被第一个 session 自己锁住的么，为什么不能更新呢？好了，打这里大家也许有自己的答案，先别急，再请看一下操作。</p>
+<p>把 2 个 session 都关闭，然后运行：<br>delete from book where num=11 limit 3;<br>delete from book where num=22 limit 3;  </p>
+<p>其实就是把 num=11 和 22 的记录各删去 3 行，<br>然后重复 “<strong><strong><strong><strong><strong>***</strong></strong></strong></strong></strong>” 之间的操作<br>竟然发现，运行 update book set name=’abc’ where num=11; 后，有结果出现了，说明没有被锁住，<br>这是为什么呢，难道 2 行数据和 5 行数据，对 MySQL 来说，会产生锁行和锁表两种情况吗。经过跟网友讨论和翻阅资料，仔细分析后发现：</p>
+<p>在以上实验数据作为测试数据的情况下，由于 num 字段重复率太高，只有 2 个值，分别是 11 和 12. 而数据量相对于这两个值来说却是比较大的，是 10 条， 5 倍的关系。<br>那么 mysql 在解释 sql 的时候，会忽略索引，因为它的优化器发现：即使使用了索引，还是要做全表扫描，故而放弃了索引，也就没有使用行锁，却使用了表锁。简单的讲，就是 MYSQL 无视了你的索引，它觉得与其行锁，还不如直接表锁，毕竟它觉得表锁所花的代价比行锁来的小。以上问题即便你使用了 force index 强制索引，结果还是一样，永远都是表锁。</p>
+<p>所以 mysql 的行锁用起来并不是那么随心所欲的，必须要考虑索引。再看下面的例子。<br>select id from items where id in (select id from items where id &lt;6) for update;<br>–id字段加了索引<br>select id from items where id in (1,2,3,4,5) for update;<br>大部分会认为结果一样没什么区别，其实差别大了，区别就是第一条 sql 语句会产生表锁，而第二个 sql 语句是行锁，为什么呢？因为第一个 sql 语句用了子查询外围查询故而没使用索引，导致表锁。</p>
+<p>好了，回到借书的例子，由于 id 是唯一的，所以没什么问题，但是如果有些表出现了索引有重复值，并且 mysql 会强制使用表锁的情况，那怎么办呢？一般来说只有重新设计表结构和用新的 SQL 语句实现业务逻辑，但是其实上面借书的例子还有一种办法。请看下面代码：<br>Set   sql_mode=<br>‘STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION’;<br>Begin;<br>Select restnum from book where id =1   ; – 取消排它锁 , 设置 restnum 为 unsigned<br>Update   book set restnum=restnum-1 where id=1 ;<br>If(update 执行成功 ) commit;<br>Else   rollback;<br> 上面是个小技巧，通过把数据库模式临时设置为严格模式，当 restnum 被更新为 -1 的时候，由于 restnum 是 unsigned 类型的，因此 update 会执行失败，无论第二个 session 做了什么数据库操作，都会被回滚，从而确保了数据的正确性，这个目的只是为了防止并发的时候极小概率出现的 2 个 session 的 sql 语句嵌套执行导致数据脏读。当然最好的办法还是修改表结构和 sql 语句，让 MYSQL 通过索引来加行锁, MySQL 测试版本为 5.0.75-log 和 5.1.36-community</p>
+<p>所以，可以总结出。Mysql innodb虽是锁行的，但是如果没有索引，或者索引如上，那就要锁表了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2012/09/12/js-ajax/" rel="next" title="XSRF攻击实例，注入cnodejs.org官网">
+                <i class="fa fa-chevron-left"></i> XSRF攻击实例，注入cnodejs.org官网
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2012/09/24/js-ajax/" rel="prev" title="windows系统增加或删除d-n-s设置">
+                windows系统增加或删除d-n-s设置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="好久没更新博客了，打算写一篇记录下最近项目的心得。最近在做一个openresty写lua的项目遇到不少难题，虽然一一攻克，但是回过头来想想，确实应该正确定位openresty中lua的功能。">
+<meta name="keywords" content="lua">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于openresty中lua时间转换引出的思考">
+<meta property="og:url" content="http://yoursite.com/2014/03/14/lua/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="好久没更新博客了，打算写一篇记录下最近项目的心得。最近在做一个openresty写lua的项目遇到不少难题，虽然一一攻克，但是回过头来想想，确实应该正确定位openresty中lua的功能。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.880Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于openresty中lua时间转换引出的思考">
+<meta name="twitter:description" content="好久没更新博客了，打算写一篇记录下最近项目的心得。最近在做一个openresty写lua的项目遇到不少难题，虽然一一攻克，但是回过头来想想，确实应该正确定位openresty中lua的功能。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/03/14/lua/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>关于openresty中lua时间转换引出的思考 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/03/14/lua/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">关于openresty中lua时间转换引出的思考
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-03-14 14:39:15" itemprop="dateCreated datePublished" datetime="2014-03-14T14:39:15+08:00">2014-03-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/lua/" itemprop="url" rel="index"><span itemprop="name">lua</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/03/14/lua/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/03/14/lua/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>好久没更新博客了，打算写一篇记录下最近项目的心得。最近在做一个openresty写lua的项目遇到不少难题，虽然一一攻克，但是回过头来想想，确实应该正确定位openresty中lua的功能。</p>
+<a id="more"></a>
+<p>公司的棋牌游戏菜单打算采用lua来从mysql数据库中取出，根据各种蛋疼的规则，然后生成json返回给客户端，这样客户端只要解析json生成菜单树即可，排序，节点属性，显示等等一切逻辑都被记录在json字符串中，由于数据库中记录的菜单数据比较原始，所以lua承担了比较繁重的逻辑和重新组合节点的任务，捎带还要有缓存支持。</p>
+<p>首先说明下为什么会选择lua去生成这个json字符串，最主要的原因当然是性能问题，luajit可以算是最快的脚本语言了，同时配合nginx的高效，我们可以无状态的横向部署多台nginx作负载均衡，毕竟对于几万人在线的公司棋牌游戏菜单获取压力也着实不小。</p>
+<p>其次因为之前公司很多对外api前端逻辑和下载统计等都是用lua来处理的，其性能和稳定性都不错，也算尝到了甜头，所以这次菜单的功能也顺理成章的使用lua来处理了。</p>
+<p>但是这次游戏菜单会根据不同的站点生成不同的json，还有其他一些逻辑，节点的父类子类总之比较麻烦，所以我在编写这个lua脚本时也遇到了一些坑。</p>
+<p>1、lua字符串转时间，时间转字符串<br>在编写整个脚本时，遇到的第一个问题就是lua对时间和字符串的互转，下面是一个用到的时间戳格式化当前时间的代码：<br>local now = os.date(“%Y-%m-%d %H:%M:%S”, os.time())<br>时间戳转时间字符串还算顺利，可是当我想通过从数据库查询出的时间字符串转换成lua的时间类型时就蛋疼了，搜了一会发现都要自己重新实现，最终在github上发现了一个外国朋友写的date.lua类，非常不错分享给大家：</p>
+<p>项目地址：<a href="https://github.com/Tieske/date" target="_blank" rel="noopener">https://github.com/Tieske/date</a></p>
+<p>把文件夹下的date.lua放入openresty定义的lib目录中，直接requrie即可使用，非常方便，他也拥有很多api功能，具体请参阅github项目帮助文档。</p>
+<p>local dateLib = require “date”<br>…<br>updatetime = dateLib(tonumber(updatetime)):tolocal() – 这边比较坑，要转成local，否则差8小时<br>..<br>local writetime = dateLib(v[‘writetime’])<br>这样我就可以将时间戳或时间字符串转换成lua的date类型了，同时date类型之间还能够进行”&gt;”或”&lt;”等的对比</p>
+<p>2、缺少类似go语言的defer<br>由于mysql中连接可能存在各种问题，包括数据查询不到，链接错误等等，所以我最后的代码中充斥着返回err,nil和关闭归还数据库连接的代码，如下：<br>local err,db = self:connect() –连接mysql数据库<br>     if err then<br>            self:close_conn()<br>        return err,nil<br>     end<br>每次sql操作都需要执行，当然也不能对lua语言有这奢望了</p>
+<p>3、缺少table的高级功能<br>lua中数组和对象都是table类型，由于lua缺少对table类型的一些简单的indexOf，forEach，filter等操作，导致我写了大量的for语句和临时table保存处理数据，甚至还存在多出for循环嵌套的情况。</p>
+<p>我还有需求会在循环中修改循环table的内容，这当然是非常危险的动作，所以我不得不将修改的位置pos记录在临时table中，在处理结束后再循环处理临时table保存的pos的数据，大致代码如下：<br>local removeIds = {}<br>    for i,v1 in ipairs(objtable) do –第一步，循环结果，查找空channel<br>            if v1 and v1[‘ItemType’] == typestr then<br>            local countParent = 0<br>            local curId = v1[‘Id’]<br>                for j,v2 in ipairs(objtable) do<br>                    if v2 and v2[‘parentId’] == curId then<br>                        countParent = countParent+1;<br>                    end<br>                end<br>            if countParent == 0 then<br>                table.insert(removeIds,curId)<br>            end<br>            end</p>
+<pre><code>end
+return table.getn(removeIds), removeIds
+</code></pre><p>大量雷同的代码，不写上详细的注释，我怕1个月后，自己都无法维护了</p>
+<p>4、恶心的调试<br>其实最影响我开发效率的就是调试，我实在想不出能有什么更好的调试方法，只要lua脚本出错，nginx就会报500，于是我只能开着secureCRT软件，通过 tail -f error.log 的方式，查看lua脚本中各种语法错误或者是类型转换错误。</p>
+<p>在运行中无法设置断点，想要知道程序运行的如何，只能在代码中到处打log，恶心的是ngx.log输出的log还是下面这种格式的，让人无法一下子找到自己打的log在哪里？<br>2014/03/14 12:46:00 [error] 12729#0: <em>1251 [lua] mysql_class2.lua:275: filterEmpty(): 1, client: 192.168.11.30, server: trymenu.6998test.com, request: “GET /menu?city=gg HTTP/1.1”, host: “192.168.28.27:3001”<br>2014/03/14 12:46:00 [error] 12729#0: </em>1251 [lua] mysql_class2.lua:276: filterEmpty(): null, client: 192.168.11.30, server: trymenu.6998test.com, request: “GET /menu?city=gg HTTP/1.1”, host: “192.168.28.27:3001”<br>2014/03/14 12:46:00 [error] 12729#0: *1251 [lua] mysql_class2.lua:277: filterEmpty(): nil, client: 192.168.11.30, server: trymenu.6998test.com, request: “GET /menu?city=gg HTTP/1.1”, host: “192.168.28.27:3001”<br>大家能看出来，其实上面我打印了1，null，nil 这3个变量值吗？ngx.log方法只能接受字符串，nil等类型的值，所以你想要看table里面的内容，嘿嘿，自己用 cjosn.encode(table) 打印把，然后将打印的json字符串我还要丢到chrome的consle里转换成js对象才能看清他们的层次关系和key，val值，如果table过大甚至还会出现log打印不全的问题，当时开发实在是抓狂了！</p>
+<p>我的代码到处是注释掉的如下代码：<br>– ngx.log(ngx.ERR, sqlCmd)<br>–ngx.log(ngx.ERR,cjson.encode(self.menuTable))</p>
+<p>5、xor加解密<br>由于返回的菜单需要一个加密算法，神马3DES貌似Openresty原生不支持，于是想到了使用XOR异或来生成加密，通过同样的XOR异或key来解密，但是用lua实现这个功能也是耗费了一番波折，先在网上搜到了一个加密的方法，可惜我们字符串太长，这个方法会报错：<br>— 使用密钥对字符串进行加密(解密)<br>– @param string str 原始字符串(加密后的密文)<br>– @param string key 密钥<br>– @return string 加密后的密文(原始字符串)<br>local function encrypt(str, key)<br>    local strBytes = { str:byte(1, #str) }<br>    local keyBytes = { key:byte(1, #key) }<br>    local n, keyLen = 1, #keyBytes<br>    for i = 1, #strBytes do<br>        strBytes[i] = bit.bxor(strBytes[i], keyBytes[n])</p>
+<pre><code>    n = n + 1
+
+    if n &gt; keyLen then
+        n = n - keyLen
+    end
+end
+return string.char(unpack(strBytes))
+</code></pre><p>end<br>不过感谢这位博主，给了我思路，链接地址：<a href="http://zivn.me/?p=183" target="_blank" rel="noopener">http://zivn.me/?p=183</a><br>于是我简单修改下代码，让算法支持长字符串的加密，最后代码如下：<br>local XorKey = 4<br>local s = ngx.encode_base64(json)<br>local stable={}<br>for i=1,#s do<br>    table.insert(stable, string.char(bit.bxor(string.byte(s, i),XorKey)))<br>end<br>local s2 = table.concat(stable)<br>注意，一开始我使用字符串直接拼接，但是效率慢的出奇，后来改成table形式，明细快多了<br>str = str .. (加密字符)<br>上面这种方式小的拼接没影响，大字符串拼接就坑爹了</p>
+<p>总结<br>经历过和tengine或openresty中lua脚本的蜜月期，慢慢成为蛋疼期，也让我重新定义lua脚本在web server的定位，对于逻辑复杂，经常需要调整的功能或者需求，坚决不要让lua去做，这会让开发人员很抓狂，如果对需求相对稳定，比如我们api前端处理用户请求罚值，合法性验证，下载地址统计跳转等等，lua非常胜任。<br>所以千万不要神话nginx+lua，他有他适合的地方，也有非常明显的短板。<br>最后线上项目地址：<a href="https://github.com/DoubleSpout/tryMenu" target="_blank" rel="noopener">https://github.com/DoubleSpout/tryMenu</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lua/" rel="tag"># lua</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/01/15/js-ajax/" rel="next" title="如何更安全的用Node.js开发web应用">
+                <i class="fa fa-chevron-left"></i> 如何更安全的用Node.js开发web应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/03/26/js-ajax/" rel="prev" title="npm国内访问不了办法">
+                npm国内访问不了办法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

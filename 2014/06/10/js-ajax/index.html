@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="session想来大家都不会陌生，session主要的作用就是用来记录用户状态，表明用户身份的，session的存储方式也有多样，最为传统的就是服务端保存session的内容，客户端浏览器cookie保存sessionid，服务端通过客户端每次http请求带上的cookie中的sessionid去找到对应此用户的session内容。当然我之前也发过一篇文章讲到过通过etag来做为sessionid">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="客户端session vs 服务端session">
+<meta property="og:url" content="http://yoursite.com/2014/06/10/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="session想来大家都不会陌生，session主要的作用就是用来记录用户状态，表明用户身份的，session的存储方式也有多样，最为传统的就是服务端保存session的内容，客户端浏览器cookie保存sessionid，服务端通过客户端每次http请求带上的cookie中的sessionid去找到对应此用户的session内容。当然我之前也发过一篇文章讲到过通过etag来做为sessionid">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.884Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="客户端session vs 服务端session">
+<meta name="twitter:description" content="session想来大家都不会陌生，session主要的作用就是用来记录用户状态，表明用户身份的，session的存储方式也有多样，最为传统的就是服务端保存session的内容，客户端浏览器cookie保存sessionid，服务端通过客户端每次http请求带上的cookie中的sessionid去找到对应此用户的session内容。当然我之前也发过一篇文章讲到过通过etag来做为sessionid">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/06/10/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>客户端session vs 服务端session | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/06/10/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">客户端session vs 服务端session
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-06-10 22:32:54" itemprop="dateCreated datePublished" datetime="2014-06-10T22:32:54+08:00">2014-06-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/06/10/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/06/10/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>session想来大家都不会陌生，session主要的作用就是用来记录用户状态，表明用户身份的，session的存储方式也有多样，最为传统的就是服务端保存session的内容，客户端浏览器cookie保存sessionid，服务端通过客户端每次http请求带上的cookie中的sessionid去找到对应此用户的session内容。当然我之前也发过一篇文章讲到过通过etag来做为sessionid，识别用户身份。相关文章链接：<a href="http://cnodejs.org/topic/5212d82d0a746c580b43d948" target="_blank" rel="noopener">http://cnodejs.org/topic/5212d82d0a746c580b43d948</a></p>
+<a id="more"></a>
+<p>最近在做公司一个项目，我们用到了python的flask框架，一个轻量级，易上手的python web框架，有点类似nodejs中的expressjs，一些周边相关的模块集成的比expressjs好一些，题外话，写了阵python回来写node，代码那是各种整齐啊。<br>说重点，flask和我之前用过的其他框架有一点不同的是，它的session默认是完全保留在客户端浏览器中的，也就是说我往flask的session中写入数据，最终这些数据将会以json字符串的形式，经过base64编码写入到用户浏览器的cookie里，也就是说无须依赖第三方数据库保存session数据，也无需依赖文件来保存，这一点倒是挺有意思。</p>
+<p>估计很多人要问我安全性问题了，session内容保存在客户端cookie，如何保证它的保密性、完整性和容量限制，保密性表示不被其他用户窥探，完整性表示不被恶意用户篡改，容量限制则表示cookie中必然无法保存过多的数据。</p>
+<p>1、保密性，flask 这方面可以说是完全不设防，经过简单的base64编码，很容易就可以对它进行decode，然后看到其中的数据，不过话又说回来，session中本来记录的就是当前用户的一些相关身份信息和操作记录，就算被本用户看见又何妨，如果怕网络传输时被截获，那用户其他的一些 http 请求操作也照样被截获，无关乎客户端的cookie session设计</p>
+<p>2、完整性，flask 利用开发者定义的一个私钥对数据进行简单的hash签名认证，所以我们会看到在 flask 保存在浏览器cookie中的session值，经过base64解码之后都是这样的：<br>{“userid”:12345}.xxxxxxxxxxxxx<br>json字符串后面的xxxx就是利用开发人员定义的密钥对前面json字符串进行hash生成的签名，所以数据的完整性只要保证一个足够强大的密钥不被泄露和就行了。</p>
+<p>3、容量限制，这点确实是cookie session的不足，因为客户端cookie是有容量限制的，不可能像使用第三方数据库保存session那样可以存放大量的数据，不过一般我们开发一些web站点，session在大部分情况下主要是用来表示用户身份，比如一个 userid，一个头像地址，或者一个nickname等，真正用户的一些其他信息还是要通过userid去数据库获取的。</p>
+<p>所以在开发一些对session保存容量要求不大，但是并发量比较大，而且需要多机器，多进程服务的项目来说，客户端session无疑是一个即轻松又节约设备的方法，至少节约了1台redis服务器。</p>
+<p>我在开发完这个 flask 项目后，想到了node也应该在npm上有这样一个包，可惜我搜了下npmjs.org，似乎没有找到特别雷同的cookie session store的包，于是本着重复造轮的思想，写了一个让nodejs也支持客户端 cookie session保存的package，client-session，项目地址：<br><a href="https://github.com/DoubleSpout/nodeClientSession" target="_blank" rel="noopener">https://github.com/DoubleSpout/nodeClientSession</a><br>安装发放：<br>npm install client-session</p>
+<p>client-session包主要解决了nodejs多进程下内存session无法同步的问题，让吊丝们的1G内存vps也能够不开redis，多进程同步session数据；同时在flask仅利用base64将session内容编码的基础上，做了一个小的加解密方法，让数据看上去更加安全一些，仅是安全一些，还是尽量不要保存用户密码，银行账户信息在里面哦。</p>
+<p>client-session对数据加解密，base64编码以及签名和签名验证都是通过c++插件完成，所以相对于纯js性能上可能有那么点优势（没做过测试，不能妄下定论啊），另外在我的压力测试中，利用expressjs框架，多进程使用client-session要比使用本机开启redis数据库存session，性能高出20%左右，测试数据详见项目地址，client-session使用方法也很简单，一个结合expressjs框架返回计数器的代码例子：<br>       var express = require(‘express’);<br>    var path = require(‘path’)<br>    var cs = require(‘client-session’);<br>    var clientSession = cs(‘mysecretkey’);<br>    var app = express();<br>    app.use(clientSession.connect());//调用client-session中间件<br>    app.get(‘/‘, function(req, res){<br>      var count = req.csession[‘count’];<br>      if(!count) count = 1;<br>      else count++;<br>      req.csession[‘count’] = count;<br>      //这边不想暴力的改掉express框架的res.send方法<br>      //就劳烦开发人员手动调用一下csflash，毕竟1台redis服务器是省下了<br>      req.csflush();<br>      res.send(count.toString());<br>    });<br>    app.listen(8124);<br>    console.log(‘Server running at <a href="http://127.0.0.1:8124/&#39;)" target="_blank" rel="noopener">http://127.0.0.1:8124/&#39;)</a>;<br>利用ab命令：ab -c 500 -n 20000 <a href="http://192.168.150.3:8124/" target="_blank" rel="noopener">http://192.168.150.3:8124/</a><br>压力测试内网的一台2cpu 6Gmen linux云主机<br>express + redis + 2 process session:：<br>Requests per second:    380.54 [#/sec] (mean)</p>
+<p>express + client-session +2 process session:<br>Requests per second:    492.25 [#/sec] (mean)<br>具体的client-session使用方法，详见项目github地址，有啥问题可以留言给我。</p>
+<p>对于客户端session和服务端session的优劣特点，大家都明白了，最终如何选择还是看项目需求吧~</p>
+<p>另外expressjs似乎没有在响应前触发的事件吧，比如:<br>res.on(‘beforeResponse’, function(){<br>//do something<br>})</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/06/07/mongodb/" rel="next" title="mongodb 数据导入导出数据">
+                <i class="fa fa-chevron-left"></i> mongodb 数据导入导出数据
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/06/16/python/" rel="prev" title="Flask 框架中的请求中间件( middleware )">
+                Flask 框架中的请求中间件( middleware ) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

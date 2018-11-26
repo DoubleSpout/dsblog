@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最后我们来看下route模块，之前connect.js的route模块写的太TM坑爹了，相当混乱，作者显然也是发现了这个问题，重新在expressjs中改写了route模块。">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="expressjs源码解读(五) —— 3.0版本route模块（1）">
+<meta property="og:url" content="http://yoursite.com/2011/12/22/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="最后我们来看下route模块，之前connect.js的route模块写的太TM坑爹了，相当混乱，作者显然也是发现了这个问题，重新在expressjs中改写了route模块。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.857Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="expressjs源码解读(五) —— 3.0版本route模块（1）">
+<meta name="twitter:description" content="最后我们来看下route模块，之前connect.js的route模块写的太TM坑爹了，相当混乱，作者显然也是发现了这个问题，重新在expressjs中改写了route模块。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2011/12/22/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>expressjs源码解读(五) —— 3.0版本route模块（1） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2011/12/22/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">expressjs源码解读(五) —— 3.0版本route模块（1）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2011-12-22 15:34:14" itemprop="dateCreated datePublished" datetime="2011-12-22T15:34:14+08:00">2011-12-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2011/12/22/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2011/12/22/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最后我们来看下route模块，之前connect.js的route模块写的太TM坑爹了，相当混乱，作者显然也是发现了这个问题，重新在expressjs中改写了route模块。</p>
+<a id="more"></a>
+<p>新的route模块包含4个文件，我们一个个来看，</p>
+<p>1、index.js：主要功能模块</p>
+<p>2、collection.js：收集remove的route</p>
+<p>3、methods.js：http请求方法的数组</p>
+<p>4、route.js：匹配和正则化path</p>
+<h2 id="1、route-js"><a href="#1、route-js" class="headerlink" title="1、route.js"></a>1、route.js</h2><p>包含2个主要方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Route.prototype.match = function(path)&#123;</span><br><span class="line">  return this.regexp.exec(path);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>匹配的方法，传入path参数，然后利用原先定义的path进行匹配，返回Regexp.exe()结果的数组。也就是说如果我们定义了多个路由规则，则会实例化多个Route类。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">function normalize(path, keys, sensitive, strict) &#123;...&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个方法名叫：正常化，其实更贴切的应该是叫 正则化，他会根据传入的path路径还有参数等字符串，拼装成一个正则表达式，供以后math方法使用。具体实现太TM复杂，我不大在行正则就不分析拉，免得献丑。</p>
+<h2 id="2、collection-js"><a href="#2、collection-js" class="headerlink" title="2、collection.js"></a>2、collection.js</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">function Collection(router) &#123;</span><br><span class="line">  Object.defineProperty(this, &apos;router&apos;, &#123; value: router &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义Collection类的属性router<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Collection.prototype.__proto__ = Array.prototype;</span><br></pre></td></tr></table></figure></p>
+<p>将Collection的原型链的原型父链指向Array的原型链，这样Collection就继承了Array.prototype的方法，也就是数组的一些方法。同时他还是Function的一个实例，并且他还有一个属性router。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Collection.prototype.remove = function()&#123;</span><br><span class="line">  var router = this.router</span><br><span class="line">    , len = this.length</span><br><span class="line">    , ret = new Collection(this.router);</span><br><span class="line"></span><br><span class="line">  for (var i = 0; i &lt; len; ++i) &#123;</span><br><span class="line">    if (router.remove(this[i])) &#123;</span><br><span class="line">      ret.push(this[i]);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return ret;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>这个代码主要是调用Collection的router属性对象的remove方法删除原本Collection实例的内容复制到另外一个新的Collection示例ret数组中。</p>
+<p>看到这里我们发现Collection实例化的数组既有数组的方法，也有属性，这里只要理解javascript一切皆对象。</p>
+<p>比如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">var a=[1,2,3,4];</span><br><span class="line">a.msg = &apos;我是数组&apos;;</span><br><span class="line">a.alt = function()&#123;</span><br><span class="line"> alert(this.msg);</span><br><span class="line">&#125;</span><br><span class="line">a.alt(); //弹出我是数组</span><br><span class="line">alert(a.length); //弹出4</span><br></pre></td></tr></table></figure></p>
+<h2 id="3、index-js"><a href="#3、index-js" class="headerlink" title="3、index.js"></a>3、index.js</h2><p>最重要的一般都放在最后，index.js就是提供route类的核心函数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function Router(app) &#123;</span><br><span class="line">  var self = this;</span><br><span class="line">  this.app = app;</span><br><span class="line">  this.routes = new Collection;</span><br><span class="line">  this.map = &#123;&#125;;</span><br><span class="line">  this.params = &#123;&#125;;</span><br><span class="line">  this._params = [];</span><br><span class="line">  this.middleware = function(req, res, next)&#123;</span><br><span class="line">    self._dispatch(req, res, next);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>传入了一个app参数，这里作者用  this.routes = new Collection; 就是实例化Colection类，比较装B的写法，表示不传参数的new func()。</p>
+<p>还定义了一个middleware函数。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Router.prototype.param = function(name, fn)&#123;...&#125;</span><br></pre></td></tr></table></figure></p>
+<p>注册一个回调函数，是配合 app.param()方法一起使用的。</p>
+<p>我们回过头来先看看app.param:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">app.param = function(name, fn)&#123;</span><br><span class="line">  var self = this</span><br><span class="line">    , fns = [].slice.call(arguments, 1);</span><br><span class="line"></span><br><span class="line">  // array</span><br><span class="line">  if (Array.isArray(name)) &#123;</span><br><span class="line">    name.forEach(function(name)&#123;</span><br><span class="line">      fns.forEach(function(fn)&#123;</span><br><span class="line">        self.param(name, fn);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  // param logic</span><br><span class="line">  &#125; else if (&apos;function&apos; == typeof name) &#123;</span><br><span class="line">    this._router.param(name);</span><br><span class="line">  // single</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    if (&apos;:&apos; == name[0]) name = name.substr(1);</span><br><span class="line">    fns.forEach(function(fn)&#123;</span><br><span class="line">      self._router.param(name, fn);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  return this;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>app.param期望接收2个参数，当然第一个参数是数组时，就将数组中每一项name和回调fn做递归。</p>
+<p>当第一个参数是函数时，则expressjs认为是注册一种匹配的函数,转给route.param方法。</p>
+<p>最后进行判断name的合法性和fn是否是数组，将1个name和1个fn作为参数转给route.param方法。</p>
+<p>然后我们看下route.param方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Router.prototype.param = function(name, fn)&#123;</span><br><span class="line">  // param logic</span><br><span class="line">  if (&apos;function&apos; == typeof name) &#123;</span><br><span class="line">    this._params.push(name);</span><br><span class="line">    return;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  // apply param functions</span><br><span class="line">  var params = this._params</span><br><span class="line">    , len = params.length</span><br><span class="line">    , ret;</span><br><span class="line"></span><br><span class="line">  for (var i = 0; i &lt; len; ++i) &#123;</span><br><span class="line">    if (ret = params[i](name, fn)) &#123;</span><br><span class="line">      fn = ret;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  // ensure we end up with a</span><br><span class="line">  // middleware function</span><br><span class="line">  if (&apos;function&apos; != typeof fn) &#123;</span><br><span class="line">    throw new Error(&apos;invalid param() call for &apos; + name + &apos;, got &apos; + fn);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  (this.params[name] = this.params[name] || []).push(fn);</span><br><span class="line">  return this;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>如果第一个参数是function，则向route._params数组插入这个function，然后直接return;</p>
+<p>执行route._params中的函数将返回函数赋值个头ret</p>
+<p>接着合法性判断，然后将name作为key，fn作为值放置到route.param数组中，以供后面获取这个参数时执行回调。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Router.prototype.find = function(fn)&#123;</span><br><span class="line">  var len = methods.length</span><br><span class="line">    , ret = new Collection(this)</span><br><span class="line">    , method</span><br><span class="line">    , routes</span><br><span class="line">    , route;</span><br><span class="line"></span><br><span class="line">  for (var i = 0; i &lt; len; ++i) &#123;</span><br><span class="line">    method = methods[i];</span><br><span class="line">    routes = this.map[method];</span><br><span class="line">    if (!routes) continue;</span><br><span class="line">    for (var j = 0, jlen = routes.length; j &lt; jlen; ++j) &#123;</span><br><span class="line">      route = routes[j];</span><br><span class="line">      if (fn(route)) ret.push(route);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return ret;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>根据methods数组进行循环，methods数组就是methods.js文件，如果map对象中不存有这个方法，也就是用户没有注册过这个方法，则继续查找。</p>
+<p>当找到用户注册的方法，然后根据fn回调进行操作，如果返回true，则将route对象存入collection实例的ret中。</p>
+<p>最后返回collection实例。</p>
+<p>好我们跳着看，那个存入map对象中的以请求method为key的对象是什么呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Router.prototype._route = function(method, path, callbacks)&#123;</span><br><span class="line">  var app = this.app</span><br><span class="line">    , callbacks = utils.flatten([].slice.call(arguments, 2));</span><br><span class="line"></span><br><span class="line">  // ensure path was given</span><br><span class="line">  if (!path) throw new Error(&apos;app.&apos; + method + &apos;() requires a path&apos;);</span><br><span class="line"></span><br><span class="line">  // create the route</span><br><span class="line">  var route = new Route(method, path, callbacks, &#123;</span><br><span class="line">      sensitive: app.enabled(&apos;case sensitive routing&apos;)</span><br><span class="line">    , strict: app.enabled(&apos;strict routing&apos;)</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  // add it</span><br><span class="line">  (this.map[method] = this.map[method] || []).push(route);</span><br><span class="line">  this.routes.push(route);</span><br><span class="line">  return this;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>它就是这个，用_route方法注册map[method]中的route对象。sensitive，strict 这2个参数是用来生成正则使用，第一个参数是是否严格匹配，第二个参数是是否区分大小写。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Router.prototype._options = function(req, res)&#123;</span><br><span class="line">  var path = parse(req.url).pathname</span><br><span class="line">    , body = this._optionsFor(path).join(&apos;,&apos;);</span><br><span class="line">  res.header(&apos;Allow&apos;, body).send(body);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这个options函数是用来接收option请求的，将返回服务器所支持的所有请求格式，例如”get,post等等”</p>
+<p>两个重头戏：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_dispatch和_match，</span><br></pre></td></tr></table></figure></p>
+<p>调度员和比对两个方法我下一节再详细说。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2011/12/20/js-ajax/" rel="next" title="expressjs源码解读(四) —— 3.0版本expressjs">
+                <i class="fa fa-chevron-left"></i> expressjs源码解读(四) —— 3.0版本expressjs
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2011/12/22/js-ajax/" rel="prev" title="expressjs源码解读(五) —— 3.0版本route模块（2）">
+                expressjs源码解读(五) —— 3.0版本route模块（2） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、route-js"><span class="nav-number">1.</span> <span class="nav-text">1、route.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、collection-js"><span class="nav-number">2.</span> <span class="nav-text">2、collection.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、index-js"><span class="nav-number">3.</span> <span class="nav-text">3、index.js</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

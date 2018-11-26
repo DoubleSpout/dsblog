@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="想必部署过nodejs应用的朋友都有过这样的经历： 1、通过ssh登录服务器 2、进入nodejs目录 3、执行：git pull 命令拉取最新代码 4、执行：npm install 安装新依赖 5、执行：pm2 restart all 重新启动所有nodejs进程">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Jenkins自动部署nodejs应用">
+<meta property="og:url" content="http://yoursite.com/2014/11/26/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="想必部署过nodejs应用的朋友都有过这样的经历： 1、通过ssh登录服务器 2、进入nodejs目录 3、执行：git pull 命令拉取最新代码 4、执行：npm install 安装新依赖 5、执行：pm2 restart all 重新启动所有nodejs进程">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/img/jekins/1.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/2.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/3.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/4.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/5.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/6.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/7.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/8.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/9.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/10.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/11.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/12.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/13.png">
+<meta property="og:image" content="http://yoursite.com/img/jekins/14.png">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.878Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用Jenkins自动部署nodejs应用">
+<meta name="twitter:description" content="想必部署过nodejs应用的朋友都有过这样的经历： 1、通过ssh登录服务器 2、进入nodejs目录 3、执行：git pull 命令拉取最新代码 4、执行：npm install 安装新依赖 5、执行：pm2 restart all 重新启动所有nodejs进程">
+<meta name="twitter:image" content="http://yoursite.com/img/jekins/1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/11/26/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用Jenkins自动部署nodejs应用 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/11/26/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用Jenkins自动部署nodejs应用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-11-26 22:48:26" itemprop="dateCreated datePublished" datetime="2014-11-26T22:48:26+08:00">2014-11-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/11/26/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/11/26/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>想必部署过nodejs应用的朋友都有过这样的经历：</p>
+<p>1、通过ssh登录服务器</p>
+<p>2、进入nodejs目录</p>
+<p>3、执行：git pull 命令拉取最新代码</p>
+<p>4、执行：npm install 安装新依赖</p>
+<p>5、执行：pm2 restart all 重新启动所有nodejs进程</p>
+<a id="more"></a>
+<p>如果我们只有一台机器，并且更新不是很频繁，似乎这样的操作还是可以接受，但是如果我们有4台nodejs应用的服务器，每次的代码改动将是灾难！<br>好在我们有Jenkins帮助我们做这些事情，Jenkins是一个可以自动远程部署，执行远程脚本命令的工具，它被称为持续集成工具，我们可以通过docker来快速搭建一个Jenkins服务。</p>
+<p>一、安装docker，拉取images，启动container<br>在centos7下，只需要执行<br>yum install docker<br>service docker start<br>ps -ef|grep docker<br>在centos6下，需要分别执行<br>yum install sudo<br>sudo yum install -y epel-release<br>sudo yum install -y docker-io<br>service docker start<br>ps -ef|grep docker<br>进入 jenkins 的官方docker镜像地址：<br><a href="https://registry.hub.docker.com/_/jenkins/" target="_blank" rel="noopener">https://registry.hub.docker.com/_/jenkins/</a><br>然后根据说明执行：<br>docker pull jenkins<br>拉取好镜像之后，我们先创建目录，然后启动docker的container<br>mkdir /var/jenkins_home<br>docker run -d –name myjenkins -p 49001:8080 -v /var/jenkins_home:/var/jenkins_home jenkins</p>
+<p>二、安装nginx<br>安装并启动nginx，把如下代码放在配置文件中，添加一个server节点，反向代理到docker<br>upstream app {<br>    server 127.0.0.1:49001;<br>}<br>server {<br>    listen 80;<br>    server_name jenkins.your-domain.com;</p>
+<pre><code>location / {
+    proxy_pass http://app;
+}
+</code></pre><p>}<br>这样打开浏览器我们就可以看到jenkins的首页了<br><img src="/img/jekins/1.png" alt=""><br>三、配置jinkens<br>我们首先需要进入jinkens添加用户，这里不累述了，根据提示一步步即可完成。<br>然后我们要安装插件，依次进入：<br>系统管理 -&gt; 插件管理 -&gt; 高级（选项卡）-&gt; 底部立即获取按钮<br><img src="/img/jekins/2.png" alt=""><br> 稍等片刻，就可以把可用插件更新下来，然后我们选择安装如下几个插件：<br>GIT client plugin<br>GIT plugin<br>Git server plugin<br>GitHub API Plugin<br>GitHub plugin<br>SSH Credentials Plugin<br>SSH plugin<br>Publish Over SSH<br> 安装完成后，重新启动 jenkins。如果无法自动重启，可以输入 ‘/restart’ 在地址栏，即可手动重启。</p>
+<p>四、添加remote计算机<br>我们jenkins是安装在docker中的，所以就算部署到本机，对于jenkins也是remote外部的机器，需要使用ssh来连接，我们需要添加ssh主机，来让jenkins联入。<br>依次进入  系统管理 -&gt; 系统设置<br>如下图增加remote server，这个是增加ssh remote 插件的服务器<br><img src="/img/jekins/3.png" alt=""></p>
+<p>下图是增加远程拷贝文件的remote server<br><img src="/img/jekins/4.png" alt=""></p>
+<p>五、创建项目<br>我现在在github上建了一个nodejs的helloworld项目：<br><a href="https://github.com/DoubleSpout/jenkinsNodejs" target="_blank" rel="noopener">https://github.com/DoubleSpout/jenkinsNodejs</a><br>我们需要在jenkins中也创建一个相应的项目来，依次点击：新建 -&gt;  取名为 nodejsPublish<br><img src="/img/jekins/5.png" alt=""><br> 进入项目，点击配置，我们就可以对这个项目进行配置，让它自动部署<br>1、设置 git 仓库路径：<br>如下图，因为是公共仓库，所以不需要验证用户名，密码：<br><img src="/img/jekins/6.png" alt=""></p>
+<p>2、构建完毕之后，将代码打包保存<br>我们先如下图，增加一个构建完毕的shell脚本执行<br><img src="/img/jekins/7.png" alt=""><br>然后些如下图脚本，打包代码，然后移动到workspace目录下<br><img src="/img/jekins/8.png" alt=""><br>3、接着我们需要连接到部署服务器上，将原来的服务暂时暂停，删除上一次部署的压缩包，选择添加远程shell脚本执行，如下图：<br><img src="/img/jekins/9.png" alt=""></p>
+<p>写如下脚本，将pm2服务停止，这里大家可以根据自己的要求暂停脚本<br><img src="/img/jekins/10.png" alt=""><br> 4、最后我们要把打包好的代码发送到服务器上，然后执行安装依赖包操作，并且启动nodejs服务，选择通过ssh发送文件并执行命令到远程服务器，如图：<br><img src="/img/jekins/11.png" alt=""><br> 下图的 source files 的默认当前路径就是workspaces，remote directory的当前路径就是之前添加服务器设置的，这里我设置为 /var/nodejs<br>下面的命令很简单，解压代码，执行依赖包安装，然后通过pm2启动nodejs服务。<br><img src="/img/jekins/12.png" alt=""></p>
+<p>5、开始构建<br>配置好上述命令之后，我们点击保存，然后点击立即构建，出现蓝色的球，就表示构建成功，红色的球表示构建失败，黄色的球表示执行构建命令失败，如下图，就是正在构建和发布：<br><img src="/img/jekins/13.png" alt=""></p>
+<p>不论构建成功还是失败，我们可以通过查看控制台输出看到构建的结果：<br><img src="/img/jekins/14.png" alt=""></p>
+<p>如果我们有多台设备，就只需要配置一次，然后以后每次有代码变更，手动点击立即构建即可自动部署到目标服务器，免去我们枯草的重复劳动。当然其他语言，例如python，php都是可以这样来部署的。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/10/30/python/" rel="next" title="Flask-SQLAlchemy 使用小坑">
+                <i class="fa fa-chevron-left"></i> Flask-SQLAlchemy 使用小坑
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/12/15/python/" rel="prev" title="Flask中使用redis的pub，sub例子">
+                Flask中使用redis的pub，sub例子 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

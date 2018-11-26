@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="0.8版本修改了不少api，以下是一些常用的api修改，大家注意哦： 以下是主要常用的api变更">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="node.js-v0.8API解读（2）- api的修改部分">
+<meta property="og:url" content="http://yoursite.com/2012/07/02/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="0.8版本修改了不少api，以下是一些常用的api修改，大家注意哦： 以下是主要常用的api变更">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.868Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="node.js-v0.8API解读（2）- api的修改部分">
+<meta name="twitter:description" content="0.8版本修改了不少api，以下是一些常用的api修改，大家注意哦： 以下是主要常用的api变更">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2012/07/02/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>node.js-v0.8API解读（2）- api的修改部分 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2012/07/02/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">node.js-v0.8API解读（2）- api的修改部分
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2012-07-02 16:02:22" itemprop="dateCreated datePublished" datetime="2012-07-02T16:02:22+08:00">2012-07-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2012/07/02/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2012/07/02/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>0.8版本修改了不少api，以下是一些常用的api修改，大家注意哦：</p>
+<p>以下是主要常用的api变更</p>
+<a id="more"></a>
+<h2 id="1、path"><a href="#1、path" class="headerlink" title="1、path"></a>1、path</h2><p>path.{exists,existsSync} was moved to fs.{exists,existsSync}</p>
+<p>很早就觉得path.exists应该归纳到fs模块中</p>
+<h2 id="2、cluster"><a href="#2、cluster" class="headerlink" title="2、cluster"></a>2、cluster</h2><p>cluster.fork() no longer return a child_process.fork() object use cluster.fork().process to get the object.</p>
+<p>返回子进程的process对象需要使用：cluster.fork().process</p>
+<p>the ‘death’ event on the cluster object is renamed to ‘exit’.<br>cluster的death事件改名为exit</p>
+<p>the kill() method is renamed to destroy().<br>cluster的kill方法改名为destory</p>
+<p>the CLUSTER_WORKER_ID env is now called CLUSTER_UNIQUE_ID, but you should not have used that anyway.<br>不建议使用CLUSTER_WORKER_ID 这个环境变量</p>
+<p>workers now kill themselves when they accidentally lose their connection to the master.<br>子进程会自杀，当他们偶然失去去与主进程的通信</p>
+<h2 id="3、http"><a href="#3、http" class="headerlink" title="3、http"></a>3、http</h2><p>http.Server emits ‘connect’ event instead of ‘upgrade’ when the CONNECT method is requested.</p>
+<p>当连接被请求时，connect 事件会代替 upgrade 事件</p>
+<p>http.ServerResponse sends Date: header by default. You can disable it by setting response.sendDate to false.</p>
+<p>http的响应头会自动加上Date这个值，想要关掉它可以将 response.sendDate 设置为false</p>
+<p>http.ClientRequest emits ‘connect’ event instead of ‘request’ when the CONNECT method is responded.</p>
+<p>当node.js作为客户端去请求其他http服务器时，当对方响应，将会触发connect事件来代替request事件</p>
+<h2 id="4、net"><a href="#4、net" class="headerlink" title="4、net"></a>4、net</h2><p>net.listen(socketPath) no longer unlinks the socket unless you call server.close(). Automatic unlinking was subject to race conditions in multi-process setups. Also applies to http.listen(socketPath).</p>
+<p>net.listen(socketPath)方法不会去断开socket，直到server.close()方法调用才会断开。自动断开的情况是多个进程竞争条件，同样适用于http.listen(socketPath).方法。</p>
+<h2 id="5、child-process"><a href="#5、child-process" class="headerlink" title="5、child_process"></a>5、child_process</h2><p>arguments and options arguments of child_process.fork() became an option.//修改了fork的api，详细见doc</p>
+<p>the ‘exit’ event is now emitted right after the child process exits. It no longer waits for all stdio pipes to be closed.</p>
+<p>//现在exit事件会等到进程退出后再出发，但是不会等待stdio pipes关闭</p>
+<p>the ‘close’ event was added that has is emitted after the child has exited and all the stdio pipes are closed.</p>
+<p>//同上，但是会等到stdio 管道关触发</p>
+<h2 id="6、url"><a href="#6、url" class="headerlink" title="6、url"></a>6、url</h2><p>url.parse() now parses IPv6 addresses. //支持IPv6的地址</p>
+<p>url.parse() now escapes delimiters characters rather than truncating the input.//这句不是很理解</p>
+<p>url.format() now escapes the auth section, and url.parse() decodes it.</p>
+<p>//可以加入auth的片段支持</p>
+<h2 id="7、fs"><a href="#7、fs" class="headerlink" title="7、fs"></a>7、fs</h2><p>path.exists() and path.existsSync() has moved to fs.exists() and fs.existsSync().</p>
+<p>//以后查找文件是否存在改用fs.exists()方法了</p>
+<p>fs.symlink type argument can now be ‘junction’ (for Windows only).</p>
+<p>//junction是windows特有的，属于磁盘映射的工具，比如我们C盘容量过大了，于是我们把文件夹X（假设X有10个G）拷贝到D盘，然后使用junction工具将文件夹X映射回C盘，这样从C盘看访问路径还是C:/xxxx，也可以对其进行正常的修改删除，但是空间占用的是D盘的</p>
+<p>fs.realpath and fs.lstat work the same on Windows as on Unix</p>
+<p>//fs.realpath和fs.lstat在unix和windows上运行时一样了</p>
+<h2 id="8、console"><a href="#8、console" class="headerlink" title="8、console"></a>8、console</h2><p>console.timeEnd now throws when there’s no such label</p>
+<p>没有 label 时输出当前时间戳</p>
+<h2 id="9、os"><a href="#9、os" class="headerlink" title="9、os"></a>9、os</h2><p>os.cpus().times is now supported on Windows</p>
+<p>os.uptime now displays the correct uptime if the system’s current uptime is &gt; 50 days on Windows</p>
+<p>//这里主要是windows的支持问题</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2012/06/28/js-ajax/" rel="next" title="centOS安装node.js-v0.8.0">
+                <i class="fa fa-chevron-left"></i> centOS安装node.js-v0.8.0
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2012/07/02/js-ajax/" rel="prev" title="node.js-v0.8API解读（3）- api的新增部分">
+                node.js-v0.8API解读（3）- api的新增部分 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、path"><span class="nav-number">1.</span> <span class="nav-text">1、path</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、cluster"><span class="nav-number">2.</span> <span class="nav-text">2、cluster</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、http"><span class="nav-number">3.</span> <span class="nav-text">3、http</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、net"><span class="nav-number">4.</span> <span class="nav-text">4、net</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、child-process"><span class="nav-number">5.</span> <span class="nav-text">5、child_process</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、url"><span class="nav-number">6.</span> <span class="nav-text">6、url</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7、fs"><span class="nav-number">7.</span> <span class="nav-text">7、fs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8、console"><span class="nav-number">8.</span> <span class="nav-text">8、console</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9、os"><span class="nav-number">9.</span> <span class="nav-text">9、os</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

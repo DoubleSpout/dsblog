@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="接上一篇写到app是什么，我们在expressjs的api中我们看到了这段代码：1app.use(express.static(__dirname + &amp;apos;/public&amp;apos;)); api说明：设置静态文件的目录。app.use是定义到中间件的middleware中的，所以我们就去middleware文件夹一探究竟。 注：expressjs是对connectjs的一个封装，所以原理">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="expressjs源码解读(二) —— middleware">
+<meta property="og:url" content="http://yoursite.com/2011/12/16/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="接上一篇写到app是什么，我们在expressjs的api中我们看到了这段代码：1app.use(express.static(__dirname + &amp;apos;/public&amp;apos;)); api说明：设置静态文件的目录。app.use是定义到中间件的middleware中的，所以我们就去middleware文件夹一探究竟。 注：expressjs是对connectjs的一个封装，所以原理">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.857Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="expressjs源码解读(二) —— middleware">
+<meta name="twitter:description" content="接上一篇写到app是什么，我们在expressjs的api中我们看到了这段代码：1app.use(express.static(__dirname + &amp;apos;/public&amp;apos;)); api说明：设置静态文件的目录。app.use是定义到中间件的middleware中的，所以我们就去middleware文件夹一探究竟。 注：expressjs是对connectjs的一个封装，所以原理">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2011/12/16/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>expressjs源码解读(二) —— middleware | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2011/12/16/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">expressjs源码解读(二) —— middleware
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2011-12-16 14:19:12" itemprop="dateCreated datePublished" datetime="2011-12-16T14:19:12+08:00">2011-12-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2011/12/16/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2011/12/16/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>接上一篇写到app是什么，我们在expressjs的api中我们看到了这段代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app.use(express.static(__dirname + &apos;/public&apos;));</span><br></pre></td></tr></table></figure></p>
+<p>api说明：设置静态文件的目录。app.use是定义到中间件的middleware中的，所以我们就去middleware文件夹一探究竟。</p>
+<p>注：expressjs是对connectjs的一个封装，所以原理还是一样的。</p>
+<a id="more"></a>
+<h2 id="1、connect-js中的middleware"><a href="#1、connect-js中的middleware" class="headerlink" title="1、connect.js中的middleware"></a>1、connect.js中的middleware</h2><p>打开connect.js文件，我们可以找到如下代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">exports.middleware = &#123;&#125;;</span><br><span class="line">/**</span><br><span class="line"> * Auto-load bundled middleware with getters.</span><br><span class="line"> */</span><br><span class="line">fs.readdirSync(__dirname + &apos;/middleware&apos;).forEach(function(filename)&#123;</span><br><span class="line">   if (/\.js$/.test(filename)) &#123;</span><br><span class="line">      var name = filename.substr(0, filename.lastIndexOf(&apos;.&apos;));</span><br><span class="line">      exports.middleware.__defineGetter__(name, function()&#123;</span><br><span class="line">        return require(&apos;./middleware/&apos; + name);</span><br><span class="line">       &#125;);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>将middleware对象exports，然后循环定义给middleware对象一种方法，这种方法是直接加载 middleware 文件夹中的.js文件模块。</p>
+<p>然后connect.js利用：exports.utils.merge(exports, exports.middleware); 这句话将middleware中的方法直接exports了。</p>
+<p>如何利用middleware呢？我们先看connect.js的api示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">var server = connect.createServer(</span><br><span class="line">         connect.favicon()</span><br><span class="line">       , connect.logger()</span><br><span class="line">       , connect.static(__dirname + &apos;/public&apos;)</span><br><span class="line">     );</span><br></pre></td></tr></table></figure></p>
+<p>或者可以这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var server = connect.createServer();</span><br><span class="line">      server.use(connect.favicon());</span><br><span class="line">      server.use(connect.logger());</span><br><span class="line">      server.use(connect.static(__dirname + &apos;/public&apos;));</span><br></pre></td></tr></table></figure></p>
+<p>当然还有一种是链式调用，其实无论用哪种方式，最终都是会将connect.favicon()的返回值作为参数传递给 Server.prototype.use 这个方法。然后做一下处理，将其丢入stack堆栈中，等待handle调用（前一章已经说过）。</p>
+<p>在介绍 Server.prototype.use 之前，我先介绍下2个不怎么用到的东西：</p>
+<h3 id="1、javascript-1-6-数组新增方法：-forEach"><a href="#1、javascript-1-6-数组新增方法：-forEach" class="headerlink" title="1、javascript 1.6 数组新增方法： forEach()"></a>1、javascript 1.6 数组新增方法： forEach()</h3><p>代码示例：array.forEach(callback[, thisObject]);</p>
+<p>说明：callback： 要对每个数组元素执行的回调函数，带3个参数，分别是：当前元素，当前元素的索引和当前的数组对象。</p>
+<p>thisObject ： 在执行回调函数时定义的this对象。</p>
+<h3 id="2、在对象定义后通过Object的defineGetter、defineSetter方法来追加定义，我们看个例子："><a href="#2、在对象定义后通过Object的defineGetter、defineSetter方法来追加定义，我们看个例子：" class="headerlink" title="2、在对象定义后通过Object的defineGetter、defineSetter方法来追加定义，我们看个例子："></a>2、在对象定义后通过Object的<strong>defineGetter</strong>、<strong>defineSetter</strong>方法来追加定义，我们看个例子：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Date.prototype.__defineGetter__(&apos;year&apos;, function() &#123;return this.getFullYear();&#125;); </span><br><span class="line">Date.prototype.__defineSetter__(&apos;year&apos;, function(y) &#123;this.setFullYear(y)&#125;); </span><br><span class="line">var now = new Date; </span><br><span class="line">alert(now.year); </span><br><span class="line">now.year = 2006; </span><br><span class="line">alert(now);</span><br></pre></td></tr></table></figure>
+<p>这样就一目了然了啊，是用来方便定义对象方法的，如果传参则是setter，如果不传参则是getter，当然在getter时也可以传参，但是在setter时必须传参。</p>
+<p>接下来，我们着重看下 Server.prototype.use 这个方法是怎么做统一处理数据，并push入stack数组中的：</p>
+<p>Server.prototype.use 方法的宗旨就是将传递过来的参数变换为{route, handle}这样形势的，route代表路由路径，而handle代表回调函数。方法用4个if做了判断：</p>
+<p>1、如果传递进来的route不是string，则认为是function，于是将handle = route, route = ‘/‘;</p>
+<p>2、如果传递进来的handle.handle是function，则把handle参数改写解套;</p>
+<p>3、如果传递进来的handle是http.Server的一个实例，handle = handle.listeners(‘request’)[0]; 将request监听器的第一个回调函数复制给handle。</p>
+<p>4、如果route的最后一位是’/‘，则把’/‘去掉，当然对于指向根目录的也清空了。</p>
+<p>最后将拼装好的{route, handle}放入stack数组中，等待出列。</p>
+<p>当有客户端请求触发，handle方法就执行，开始一个个从stack堆栈中取出这个 {route, handle} 对象，根据handle.length的不同分别调用。前一篇文章对于 Server.prototype.handle 方法只是一带而过，这里我们就要开始深究它了。Server.prototype.handle 这个方法在每次有客户端request时就会被调用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">path = parse(req.url).pathname;</span><br><span class="line">if (undefined == path) path = &apos;/&apos;;</span><br></pre></td></tr></table></figure></p>
+<p>当path不存在时则默认为访问根目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (0 != path.indexOf(layer.route)) return next(err);</span><br><span class="line">c = path[layer.route.length];</span><br><span class="line">if (c &amp;&amp; &apos;/&apos; != c &amp;&amp; &apos;.&apos; != c) return next(err);</span><br></pre></td></tr></table></figure></p>
+<p>首先当path和之前定义的route路由路径不匹配时，然后当访问路径比route长，并且长出的那一位不是’/‘也不是’.’时，执行next(err),转发下一个middleware并携带err参数。</p>
+<h3 id="3、removed-layer-route"><a href="#3、removed-layer-route" class="headerlink" title="3、removed = layer.route;"></a>3、removed = layer.route;</h3><pre><code>req.url = req.url.substr(removed.length);
+</code></pre><p>剪取路由匹配掉的那部分。</p>
+<p>举个例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">route：/user/face</span><br><span class="line">path1：user/face </span><br><span class="line">path2：/user/fac</span><br><span class="line">path3：/user/face/snoopy</span><br></pre></td></tr></table></figure></p>
+<p>有以上3个访问path，则path1在 indexOf 那个判断壮烈，path2 在 判断多一位的时候壮烈了，path3 顺利通过检测，剪取以后为‘/snoopy’。</p>
+<h3 id="4、"><a href="#4、" class="headerlink" title="4、"></a>4、</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var arity = layer.handle.length;</span><br><span class="line"></span><br><span class="line">if (err) &#123;</span><br><span class="line">      if (arity === 4)  layer.handle(err, req, res, next);</span><br><span class="line">      else  next(err);</span><br><span class="line">  &#125; else if (arity &lt; 4) &#123;</span><br><span class="line">    layer.handle(req, res, next);</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    next();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这里写的真TM绕啊，如果有err参数传递，并且handle期望传递参数是4位的，则执行 layer.handle(err, req, res, next);</p>
+<p>如果handle期望传递参数是小于4位的，并且没有err参数的，则执行  layer.handle(req, res, next);</p>
+<p>否则执行next();</p>
+<p>至此我们完全分析了两个功能性函数：</p>
+<p>Server.prototype.handle  和 Server.prototype.use ，但是他们是怎么作用的呢？</p>
+<p>下面我以favicon、static为例，跑一下它们的流程。</p>
+<h2 id="2、favicon-js中间件"><a href="#2、favicon-js中间件" class="headerlink" title="2、favicon.js中间件"></a>2、favicon.js中间件</h2><p>打开favicon.js，这个.js文件</p>
+<h3 id="1、-module-exports-function-favicon-path-options-…"><a href="#1、-module-exports-function-favicon-path-options-…" class="headerlink" title="1、 module.exports = function favicon(path, options){ …}"></a>1、 module.exports = function favicon(path, options){ …}</h3><p>输出 favicon 函数，并且期待传递2个参数，path路径和options设置。</p>
+<h3 id="2、-return-function-favicon-req-res-next-…"><a href="#2、-return-function-favicon-req-res-next-…" class="headerlink" title="2、  return function favicon(req, res, next){ …}"></a>2、  return function favicon(req, res, next){ …}</h3><p>返回一个回调函数，接收3个参数那种</p>
+<h3 id="3、"><a href="#3、" class="headerlink" title="3、"></a>3、</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (icon) &#123;</span><br><span class="line">    res.writeHead(200, icon.headers);</span><br><span class="line">    res.end(icon.body);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>如果icon对象已经生成好了，则直接输出给客户端，</p>
+<p>###4、<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">else &#123;</span><br><span class="line">    fs.readFile(path, function(err, buf)&#123;</span><br><span class="line">      if (err) return next(err);</span><br><span class="line">      icon = &#123;</span><br><span class="line">        headers: &#123;</span><br><span class="line">            &apos;Content-Type&apos;: &apos;image/x-icon&apos;</span><br><span class="line">          , &apos;Content-Length&apos;: buf.length</span><br><span class="line">          , &apos;ETag&apos;: &apos;&quot;&apos; + utils.md5(buf) + &apos;&quot;&apos;</span><br><span class="line">          , &apos;Cache-Control&apos;: &apos;public, max-age=&apos; + (maxAge / 1000)</span><br><span class="line">        &#125;,</span><br><span class="line">        body: buf</span><br><span class="line">      &#125;;</span><br><span class="line">      res.writeHead(200, icon.headers);</span><br><span class="line">      res.end(icon.body);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果icon对象没有生成好，则去 readFile ，并且设置响应头，设置ETag属性和 Cache-Control ，将文件读入buf，保存icon对象，然后响应给客户端。</p>
+<p>示例：connect.favicon(__dirname + ‘/public/favicon.ico’, {maxAge: 86400000})</p>
+<h2 id="3、static-js中间件"><a href="#3、static-js中间件" class="headerlink" title="3、static.js中间件"></a>3、static.js中间件</h2><p>static.js是用来做静态文件输出的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exports = module.exports = function static(root, options)&#123;...&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出一个static函数，接收2个参数，静态文件路径和设置，示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">connect.static(__dirname + &apos;/public&apos;, &#123; maxAge: oneDay &#125;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">options = options || &#123;&#125;;</span><br><span class="line">  // root required</span><br><span class="line">  if (!root) throw new Error(&apos;static() root path required&apos;);</span><br><span class="line">  options.root = root;</span><br><span class="line">  return function static(req, res, next) &#123;</span><br><span class="line">    options.path = req.url;</span><br><span class="line">    send(req, res, next, options);</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+<p>对options进行设置，返回一个static函数，这个函数主要的功能是执行send方法，接收4个参数，关键是第4个options。</p>
+<p>我们来看send函数，国际惯例，显示一些参数的赋值什么的，注意这一个：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">head = &apos;HEAD&apos; == req.method</span><br></pre></td></tr></table></figure></p>
+<p>判断是否是http请求的head请求。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if (fn) next = fn; </span><br><span class="line">if (&apos;GET&apos; != req.method &amp;&amp; !head) return next();</span><br></pre></td></tr></table></figure></p>
+<p>如果传递了回调函数，改写next，如果不是get也不是head，则执行next<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// when root is not given, consider .. malicious</span><br><span class="line">if (!root &amp;&amp; ~path.indexOf(&apos;..&apos;)) return utils.forbidden(res);</span><br></pre></td></tr></table></figure></p>
+<p>如果root没有给出，用恶意的‘..’想去访问文件，则干掉之。</p>
+<p>这里 作者写的很装B，~path.indexOf(‘..’) 表示 path.indexOf(‘..’) != -1，~符号是按位的非操作，-1在2进制码中表示：1111 1111 111 111。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">fs.stat(path, function(err, stat)&#123;</span><br><span class="line">    // ignore ENOENT</span><br><span class="line">    if (err) &#123;</span><br><span class="line">      if (fn) return fn(err);</span><br><span class="line">      return &apos;ENOENT&apos; == err.code</span><br><span class="line">        ? next()</span><br><span class="line">        : next(err);</span><br><span class="line">    // ignore directories</span><br><span class="line">    &#125; else if (stat.isDirectory()) &#123;</span><br><span class="line">      return fn</span><br><span class="line">        ? fn(new Error(&apos;Cannot Transfer Directory&apos;))</span><br><span class="line">        : next();</span><br><span class="line">    &#125;</span><br><span class="line">...&#125;</span><br></pre></td></tr></table></figure></p>
+<p>先检查文件的状态，如果不存在，或者访问的是目录，则抛出error<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (utils.conditionalGET(req)) &#123;</span><br><span class="line">       if (!utils.modified(req, res)) &#123;</span><br><span class="line">         return utils.notModified(res);</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果在缓存之内，则直接输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (head) return res.end();</span><br></pre></td></tr></table></figure>
+<p>这里如果是head请求，只是来试探文件有的大小等信息的，则返回结束<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var stream = fs.createReadStream(path, opts);</span><br><span class="line">    stream.pipe(res);</span><br></pre></td></tr></table></figure></p>
+<p>创建一个文件可读流，然后利用pipe方法（管道）将文件流响应给客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if (fn) &#123;</span><br><span class="line">     function callback(err) &#123; done || fn(err); done = true &#125;</span><br><span class="line">     req.on(&apos;close&apos;, callback);</span><br><span class="line">     req.socket.on(&apos;error&apos;, callback);</span><br><span class="line">     stream.on(&apos;end&apos;, callback);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数很巧妙，因为我们不能预期是传输过程中出错了，还是客户端先关闭了连接，或是传输完毕，所以这样写的好处便在于，callback内的fn(err)只会执行一次。</p>
+<h2 id="4、总结"><a href="#4、总结" class="headerlink" title="4、总结"></a>4、总结</h2><p>我们详细了解了connect.js的middleware工作流程，如何做到在响应给用户之前将static这部分工作包揽过去，然后又将req的一些信息进行封装，比如cookie等，很巧妙，代码写的也很精炼。</p>
+<p>不过我个人觉得，connect还是有提高性能空间的。就拿favicon来说，比如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (&apos;/favicon.ico&apos; == req.url) &#123; </span><br><span class="line">fs.readFile(path, function(err, buf)&#123;</span><br><span class="line">          if (err) return next(err);</span><br><span class="line">&#125;)</span><br><span class="line">&#125; else &#123;next();&#125;</span><br></pre></td></tr></table></figure></p>
+<p>当读取文件失败，将err传递给next函数，说穿了就是去执行stack堆栈下一个的handle，直到代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">layer = stack[index++];</span><br><span class="line">    // all done</span><br><span class="line">    if (!layer) &#123;</span><br><span class="line"> //404 error or 500 error</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>才能输出404或是500错误，可以或者有必要直接为404或500错误开辟一个方法，而不再去处理stack堆栈中的内容，这样应该还可以提高些许性能。</p>
+<p>中间件的应用我们也分析掉拉，下一篇我要开始connect.js部分最后的一块了，router.js路由部分。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2011/12/15/js-ajax/" rel="next" title="expressjs源码解读(一) —— http(s)模块">
+                <i class="fa fa-chevron-left"></i> expressjs源码解读(一) —— http(s)模块
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2011/12/16/js-ajax/" rel="prev" title="expressjs源码解读(三) —— router.js">
+                expressjs源码解读(三) —— router.js <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、connect-js中的middleware"><span class="nav-number">1.</span> <span class="nav-text">1、connect.js中的middleware</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、javascript-1-6-数组新增方法：-forEach"><span class="nav-number">1.1.</span> <span class="nav-text">1、javascript 1.6 数组新增方法： forEach()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、在对象定义后通过Object的defineGetter、defineSetter方法来追加定义，我们看个例子："><span class="nav-number">1.2.</span> <span class="nav-text">2、在对象定义后通过Object的defineGetter、defineSetter方法来追加定义，我们看个例子：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、removed-layer-route"><span class="nav-number">1.3.</span> <span class="nav-text">3、removed = layer.route;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、"><span class="nav-number">1.4.</span> <span class="nav-text">4、</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、favicon-js中间件"><span class="nav-number">2.</span> <span class="nav-text">2、favicon.js中间件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、-module-exports-function-favicon-path-options-…"><span class="nav-number">2.1.</span> <span class="nav-text">1、 module.exports = function favicon(path, options){ …}</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、-return-function-favicon-req-res-next-…"><span class="nav-number">2.2.</span> <span class="nav-text">2、  return function favicon(req, res, next){ …}</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、"><span class="nav-number">2.3.</span> <span class="nav-text">3、</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、static-js中间件"><span class="nav-number">3.</span> <span class="nav-text">3、static.js中间件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、总结"><span class="nav-number">4.</span> <span class="nav-text">4、总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

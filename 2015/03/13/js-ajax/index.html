@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Sharding（切片） 不是一门新技术，而是一个相对简朴的软件理念，就是当我们的数据库单机无法承受高强度的i/o时，我们就考虑利用 sharding 来把这种读写压力分散到各个主机上去。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用一致性哈希水平拆分MySql单表">
+<meta property="og:url" content="http://yoursite.com/2015/03/13/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="Sharding（切片） 不是一门新技术，而是一个相对简朴的软件理念，就是当我们的数据库单机无法承受高强度的i/o时，我们就考虑利用 sharding 来把这种读写压力分散到各个主机上去。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/img/cmysql/1.jpg">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.882Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用一致性哈希水平拆分MySql单表">
+<meta name="twitter:description" content="Sharding（切片） 不是一门新技术，而是一个相对简朴的软件理念，就是当我们的数据库单机无法承受高强度的i/o时，我们就考虑利用 sharding 来把这种读写压力分散到各个主机上去。">
+<meta name="twitter:image" content="http://yoursite.com/img/cmysql/1.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/03/13/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>利用一致性哈希水平拆分MySql单表 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/03/13/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">利用一致性哈希水平拆分MySql单表
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2015-03-13 16:32:46" itemprop="dateCreated datePublished" datetime="2015-03-13T16:32:46+08:00">2015-03-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/03/13/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2015/03/13/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Sharding（切片） 不是一门新技术，而是一个相对简朴的软件理念，就是当我们的数据库单机无法承受高强度的i/o时，我们就考虑利用 sharding 来把这种读写压力分散到各个主机上去。</p>
+<a id="more"></a>
+<p>所以Sharding 不是一个某个特定数据库软件附属的功能，而是在具体技术细节之上的抽象处理，是Horizontal Partitioning 水平扩展(或横向扩展)的解决方案，其主要目的是为突破单节点数据库服务器的 I/O 能力限制，注意这里是突破单点数据库服务器的“I/O”能力。</p>
+<p>在MySql 5.1 中增加了对单表的 PARTITION（分区）支持，可以把一张很大的单表通过 partition 分区成很多物理文件，避免每次操作一个大文件，可以对读写新能有所提升，下面是一个 partition 分区的例子。</p>
+<p>一张游戏的日志表，有几千万行的数据，记录了接近一年的游戏物品获取日志，如果不对它进行 partition 分区存储，每次统计和分析日志都会消耗大量的时间。然后我们新建一张分区表，把老的日志数据导入到新的数据，统计分析的时间就会节约很多。<br>CREATE TABLE <code>xxxxxxxx</code> (<br><code>crttm</code> int(11) NOT NULL,<br><code>srvid</code> int(11) NOT NULL,<br><code>evtid</code> int(11) NOT NULL,<br><code>aid</code> int(11) NOT NULL,<br><code>rid</code> int(11) NOT NULL,<br><code>itmid</code> int(11) NOT NULL,<br><code>itmnum</code> int(11) NOT NULL,<br><code>gdtype</code> int(11) NOT NULL,<br><code>gdnum</code> int(11) NOT NULL,<br><code>islmt</code> int(11) NOT NULL,<br>KEY <code>crttm</code> (<code>crttm</code>),<br>  KEY <code>itemid</code> (<code>itmid</code>),<br>  KEY <code>srvid</code> (<code>srvid</code>),<br>  KEY <code>gdtype</code> (<code>gdtype</code>)<br>) ENGINE=myisam DEFAULT CHARSET=utf8<br>PARTITION BY RANGE (crttm)<br>(<br>PARTITION p201303 VALUES LESS THAN (unix_timestamp(‘2014-04-01’)),<br>PARTITION p201304 VALUES LESS THAN (unix_timestamp(‘2014-05-01’)),<br>PARTITION p201305 VALUES LESS THAN (unix_timestamp(‘2014-06-01’)),<br>PARTITION p201306 VALUES LESS THAN (unix_timestamp(‘2014-07-01’)),<br>PARTITION p201307 VALUES LESS THAN (unix_timestamp(‘2014-08-01’)),<br>PARTITION p201308 VALUES LESS THAN (unix_timestamp(‘2014-09-01’)),<br>PARTITION p201309 VALUES LESS THAN (unix_timestamp(‘2014-10-01’)),<br>PARTITION p201310 VALUES LESS THAN (unix_timestamp(‘2014-11-01’)),<br>PARTITION p201311 VALUES LESS THAN (unix_timestamp(‘2014-12-01’)),<br>PARTITION p201312 VALUES LESS THAN (unix_timestamp(‘2015-01-01’)),<br>PARTITION p201401 VALUES LESS THAN (unix_timestamp(‘2015-02-01’))<br>);<br>对于这种业务场景，使用 mysql 的 partition 就已经足够了，但是对于 i/o 非常频繁的大表，单机垂直升级也已经支撑不了，存储已经不是影响其性能的主要原因，这时候就要用到sharding了。</p>
+<p>我们一般会将一张大表的唯一键作为 hash 的 key，比如我们想要水平拆分的是一张拥有3千万行数据的用户表，我们可以利用唯一的字段用户id作为拆分的依据，这样就可以依据如下的方式，将用户表水平拆分成3张，下面是伪代码，将老的用户数据导入到新的3个被水平拆分的数据库中。<br>if userId % 3 == 0:</p>
+<pre><code>#insert data in user_table (user_table_0 databaseip: 127.0.0.1)
+</code></pre><p>elif userId % 3 == 1:</p>
+<pre><code>#insert data in user_table (user_table_1 databaseip: 127.0.0.2)
+</code></pre><p>else:</p>
+<pre><code>#insert data in user_table (user_table_2 databaseip: 127.0.0.3)
+</code></pre><p>我们还会对每一个被拆分的数据库，做一个双主 master 的副本集备份，至于backup，我们则可以使用 percona的cluster来解决。它是比 mysql m/s 或者 m/m 更靠谱的方案。<br><a href="http://www.percona.com/software/percona-xtradb-cluster" target="_blank" rel="noopener">http://www.percona.com/software/percona-xtradb-cluster</a></p>
+<p>所以最后拆分的拓扑图大致如下：</p>
+<p><img src="/img/cmysql/1.jpg" alt=""></p>
+<p>随着我们的业务增长，数据涨到5千万了，慢慢的发现3个sharding不能满足我们的需求了，因为服务器紧张，所以这时候BOSS打算再加2个sharding，以后会慢慢加到10个sharding。</p>
+<p>所以我们得在之前的3台sharding服务器上分别执行导入数据代码，将数据根据新的hash规则导入到每台sharding服务器上。几乎5千万行数据每行都移动了一遍，如果服务器够牛逼，Mysql每秒的插入性能能高达 2000/s，即使这样整个操作，都要让服务暂停8个小时左右。这时候DBA的脸色已经不好看了，他应该是已经通宵在导数据了。</p>
+<p>那有没有一种更好的办法，让添加或者删除 sharding 节点对整个分片系统的数据迁移量降低呢？</p>
+<p>我们可以利用一致性哈希算法，把用户id散列到各个 sharding 节点，这样就可以保证添加和删除节点数据迁移影响较小。关于什么是一致性哈性算法，参考我的另一篇博客：<br><a href="http://snoopyxdy.blog.163.com/blog/static/601174402012722102446720/" target="_blank" rel="noopener">http://snoopyxdy.blog.163.com/blog/static/601174402012722102446720/</a></p>
+<p>这里介绍一个Node.js模块，hashring，github主页地址如下，上面有demo和api文档：<br><a href="https://github.com/3rd-Eden/node-hashring" target="_blank" rel="noopener">https://github.com/3rd-Eden/node-hashring</a><br>这是一个使用的demo代码，我翻译了注释，供大家参考：<br>// 加载模块，返回HashRing的构造函数<br>var HashRing = require(‘hashring’);</p>
+<p>//实例化HashRing，这个例子中，我们把各个服务器均匀的添加了，没有设置权重<br>// 设置了最大的缓冲区 10000<br>var ring = new HashRing([<br>    ‘127.0.0.1’,<br>    ‘127.0.0.2’,<br>    ‘127.0.0.3’,<br>    ‘127.0.0.4’<br>  ], ‘md5’, {<br>    ‘max cache size’: 10000<br>  });</p>
+<p>//我们获取这个字符串的服务器ip<br>var server = ring.get(‘foo bar banana’); // returns 127.0.0.x<br>console.log(server)</p>
+<p>// 如果你想把数据冗余的存储在多个服务器上<br>ring.range(‘foo bar banana’, 2).forEach(function forEach(server) {<br>  console.log(server); // do stuff with your server<br>});</p>
+<p>// 对环上移除或新增加一台服务器<br>ring.add(‘127.0.0.7’).remove(‘127.0.0.1’);</p>
+<p>var server = ring.get(‘foo bar banana’); // returns 127.0.0.x<br>console.log(server)<br>接下来我们就要验证这种方式的可行性。<br>第一，假如我们有3万条数据，根据一致性哈希算法存储好了之后，这个算法是否能够较平均的将3万条数据分散到3台sharding服务器上。<br>第二，当数据量增加到5万，然后我们增加2台sharding服务器后，这个算法移动的数据量和最终每台服务器上的数据分布是如何的。</p>
+<p>connHashStep1.js将3万用户数据通过一致性哈希算法存储在3台服务器上<br>var HashRing = require(‘hashring’);<br>var ring = new HashRing([<br>    ‘127.0.0.1’,<br>    ‘127.0.0.2’,<br>    ‘127.0.0.3’,<br>  ], ‘md5’, {<br>    ‘max cache size’: 10000<br>  });</p>
+<p>var record = {<br>      ‘127.0.0.1’:0,<br>    ‘127.0.0.2’:0,<br>    ‘127.0.0.3’:0<br>};<br>var userMap = {}</p>
+<p>for(var i=1; i&lt;=30000; i++){<br>    var userIdStr = i.toString();<br>    var server = ring.get(userIdStr);<br>    userMap[userIdStr] = server;<br>    record[server]++;<br>}</p>
+<p>console.log(record);<br>第一次利用一致性hash之后，每台服务器存储的用户数据。<br>{ ‘127.0.0.1’: 9162, ‘127.0.0.2’: 9824, ‘127.0.0.3’: 11014 }<br>connHashStep2.js将5万用户数据通过一致性哈希算法存储在3台服务器上，然后用户数据5万不改变，新增加2台sharding，查看新的5台sharding的用户数据存储情况以及计算移动的数据条数。<br>var HashRing = require(‘hashring’);<br>var ring = new HashRing([<br>    ‘127.0.0.1’,<br>    ‘127.0.0.2’,<br>    ‘127.0.0.3’,<br>  ], ‘md5’, {<br>    ‘max cache size’: 10000<br>  });</p>
+<p>var record = {<br>      ‘127.0.0.1’:0,<br>    ‘127.0.0.2’:0,<br>    ‘127.0.0.3’:0<br>};<br>var userMap = {}</p>
+<p>for(var i=1; i&lt;=50000; i++){<br>    var userIdStr = i.toString();<br>    var server = ring.get(userIdStr);<br>    userMap[userIdStr] = server;<br>    record[server]++;<br>}</p>
+<p>console.log(record);</p>
+<p>//新增加2个sharding节点<br>var record2 = {<br>    ‘127.0.0.1’:0,<br>      ‘127.0.0.2’:0,<br>      ‘127.0.0.3’:0,<br>    ‘127.0.0.4’:0,<br>    ‘127.0.0.5’:0,<br>};<br>ring.add(‘127.0.0.4’).add(‘127.0.0.5’)</p>
+<p>var moveStep = 0;<br>for(var i=1; i&lt;=50000; i++){<br>    var userIdStr = i.toString();<br>    var server = ring.get(userIdStr);<br>    //当用户的存储server改变，则计算移动<br>    if(userMap[userIdStr] &amp;&amp; userMap[userIdStr] != server){<br>        userMap[userIdStr] = server;<br>        moveStep++;<br>    }<br>    record2[server]++;<br>}<br>console.log(record2);<br>console.log(‘move step:’+moveStep);<br>5万用户数据，存储在3台服务器上的数目：<br>{ ‘127.0.0.1’: 15238, ‘127.0.0.2’: 16448, ‘127.0.0.3’: 18314 }<br>当我们sharding增加到5台，存储在5台服务器上的数目：<br>{ ‘127.0.0.1’: 8869,<br>  ‘127.0.0.2’: 9972,<br>  ‘127.0.0.3’: 10326,<br>  ‘127.0.0.4’: 10064,<br>  ‘127.0.0.5’: 10769 }<br>最终我们移动的用户数量：<br>move step:20833<br>其实你会发现<br>20833 = 10064 + 10769<br>也就是说，我们只是将1-3节点的部分数据移动到了4,5节点，并没有多余的移动一行数据。根据上面的示例，如果是5千万数据，利用一致性哈希的算法，添加2个节点，仅需2-3小时就可以完成。</p>
+<p>那么什么时候我们需要利用一致性哈希水平拆分数据库单表呢?<br>1、当我们拥有一个数据量非常大的单表，比如上亿条数据。<br>2、不仅数据量巨大，这个单表的访问读写也非常频繁，单机已经无法抗住 I/O 操作。<br>3、此表无事务性操作，如果涉及分布式事务是相当复杂的事情，在拆分此类表需要异常小心。<br>4、查询条件单一，对此表的查询更新条件常用的仅有1-2个字段，比如用户表中的用户id或用户名。<br>最后，这样的拆分也是会带来负面性的，当水平拆分了一个大表，不得不去修改应用程序或者开发db代理层中间件，这样会加大开发周期、难度和系统复杂性。</p>
+<p>P.S 打算在公司试行这种方案，求大牛指点一二，看看有无错误和遗漏。</p>
+<p>参考链接：<a href="http://lobert.iteye.com/blog/1955841" target="_blank" rel="noopener">http://lobert.iteye.com/blog/1955841</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/01/07/python/" rel="next" title="关于Flask的流响应和异步响应">
+                <i class="fa fa-chevron-left"></i> 关于Flask的流响应和异步响应
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/03/20/js-ajax/" rel="prev" title="thrift 文件编写教程">
+                thrift 文件编写教程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

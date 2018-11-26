@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="本节将介绍使用orm进行数据的增删改查的例子首先是对表和类的定义实例，">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLAlchemy学习教程（三）">
+<meta property="og:url" content="http://yoursite.com/2014/08/08/python/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="本节将介绍使用orm进行数据的增删改查的例子首先是对表和类的定义实例，">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.852Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SQLAlchemy学习教程（三）">
+<meta name="twitter:description" content="本节将介绍使用orm进行数据的增删改查的例子首先是对表和类的定义实例，">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/08/08/python/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>SQLAlchemy学习教程（三） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/08/08/python/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SQLAlchemy学习教程（三）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-08-08 15:59:54" itemprop="dateCreated datePublished" datetime="2014-08-08T15:59:54+08:00">2014-08-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/08/08/python/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/08/08/python/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本节将介绍使用orm进行数据的增删改查的例子<br>首先是对表和类的定义实例，</p>
+<a id="more"></a>
+<h1 id="coding-utf-8"><a href="#coding-utf-8" class="headerlink" title="-- coding: utf-8 --"></a>-<em>- coding: utf-8 -</em>-</h1><p>from sqlalchemy import <em><br>from sqlalchemy.orm import </em><br>from datetime import datetime<br>import sys<br>reload(sys)<br>sys.setdefaultencoding(‘utf8’)</p>
+<p>metadata = MetaData()<br>__engine = create_engine(‘mysql://root:@192.168.150.3/test’,convert_unicode=True, echo=True, encoding=’UTF-8’)</p>
+<p>metadata.bind = __engine</p>
+<p>product_table = Table(<br>    ‘product’, metadata,<br>    Column(‘sku’, String(20), primary_key=True),<br>    Column(‘msrp’, Numeric))<br>class Product(object):<br>    def <strong>init</strong>(self, sku, msrp, summary=None):<br>        self.sku = sku<br>        self.msrp = msrp<br>        self.summary = summary<br>        self.categories = []<br>        self.prices = []<br>    def <strong>repr</strong>(self):<br>        return ‘<product %s="">‘ % self.sku<br>mapper(Product, product_table)</product></p>
+<p>Session = sessionmaker(bind=engine, echo_uow=True)<br>session = Session()</p>
+<p>p1 = Product(‘123’, 11.22)<br>p2 = Product(‘456’, 33.44)<br>session.add(p1)<br>session.add(p2)<br>session.flush()</p>
+<p>1、mapper中使用 exclude_properties</p>
+<p>#排除id列名<br>mapper(Region, region_table, exclude_properties=[‘id’])</p>
+<p>2、使用properties让数据对象属性和表属性进行关联<br>mapper(Region, region_table, properties=dict(<br>   region_name=region_table.c.name,<br>   region_id=region_table.c.id))</p>
+<p>3、子查询映射关联（一般用不到）<br>average_price = select(<br> [func.avg(product_price_table.c.price)],<br> product_price_table.c.sku==product_table.c.sku)\<br> .as_scalar() \<br> .label(‘average_price’)</p>
+<p>#打印语句<br>print average_price<br>(SELECT avg(product_price.price)<br>FROM product_price, product<br>WHERE product_price.sku = product.sku) AS average_price</p>
+<p>#执行子查询<br>mapper(Product, product_table, properties=dict(<br> average_price=column_property(average_price)))<br>p = session.query(Product).get(‘123’)<br>print p.sku, p.msrp, p.average_price</p>
+<p>#打印结果<br>123 12.34 12.34</p>
+<p>4、延迟加载<br>比如数据库存储了BLOB类型的2进制文件，我们只是希望用到这个数据才去加载他，可以这样建立映射关系<br>product_table = Table(<br>‘product’, metadata,<br>Column(‘sku’, String(20), primary_key=True),<br>Column(‘msrp’, Numeric),<br>Column(‘image1’, Binary),<br>Column(‘image2’, Binary),<br>Column(‘image3’, Binary))<br>mapper(Product, product_table, properties=dict(<br>image1=deferred(product_table.c.image, group=’images’),<br>image2=deferred(product_table.c.image, group=’images’),<br>image3=deferred(product_table.c.image, group=’images’)))</p>
+<p>5、mapper方法的一些参数<br>entity_name=None，<br>always_refresh=False，每次从数据库的查询到的数据都会重写内存数据，所以使用populate_existing()会优于这个参数。<br>allow_column_override=False，允许关联的属性和列名相同，这样列名就不会被映射了<br>allow_null_pks=False，允许主键为NULL，如果不设置，当主键为NULL时将不会跳过结构对象生成<br>batch=True，允许多个对象批处理save操作，如果设置为False，每个对象将会依次入库<br>column_prefix= None，自动加上映射列名属性的前缀<br>concrete=False，如果为true，说明使用的具体表继承<br>extension=None，一个映射的扩展对象或者映射扩展对象数组<br>inherits=None，另外一个映射对象，用来被继承的<br>inherit_condition=None，另外一个映射对象，继承的方式<br>inherit_foreign_keys=None，继承方式的参数<br>order_by=None，默认的排序方式对这个映射关系查询出的结果<br>non_primary=False，设定这个是不设置主键的映射<br>properties=None，一个字段，表示那些属性映射到表中，（不设置将会自动映射）<br>include_properties=None，一个属性数组，表示哪些属性会映射到表中，没有在数组中出现的属性不会映射到表中<br>exclude_properties=None，一个属性数组，那些属性确定不包括在数组中<br>primary_key=None，主键数组<br>polymorphic_on=None，<br>polymorphic_identity=None，<br>polymorphic_fetch=’union’，<br>select_table=None，<br>version_id_col=None</p>
+<p>6、在映射中声明关系<br>一般关系对应有3种方式，1对多，多对多，1对1.<br>6.1、1对多的关系声明<br>mapper(Store, store_table)<br>mapper(Region, region_table, properties=dict(<br>   stores=relation(Store)))<br>mapper(Region, region_table, properties=dict(</p>
+<p>#当两张表有多个外键关系时，SQLAlchemy无法判断用哪个作为外键，可以指定它<br>stores=relation(Store,<br>primaryjoin=(store_table.c.region_id==region_table.c.id))))</p>
+<p>6.2、多对多的关系声明<br>定义两张多对多的表和一张关系关联表<br>category_table = Table(<br>‘category’, metadata,<br>Column(‘id’, Integer, primary_key=True),<br>Column(‘level_id’, None, ForeignKey(‘level.id’)),<br>Column(‘parent_id’, None, ForeignKey(‘category.id’)),<br>Column(‘name’, String(20)))</p>
+<p>product_table = Table(<br>‘product’, metadata,<br>Column(‘sku’, String(20), primary_key=True),<br>Column(‘msrp’, Numeric))</p>
+<p>product_category_table = Table(<br>‘product_category’, metadata,<br>Column(‘product_id’, None, ForeignKey(‘product.sku’),<br> primary_key=True),<br>Column(‘category_id’, None, ForeignKey(‘category.id’),<br> primary_key=True))</p>
+<p>#定义mapper关系<br>mapper(Category, category_table, properties=dict(<br> products=relation(Product,<br> secondary=product_category_table)))</p>
+<p>#另外一个关系映射也要声明一下</p>
+<p>mapper(Product, product_table, properties=dict(<br> categories=relation(Category,<br> secondary=product_category_table)))</p>
+<p>6.3、1对1的关系<br>1对1是特殊的1对多关系，只需要这样声明即可<br>mapper(Product, product_table, properties=dict(<br> summary=relation(ProductSummary, uselist=False)))</p>
+<p>7、backref避免重复两次声明关系<br>mapper(Level, level_table, properties=dict(<br> categories=relation(Category, backref=’level’)))</p>
+<p>mapper(Category, category_table, properties=dict(<br> products=relation(Product, secondary=product_category_table,<br> backref=’categories’)))</p>
+<p>#同样可以使用backref()方法来建立另外一个1对1的关系</p>
+<p>mapper(ProductSummary, product_summary_table, properties=dict(<br>   product=relation(Product,<br>   backref=backref(‘summary’, uselist=False))))</p>
+<p>mapper(Product, product_table)</p>
+<p>8、relation函数的参数<br>backref(relation( )only)，反向的关系自动声明<br>cascade，层叠改变关系，主要用于1对多，当parent改变，Children也会改变，参数是all，delete，save-update，refresh-        expire，merge，expunge，delete-orphan<br>collection_class，<br>foreign_keys，外键申明数组<br>join_depth=None，连接深度<br>lazy=True，<br>order_by，排序<br>passive_deletes=False，如果为true，表示自动删除子关联，当主键为null或者父删除<br>post_update=False，如果设置为true，SQLAlchemy会分开CRUD操作，否则将会把CRUD操作放在一个声明里<br>primaryjoin，设定怎么连接父表和子表<br>remote_side，用于本表关联<br>secondary,在多对多关系中，用来声明关系表<br>secondaryjoin，多对多关系，声明父表如何链接关系表<br>uselist=True，1对1关系时声明<br>viewonly=False，只读操作连接</p>
+<p>9、步入正轨，使用ORM进行查询和修改<br>两种方式生成session<br> 第一种方式<br>Session = sessionmaker(bind=engine)<br> 第二种方式<br>Session = sessionmaker()<br>Session.configure(bind=engine)<br>sessionmaker接受参数：<br>bind=None，参数是一个数据库引擎或者连接字符串<br>binds=None，绑定其他mapper对象或者表<br>autoflush=True，自动flush<br>transactional=False，事物操作，当设置为true时，无需使用begin( )来声明事物开始，只需要执行commit()就可以提交事物，回滚使用rollback()<br>twophase=False，多数据库事物支持回滚<br>echo_uow=False，输出debug信息<br>extension=None，扩展字段<br>weak_identity_map=True，自动回收，如果设置为false，需要手动执行session的expunge( ), clear( ), or purge( )进行回收</p>
+<p>10、将数据对象保存到session中<br>product_table = Table(<br>    ‘product’, metadata,<br>    Column(‘sku’, String(20), primary_key=True),<br>    Column(‘msrp’, Numeric))</p>
+<p>class Product(object):<br>    def <strong>init</strong>(self, sku, msrp, summary=None):<br>        self.sku = sku<br>        self.msrp = msrp<br>        self.summary = summary<br>        self.categories = []<br>        self.prices = []<br>    def <strong>repr</strong>(self):<br>        return ‘<product %s="">‘ % self.sku</product></p>
+<p>mapper(Product, product_table)</p>
+<p>Session = sessionmaker(bind=engine, echo_uow=True)<br>session = Session()<br>p1 = Product(‘123’, 11.22)<br>p2 = Product(‘456’, 33.44)<br>session.add(p1)<br>session.add(p2)<br>session.flush()</p>
+<p>11、从session中删除<br>session.delete(p1)</p>
+<p>12、事物的操作<br>session.begin()<br>session.commit()<br>session.rollback()</p>
+<p>13、其他session方法<br>save( self, obj, entity=None)，<br>delete( self, obj )，从下次flush中，删除对象<br>expire( self, obj )，<br>refresh( self, obj )<br>merge( self, obj, entity=None )<br>expunge( self, obj )，在session中删除整个对这个对象的引用<br>update( self, obj, entity=None )，<br>get( self, class_, ident, <strong>kwargs )，<br>load( self, class_, ident, </strong>kwargs )<br>query( self, mapper_or_class, *addtl_entities, <strong>kwargs )，查询<br>clsoe(),摧毁这个session<br>execute( self, clause, params=None, mapper=None, </strong>kwargs )，<br>identity_map<br>new<br>dirty<br>deleted</p>
+<p>14、session查询的例子，只有当执行all等操作时，才回去数据库真正的执行操作<br>query = session.query(Product)<br>query = query.filter_by(msrp=11.22)<br>query = query.limit(3)<br>print query.all() #.first()</p>
+<p>15、多表orm联查<br>query = session.query(Product)<br>query = query.join(‘categories’)<br>query = query.filter_by(name=’T-Shirts’)<br>print query.all()<br>[<product 222="">]<br>print query<br>SELECT product.sku AS product_sku, product.msrp AS product_msrp<br>FROM product JOIN product_category ON product.sku =<br> product_category.product_id JOIN category ON category.id =<br> product_category.category_id<br>WHERE category.name = ? ORDER BY product.oid<br>join方法是inner join，outjoin则是outerjoin</product></p>
+<p>#filter方法实例<br> query = query.filter(or_(Category.c.name==’Pants’,<br>   Category.c.name==None))</p>
+<p>16、from_statement，从select语句中获取查询条件<br> session.clear()<br> stmt = select([product_table.c.sku])<br> query = session.query(Product).from_statement(stmt)<br> for prod in query:<br>    print prod, prod.msrp</p>
+<p>17、query对象的一些方法：<br>add_column( self, column, id=None )，对当前查询对象增加一列<br>add_entity( self, entity, alias=None, id=None )，对当前查询对象增加一个实体<br>all( self )，去数据库执行查询操作，然会resultProxy类型<br>autoflush( self, setting )，自动刷数据库<br>apply_avg( self, col )，增加SQL AVG，返回query对象<br>apply_max( self, col )，增加SQL MAX，返回query对象<br>apply_min( self, col )，增加SQL MIN，返回query对象<br>apply_sum( self, col )，增加SQL SUM，返回query对象<br>avg( self, col )，增加SQL avg，去数据库查询<br>count( self )，去数据库查询，并返回计数<br>distinct( self )，对整个query对象增加去重复，返回query<br>filter( self, criterion )，增加过滤对象，返回query<br>filter_by( self, <strong>kwargs )，增加过滤字典，返回query<br>first( self )，去数据库返回查询结果的一条<br>from_statement( self, statement )，传入使用select()函数生成的查询语句，返回query<br>get( self, ident, reload=False, lockmode=None )，检查当前session是否具有此对象，如果有则<br>group_by( self, criterion )，分组，返回query<br>having( self, criterion )，增加having条件，返回query<br>join( self, prop, id=None, aliased=False, from_joinpoint=False )，新增加一个表，进行from查询，返回query<br>limit( self, limit )，limit限制，返回query<br>load( self, ident, raiseerr=True, lockmode=None )，从数据库返回这个实例<br>max( self, col )，执行SQL MAX<br>min( self, col, )，执行SQL MIN<br>offset( self, offset )，偏移量，返回query<br>one( self )，执行sql，返回结果，如果结果不是一个则抛出异常<br>options( self, <em>args )，根据数据中的mapper，返回一个新的query<br>order_by( self, criterion )，排序，返回query，<br>outerjoin( self, prop, id=None, aliased=False, from_joinpoint=False )，外联操作，返回query<br>params( self, </em>args, </strong>kwargs )，更改现有的query中的查询绑定的值，返回query<br>populate_existing( self )，返回一个query，刷新所有对象<br>query_from_parent( cls, instance, property, **kwargs ) (classmethod)，从另外一个query继承<br>reset_joinpoint( self )，重置连接属性，会影响filter_by，join，outerjoin<br>sum( self, col )，执行sum<br>with_lockmode( self, mode )，返回query，设置lockmodle<br>with_parent( self, instance, property=None )，从父query继承<br><strong>getitem</strong>( self, item ) (indexing)<br><strong>iter</strong>( self ) (iteration)</p>
+<p>18、使用一个上下文线程session，tornado的例子<br>Session = scoped_session(sessionmaker(<br> bind=engine, autoflush=True, transactional=True))<br>session = Session()<br>session2 = Session()<br>session is session2</p>
+<p>#用完需要调用close来清理</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/08/07/python/" rel="next" title="SQLAlchemy学习教程（二）">
+                <i class="fa fa-chevron-left"></i> SQLAlchemy学习教程（二）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/08/14/js-ajax/" rel="prev" title="mongoose中使用aggregation进行group分组功能">
+                mongoose中使用aggregation进行group分组功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">284</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#coding-utf-8"><span class="nav-number">1.</span> <span class="nav-text">-- coding: utf-8 --</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=1"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

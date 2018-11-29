@@ -109,16 +109,16 @@
 
 
   <meta name="description" content="node.js的0.8版本stable版本已经发布了，官方解释性能有大幅提升，而且稳定性也大幅增强。看了官方给出的数据，性能大约有30%-50%的提升，还是很给力的！以下是官方给出的node-v0.8版本的优势">
-<meta name="keywords" content="mongodb">
+<meta name="keywords" content="javascript">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mongodb 副本集的 error RS102 too stale to catch up">
+<meta property="og:title" content="node.js-v0.8API解读（1）-domain">
 <meta property="og:url" content="http://yoursite.com/2012/06/26/js-ajax/index.html">
 <meta property="og:site_name" content="snoopyxdy的博客">
 <meta property="og:description" content="node.js的0.8版本stable版本已经发布了，官方解释性能有大幅提升，而且稳定性也大幅增强。看了官方给出的数据，性能大约有30%-50%的提升，还是很给力的！以下是官方给出的node-v0.8版本的优势">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-26T03:48:18.848Z">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.868Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Mongodb 副本集的 error RS102 too stale to catch up">
+<meta name="twitter:title" content="node.js-v0.8API解读（1）-domain">
 <meta name="twitter:description" content="node.js的0.8版本stable版本已经发布了，官方解释性能有大幅提升，而且稳定性也大幅增强。看了官方给出的数据，性能大约有30%-50%的提升，还是很给力的！以下是官方给出的node-v0.8版本的优势">
 
 
@@ -136,7 +136,7 @@
   };
 </script>
 
-  <title>Mongodb 副本集的 error RS102 too stale to catch up | snoopyxdy的博客</title>
+  <title>node.js-v0.8API解读（1）-domain | snoopyxdy的博客</title>
   
 
 
@@ -322,7 +322,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Mongodb 副本集的 error RS102 too stale to catch up
+          <h1 class="post-title" itemprop="name headline">node.js-v0.8API解读（1）-domain
               
             
           </h1>
@@ -381,7 +381,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/mongodb/" itemprop="url" rel="index"><span itemprop="name">mongodb</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
 
                 
                 
@@ -442,18 +442,18 @@
 <p>domain模块不会自动加载，需要手动的加载它。并且domain模块会在将来的node.js版本中有比较明显的改变和升级。</p>
 <p>至此我们基本明白了domain模块的功能，下面我来看下domain模块的各个属性以及方法。</p>
 <p>domain.create()</p>
-<p>创建一个domain对象，将返回一个新的domain对象</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">var d = domain.create();</span><br><span class="line">d.on(&apos;error&apos;, function(er) &#123;</span><br><span class="line">  console.error(&apos;Caught error!&apos;, er);</span><br><span class="line">&#125;);</span><br><span class="line">d.run(function() &#123;</span><br><span class="line">  process.nextTick(function() &#123;</span><br><span class="line">    setTimeout(function() &#123; // simulating some various async stuff</span><br><span class="line">      fs.open(&apos;non-existent file&apos;, &apos;r&apos;, function(er, fd) &#123;</span><br><span class="line">        if (er) throw er;</span><br><span class="line">        // proceed...</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;, 100);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>创建一个domain对象，将返回一个新的domain对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">var d = domain.create();</span><br><span class="line">d.on(&apos;error&apos;, function(er) &#123;</span><br><span class="line">  console.error(&apos;Caught error!&apos;, er);</span><br><span class="line">&#125;);</span><br><span class="line">d.run(function() &#123;</span><br><span class="line">  process.nextTick(function() &#123;</span><br><span class="line">    setTimeout(function() &#123; // simulating some various async stuff</span><br><span class="line">      fs.open(&apos;non-existent file&apos;, &apos;r&apos;, function(er, fd) &#123;</span><br><span class="line">        if (er) throw er;</span><br><span class="line">        // proceed...</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;, 100);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
 <p>以上是官方的一个例子，很明显当匿名函数throw er后，将会被d.on(‘error’,function(er){})捕获，并做处理。</p>
 <p>看到这里我们认为我们只需在d.on(‘error’);函数内统一做出错误处理即可，而不必每次都在回调函数中写错误处理了。</p>
 <p>但是我在这里不推荐这个方式，因为domain模块接下来有更好的处理方式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">domain.bind和domain.intercept 方法：</span><br></pre></td></tr></table></figure>
-<p>这2个方法提供了统一处理一类错误机制的可能，而且相当便捷，我们看下官方代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">var d = domain.create();</span><br><span class="line"></span><br><span class="line">function readSomeFile(filename, cb) &#123;</span><br><span class="line">  fs.readFile(filename, d.intercept(function(data) &#123;</span><br><span class="line">    // note, the first argument is never passed to the</span><br><span class="line">    // callback since it is assumed to be the &apos;Error&apos; argument</span><br><span class="line">    // and thus intercepted by the domain.</span><br><span class="line"></span><br><span class="line">    // if this throws, it will also be passed to the domain</span><br><span class="line">    // so the error-handling logic can be moved to the &apos;error&apos;</span><br><span class="line">    // event on the domain instead of being repeated throughout</span><br><span class="line">    // the program.</span><br><span class="line">    return cb(null, JSON.parse(data));</span><br><span class="line">  &#125;));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">d.on(&apos;error&apos;, function(er) &#123;</span><br><span class="line">  // an error occurred somewhere.</span><br><span class="line">  // if we throw it now, it will crash the program</span><br><span class="line">  // with the normal line number and stack message.</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>domain.bind和domain.intercept 方法：</p>
+<p>这2个方法提供了统一处理一类错误机制的可能，而且相当便捷，我们看下官方代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">var d = domain.create();</span><br><span class="line"></span><br><span class="line">function readSomeFile(filename, cb) &#123;</span><br><span class="line">  fs.readFile(filename, d.intercept(function(data) &#123;</span><br><span class="line">    // note, the first argument is never passed to the</span><br><span class="line">    // callback since it is assumed to be the &apos;Error&apos; argument</span><br><span class="line">    // and thus intercepted by the domain.</span><br><span class="line"></span><br><span class="line">    // if this throws, it will also be passed to the domain</span><br><span class="line">    // so the error-handling logic can be moved to the &apos;error&apos;</span><br><span class="line">    // event on the domain instead of being repeated throughout</span><br><span class="line">    // the program.</span><br><span class="line">    return cb(null, JSON.parse(data));</span><br><span class="line">  &#125;));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">d.on(&apos;error&apos;, function(er) &#123;</span><br><span class="line">  // an error occurred somewhere.</span><br><span class="line">  // if we throw it now, it will crash the program</span><br><span class="line">  // with the normal line number and stack message.</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
 <p>一个fs.readFile方法，读取文件功能，如果出错则转交给d.on(‘error’)方法去处理，如果成功则继续我们的流程。</p>
-<p>所以可以这样理解，如果出错了，则cb是不会执行的，而只会执行d.on(‘error’)方法内的回调函数。这样我们省去了很多麻烦，以前我们往往这样写代码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">function readSomeFile(filename, cb) &#123;</span><br><span class="line">  fs.readFile(filename, function(err, data) &#123;</span><br><span class="line">    if(err) return errorHandler(err)&amp;&amp;cb(err);</span><br><span class="line">    else cb(null, data);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function errorHandle(err)&#123;    console.error(err); &#125;</span><br></pre></td></tr></table></figure>
+<p>所以可以这样理解，如果出错了，则cb是不会执行的，而只会执行d.on(‘error’)方法内的回调函数。这样我们省去了很多麻烦，以前我们往往这样写代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">function readSomeFile(filename, cb) &#123;</span><br><span class="line">  fs.readFile(filename, function(err, data) &#123;</span><br><span class="line">    if(err) return errorHandler(err)&amp;&amp;cb(err);</span><br><span class="line">    else cb(null, data);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function errorHandle(err)&#123;    console.error(err); &#125;</span><br></pre></td></tr></table></figure></p>
 <p>加入了domain模块我们就可以删除这些if判断了，统一由domain模块来管理err情况，让我们代码更清晰，调理更清楚，也省去了不少麻烦。</p>
-<p>为了方便我们管理domain对象，domain对象还提供了一些其他的属性和方法如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">domain.run(fn)</span><br></pre></td></tr></table></figure></p>
+<p>为了方便我们管理domain对象，domain对象还提供了一些其他的属性和方法如下：</p>
+<p>domain.run(fn)</p>
 <p>创建一个domain上下文，在上下文中抛出的error或者触发器触发的error事件都将被domain.on(‘error’)接收到，一方面统一管理，另一方面也避免了因为错误将整个node.js进程搞挂掉。</p>
 <p>domain.members</p>
 <p>一个数组用来存放注册到domain模块的定时器和事件触发器</p>
@@ -490,7 +490,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/mongodb/" rel="tag"># mongodb</a>
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
           
         </div>
       
@@ -513,8 +513,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2012/06/26/js-ajax/" rel="prev" title="node.js-v0.8API解读（1）-domain">
-                node.js-v0.8API解读（1）-domain <i class="fa fa-chevron-right"></i>
+              <a href="/2012/06/26/js-ajax/" rel="prev" title="Mongodb 副本集的 error RS102 too stale to catch up">
+                Mongodb 副本集的 error RS102 too stale to catch up <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>

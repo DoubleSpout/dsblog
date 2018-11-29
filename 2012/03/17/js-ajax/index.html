@@ -108,18 +108,22 @@
 
 
 
-  <meta name="description" content="公司最近推了个sns小项目，打算用mongodb作为主要的数据存储，功能类似新浪微博，有订阅，关注什么的一些服务器推技术。整个mongodb数据库设计倒是很快，为每一个用户增加一个固定长度的关注和订阅池，当有新内容或新元素时就推到这个池子里，反正池子是根据录入时间排序的，所以也不用排序，很简单，具体mongodb数据库设计文档就不拿上来献丑了。">
-<meta name="keywords" content="mongodb">
+  <meta name="description" content="好久没做美术活了，不知道退化了没：">
+<meta name="keywords" content="javascript">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Mongodb实战：MapReduce计算更新频率">
+<meta property="og:title" content="好久没做美术了">
 <meta property="og:url" content="http://yoursite.com/2012/03/17/js-ajax/index.html">
 <meta property="og:site_name" content="snoopyxdy的博客">
-<meta property="og:description" content="公司最近推了个sns小项目，打算用mongodb作为主要的数据存储，功能类似新浪微博，有订阅，关注什么的一些服务器推技术。整个mongodb数据库设计倒是很快，为每一个用户增加一个固定长度的关注和订阅池，当有新内容或新元素时就推到这个池子里，反正池子是根据录入时间排序的，所以也不用排序，很简单，具体mongodb数据库设计文档就不拿上来献丑了。">
+<meta property="og:description" content="好久没做美术活了，不知道退化了没：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-11-26T03:48:18.849Z">
+<meta property="og:image" content="http://yoursite.com/img/ui/ui1.jpg">
+<meta property="og:image" content="http://yoursite.com/img/ui/u2.jpg">
+<meta property="og:image" content="http://yoursite.com/img/ui/u3.jpg">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.883Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Mongodb实战：MapReduce计算更新频率">
-<meta name="twitter:description" content="公司最近推了个sns小项目，打算用mongodb作为主要的数据存储，功能类似新浪微博，有订阅，关注什么的一些服务器推技术。整个mongodb数据库设计倒是很快，为每一个用户增加一个固定长度的关注和订阅池，当有新内容或新元素时就推到这个池子里，反正池子是根据录入时间排序的，所以也不用排序，很简单，具体mongodb数据库设计文档就不拿上来献丑了。">
+<meta name="twitter:title" content="好久没做美术了">
+<meta name="twitter:description" content="好久没做美术活了，不知道退化了没：">
+<meta name="twitter:image" content="http://yoursite.com/img/ui/ui1.jpg">
 
 
 
@@ -136,7 +140,7 @@
   };
 </script>
 
-  <title>Mongodb实战：MapReduce计算更新频率 | snoopyxdy的博客</title>
+  <title>好久没做美术了 | snoopyxdy的博客</title>
   
 
 
@@ -322,7 +326,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Mongodb实战：MapReduce计算更新频率
+          <h1 class="post-title" itemprop="name headline">好久没做美术了
               
             
           </h1>
@@ -381,7 +385,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/mongodb/" itemprop="url" rel="index"><span itemprop="name">mongodb</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
 
                 
                 
@@ -425,18 +429,11 @@
       
 
       
-        <p>公司最近推了个sns小项目，打算用mongodb作为主要的数据存储，功能类似新浪微博，有订阅，关注什么的一些服务器推技术。整个mongodb数据库设计倒是很快，为每一个用户增加一个固定长度的关注和订阅池，当有新内容或新元素时就推到这个池子里，反正池子是根据录入时间排序的，所以也不用排序，很简单，具体mongodb数据库设计文档就不拿上来献丑了。</p>
+        <p>好久没做美术活了，不知道退化了没：</p>
 <a id="more"></a>
-<p>但是产品有一个这样的需求，就是一个话题的最近7天更新频率，也就是说必须要有一个异步的脚本每天凌晨去跑一下，把计算的结果插入到话题这个集合中去。一开始打算用shell写，后来又觉得麻烦，想用php写，又怕php脚本时间执行超时，最后还是决定使用mongodb自带的mapreduce去做这个事情，最后实现出来发现真的超简单。</p>
-<h2 id="1、我们先向测试集合插入1000条数据："><a href="#1、我们先向测试集合插入1000条数据：" class="headerlink" title="1、我们先向测试集合插入1000条数据："></a>1、我们先向测试集合插入1000条数据：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for(var i=0;i&lt;1000;i++)&#123;</span><br><span class="line"> var x = Math.floor(Math.random()*10)</span><br><span class="line"> db.element.insert(&#123;id:&quot;element_&quot;+i, name:&quot;频道名字&quot;+i, channelid:&apos;channel_&apos;+x, createtime:Date.parse(new Date(&quot;2012-2-2&quot;))&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样就插入了1000条创建时间为2012-2-2，并且channelid随机为0-9的文档。</p>
-<h2 id="2、我们再向集合插入2000条最新数据"><a href="#2、我们再向集合插入2000条最新数据" class="headerlink" title="2、我们再向集合插入2000条最新数据"></a>2、我们再向集合插入2000条最新数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for(var i=2000;i&lt;4000;i++)&#123;</span><br><span class="line"> var x = Math.floor(Math.random()*10)</span><br><span class="line"> db.element.insert(&#123;id:&quot;element_&quot;+i, name:&quot;频道名字&quot;+i, channelid:&apos;channel_&apos;+x, createtime:Date.parse(new Date())&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这样就插入了2000条创建时间是当前，并且channelid随机为0-9的文档。</p>
-<h2 id="3、执行mapReduce函数"><a href="#3、执行mapReduce函数" class="headerlink" title="3、执行mapReduce函数"></a>3、执行mapReduce函数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">db.runCommand(&#123;</span><br><span class="line">mapreduce:&quot;element&quot;,</span><br><span class="line">map:function()&#123;</span><br><span class="line"> emit(this.channelid, &#123;count:1&#125;);</span><br><span class="line">&#125;,</span><br><span class="line">reduce:function(key,emits)&#123;</span><br><span class="line"> var total=0;</span><br><span class="line"> for(var j=0, n=emits.length;j&lt;n;j++)&#123;</span><br><span class="line">  total += emits[j].count;</span><br><span class="line"> &#125;</span><br><span class="line"> return &#123;count:total&#125;;</span><br><span class="line">&#125;,</span><br><span class="line">out:&quot;channelpush&quot;,</span><br><span class="line">query:&#123;createtime:&#123;$gt:Date.parse(new Date())-1000*60*60*24*7&#125;&#125;,</span><br><span class="line">scope:&#123;isnow:new Date()&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>我们根据query这个属性筛选出了最近7天的记录，然后对channelid做统计</p>
-<h2 id="4、看下结果吧"><a href="#4、看下结果吧" class="headerlink" title="4、看下结果吧"></a>4、看下结果吧</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">db.channelpush.find()</span><br><span class="line"></span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_0&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 179 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_1&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 194 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_2&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 213 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_3&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 226 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_4&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 179 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_5&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 204 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_6&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 203 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_7&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 230 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_8&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 189 &#125; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : &quot;channel_9&quot;, &quot;value&quot; : &#123; &quot;count&quot; : 183 &#125; &#125;</span><br></pre></td></tr></table></figure>
-<p>最近7天的更新频率就出来拉，如果在 channelpush 集合中没有找到的channelid 我们则认为推送频率为0了</p>
-<p>是不是很简单，相信一些用户关系挖掘，数据统计等利用mapreduce可以省不少力呀~</p>
+<h2 id="1、首页"><a href="#1、首页" class="headerlink" title="1、首页"></a>1、首页</h2><p><img src="/img/ui/ui1.jpg" alt="img"></p>
+<h2 id="2、语言选择"><a href="#2、语言选择" class="headerlink" title="2、语言选择"></a>2、语言选择</h2><p><img src="/img/ui/u2.jpg" alt="img"></p>
+<h2 id="3、导航菜单hover"><a href="#3、导航菜单hover" class="headerlink" title="3、导航菜单hover"></a>3、导航菜单hover</h2><p><img src="/img/ui/u3.jpg" alt="img"></p>
 
       
     </div>
@@ -460,7 +457,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/mongodb/" rel="tag"># mongodb</a>
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
           
         </div>
       
@@ -483,8 +480,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2012/03/17/js-ajax/" rel="prev" title="好久没做美术了">
-                好久没做美术了 <i class="fa fa-chevron-right"></i>
+              <a href="/2012/03/17/js-ajax/" rel="prev" title="Mongodb实战：MapReduce计算更新频率">
+                Mongodb实战：MapReduce计算更新频率 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -691,7 +688,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、我们先向测试集合插入1000条数据："><span class="nav-number">1.</span> <span class="nav-text">1、我们先向测试集合插入1000条数据：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、我们再向集合插入2000条最新数据"><span class="nav-number">2.</span> <span class="nav-text">2、我们再向集合插入2000条最新数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、执行mapReduce函数"><span class="nav-number">3.</span> <span class="nav-text">3、执行mapReduce函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、看下结果吧"><span class="nav-number">4.</span> <span class="nav-text">4、看下结果吧</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、首页"><span class="nav-number">1.</span> <span class="nav-text">1、首页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、语言选择"><span class="nav-number">2.</span> <span class="nav-text">2、语言选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、导航菜单hover"><span class="nav-number">3.</span> <span class="nav-text">3、导航菜单hover</span></a></li></ol></div>
             
 
           </div>

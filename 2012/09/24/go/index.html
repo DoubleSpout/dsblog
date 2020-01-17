@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1、hello world在Go 指南中，用一个传统的方式展现了Go：让它打印“Hello World”">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang入门(1)">
+<meta property="og:url" content="http://yoursite.com/2012/09/24/go/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="1、hello world在Go 指南中，用一个传统的方式展现了Go：让它打印“Hello World”">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.859Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="golang入门(1)">
+<meta name="twitter:description" content="1、hello world在Go 指南中，用一个传统的方式展现了Go：让它打印“Hello World”">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2012/09/24/go/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>golang入门(1) | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2012/09/24/go/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">golang入门(1)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2012-09-24 22:39:55" itemprop="dateCreated datePublished" datetime="2012-09-24T22:39:55+08:00">2012-09-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/go/" itemprop="url" rel="index"><span itemprop="name">go</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2012/09/24/go/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2012/09/24/go/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>1、hello world<br>在Go 指南中，用一个传统的方式展现了Go：让它打印“Hello World”</p>
+<a id="more"></a>
+<p>package main<br>import “fmt” // 实现格式化的 I/O。<br>/<em> Print something </em>/<br>func main() {<br>fmt.Printf(“Hello, world; or  ó; orこんにちは世界\n”)<br>} </p>
+<p>逐行阅读这个程序。<br>首行这个是必须的。所有的Go文件以package <something><br>开头，对于独立运行的执行文件必须是package main；<br>这是说需要将”fmt”包加入main。不是main的其他包都被称为库，其他许多编<br>程语言有着类似的概念（参阅第4 章）。末尾以// 开头的内容是注释；<br>这同样是注释，不过这是被包裹于/<em> 和</em>/ 之间的；<br>package main 必须首先出现，紧跟着是import。在Go 中，package 总是首先出现，然后是import，然后是其他所有内容。当Go 程序在执行的时候，首先调用的函数是main.main()，这是从C 中继承而来。这里定义了这个函数；<br>第8行调用了来自于fmt包的函数打印字符串到屏幕。字符串由”包裹，并且可以包含非ASCII 的字符。这里使用了希腊文和日文。</something></p>
+<p>构建Go 程序的最佳途径是使用go 工具。<br>构建helloworld 只需要：<br>% go build helloworld.go<br>结果是叫做helloworld 的可执行文件。<br>% ./helloworld<br>Hello, world; or  ó; or こんにちは世界</p>
+<p>2、变量、类型和保留字<br>如果你希望将两个（或更多）语句放在一行书写，它们必须用分号(’;’) 分隔。一般情况下，你不需要分号。<br>Go 同其他语言不同的地方在于变量的类型在变量名的后面。不是：int a，而是a int。当定义了一个变量，它默认赋值为其类型的null 值。这意味着，在var a int后，a 的值为0。而var s string，意味着s 被赋值为零长度字符串，也就是””。<br>下面是两种赋值方式<br>var a int<br>var b bool<br>a = 15<br>b = false</p>
+<p>a := 15<br>b := false<br>在左边使用了保留字var 声明变量，然后赋值给它。右边的代码使用了:= 使得在一步内完成了声明和赋值（这一形式只可用在函数内）。在这种情况下，变量的类型是由值推演出来的。值15 表示是int 类型，值false 告诉Go 它的类型应当是bool。<br>多个var 声明可以成组，const 和import 同样允许这么做。留意圆括号的使用：<br>var (<br>x int<br>b bool<br>)<br>有相同类型的多个变量同样可以在一行内完成声明： var x, y int 让x 和y 都是int 类型变量。同样可以使用平行赋值：<br>a, b := 20, 16<br>一个特殊的变量名是_（下划线）。任何赋给它的值都被丢弃。在这个例子中，将35 赋值给b，同时丢弃34。<br>_, b := 34, 35<br>Go 的编译器对声明却未使用的变量在报错。</p>
+<p>1.布尔类型<br>布尔类型表示由预定义的常量true 和false 代表的布尔判定值。布尔类型是bool。</p>
+<p>2.数字类型<br>Go 有众所周知的类型如int，这个类型根据你的硬件决定适当的长度。意味着在32 位硬件上，是32 位的；在64 位硬件上是64 位的。注意：int 是32 或64 位之一，不会定义成其他值。uint 情况相同。<br>如果你希望明确其长度，你可以使用int32 或者uint32。完整的整数类型列表（符号和无符号）是int8，int16，int32，int64 和byte，uint8，uint16，uint32，uint64。byte 是uint8 的别名。浮点类型的值有float32 和float64 （没有float 类型）。64 位的整数和浮点数总是64 位的，即便是在32 位的架构上。<br>需要留意的是这些类型全部都是独立的，并且混合用这些类型向变量赋值会引起编译器错误，例如下面的代码：<br>package main 1<br>func main() { 3<br>var a int   Generic integer type 4<br>var b int32   32 bits integer type 5<br>a = 15 6<br>b = a + a   Illegal mixing of these types 7<br>b = b + 5   5 is a (typeless) constant, so this is OK 8<br>}<br>3.常量<br>常量在Go 中，也就是constant。它们在编译时被创建，只能是数字、字符串或布尔值； const x = 42 生成x 这个常量。可以使用iota b 生成枚举值。<br>const (<br>a = iota<br>b = iota<br>)<br>第一个iota 表示为0，因此a 等于0，当iota 再次在新的一行使用时，它的值增加了1，因此b 的值是1。<br>也可以像下面这样，省略Go 重复的= iota：<br>const (<br>a = iota<br>b   Implicitly b = iota<br>)<br>如果需要，可以明确指定常量的类型：<br>const (<br>a = 0   Is an int now<br>b string = “0”<br>)</p>
+<p>4.字符串<br>另一个重要的内建类型是string。赋值字符串的例子：<br>s := “Hello World!”<br>字符串在Go 中是UTF-8 的由双引号（”）包裹的字符序列。如果你使用单引号（’）则表示一个字符（UTF-8 编码）——这种在Go 中不是string。<br>一旦给变量赋值，字符串就不能修改了：在Go 中字符串是不可变的。从C 来的用户，下面的情况在Go 中是非法的。<br>var s string = “hello”<br>s[0] = ‘c’   修改第一个字符为’c’，这会报错<br>在Go 中实现这个，需要下面的方法：<br>s := “hello”<br>c := []rune(s)<br>c[0] = ‘c’<br>s2 := string(c)<br>fmt.Printf(“%s\n”, s2)<br>转换s 为rune 数组，查阅在第5 章”转换” 节、63 页的内容；<br>修改数组的第一个元素；<br>创建新的字符串s2 保存修改；<br>用fmt.Printf 函数输出字符串。<br>多行字符串：<br>行字符串。如果这样写：<br>s := “Starting part”</p>
+<ul>
+<li>“Ending part”<br>会被转换为：<br>s := “Starting part”;</li>
+<li>“Ending part”;<br>这是错误的语法，应当这样写：<br>s := “Starting part” +<br>“Ending part”<br>Go 就不会在错误的地方插入分号。另一种方式是使用反引号<code>作为原始字符串符号：
+s :=</code>Starting part<br>Ending part`<br>留意最后一个例子s 现在也包含换行。不像转义字符串标识，原始字符串标识的值在引号内的字符是不转义的。</li>
+</ul>
+<p>5.rune<br>Rune 是int32 的别名。用UTF-8 进行编码。这个类型在什么时候使用呢？例如需要遍历字符串中的字符。可以循环每个字节（仅在使用US ASCII 编码字符串时与字符等价，而它们在Go 中不存在！）。因此为了获得实际的字符，需要使用rune 类型。</p>
+<p>6.复数<br>Go 原生支持复数。它的变量类型是complex128 （64 位虚数部分）。如果需要小一些的，还有complex64 – 32 位的虚数部分。复数写为re + imi，re 是实数部分，im 是虚数部分，而i 是标记’i’ 。使用复数的一个例子：<br>var c complex64 = 5+5i;fmt.Printf(“Value is: %v”, c)<br>将会打印：(5+5i)</p>
+<p>7.错误<br>任何足够大的程序或多或少都会需要使用到错误报告。因此Go 有为了错误而存在的内建类型，叫做error。var a error 定义了a 为一个error，a 的值是nil。</p>
+<p>3、运算符和内建函数</p>
+<ul>
+<li><ul>
+<li><ul>
+<li>/ 和% 会像你期望的那样工作， &amp; | ^ 和&amp;^ 分别表示位运算符按位与， 按位或，按位异或和位清除。&amp;&amp; 和|| 运算符是逻辑与和逻辑或。<br>虽然Go 不支持运算符重载（或者方法重载），而一些内建运算符却支持重载。例如+ 可以用于整数、浮点数、复数和字符串（字符串相加表示串联它们）。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>4、Go 保留字<br>break default func interface select<br>case defer go map struct<br>chan else goto package switch<br>const fallthrough if range type<br>continue for import return var</p>
+<p>5、控制结构<br>在Go 中只有很少的几个控制结构。例如这里没有do 或者while 循环，只有for。有（灵活的）switch 语句和if，而switch 接受像for 那样可选的初始化语句。还有叫做类型选择和多路通讯转接器的select（参阅第7 章）。语法有所不同（同C 相比）：无需圆括号，而语句体必须总是包含在大括号内。</p>
+<p>1.if/eles<br>在Go 中if 看起来是这样的：<br>if x &gt; 0 {   //{ is mandatory<br>return y<br>} else {<br>return x<br>}<br>强制大括号鼓励将简单的if 语句写在多行上。无论如何，这都是一个很好的形式，尤其是语句体中含有控制语句，例如return 或者break。<br>if 和switch 接受初始化语句，通常用于设置一个（局部）变量。<br>if err := file.Chmod(0664); err != nil {   //nil is like C’s NULL<br>log.Stderr(err)   //Scope of err is limited to if’s body<br>return err<br>}<br>在Go 库中，你会发现当一个if 语句不会进入下一个语句流程– 也就是说，语句体结束于break，continue，goto 或者return – 不必要的else 会被省略。<br>f, err := os.Open(name, os.O_RDONLY, 0)<br>if err != nil {<br>return err<br>}<br>doSomething(f)</p>
+<p>2.goto<br>Go 有goto 语句——明智的使用它。用goto 跳转到一定是当前函数内定义的标签。例如假设这样一个循环：<br>func myfunc() {<br>i := 0<br>Here:   //这行的第一个词，以分号结束作为标签，标签名是大小写敏感的。<br>println(i)<br>i++<br>goto Here   跳转<br>}</p>
+<p>3.for<br>Go 的for 循环有三种形式，只有其中的一种使用分号。<br>for init; condition; post { }   //和C 的for 一样<br>for condition { }   //和while 一样<br>for { }   //和C 的for(;;) 一样（死循环）<br>短声明使得在循环中声明一个序号变量更加容易。<br>sum := 0<br>for i := 0; i &lt; 10; i++ {<br>sum += i   //sum = sum + i 的简化写法<br>}   //i 实例在循环结束会消失<br>最后，由于Go 没有逗号表达式，而++ 和– 是语句而不是表达式，如果你想在for 中执行多个变量，应当使用平行赋值。<br>// Reverse a<br>for i, j := 0, len(a)-1; i &lt; j; i, j = i+1, j-1 {   //平行赋值<br>a[i], a[j] = a[j], a[i]   //这里也是<br>}</p>
+<p>4.break 和continue<br>利用break 可以提前退出循环，break 终止当前的循环。<br>for i := 0; i &lt; 10; i++ {<br>if i &gt; 5 {<br>break   //终止这个循环，只打印0 到5<br>}<br>println(i)<br>}<br>循环嵌套循环时，可以在break 后指定标签。用标签决定哪个循环被终止：<br>J: for j := 0; j &lt; 5; j++ {<br>for i := 0; i &lt; 10; i++ {<br>if i &gt; 5 {<br>break J   //现在终止的是j 循环，而不是i 的那个<br>}<br>println(i)<br>}<br>}<br>5.range<br>保留字range 可用于循环。它可以在slice、array、string、map 和channel。range 是个迭代器，当被调用的时候，从它循环的内容中返回一个键值对。基于不同的内容，range 返回不同的东西。<br>当对slice 或者array 做循环时，range 返回序号作为键，这个序号对应的内容作为值。考虑这个代码：<br>list := []string{“a”, “b”, “c”, “d”, “e”, “f”}<br>for k, v := range list {<br>// 对 k 和 v 做想做的事情<br>}<br>创建一个字符串的slice<br>用range对其进行循环。每一个迭代，range将返回int类型的序号，string类型的值，以0 和“a” 开始。<br>k 的值为0…5，而v 在循环从“a”…“f”。<br>也可以在字符串上直接使用range。这样字符串被打散成独立的Unicode 字符并且起始位按照UTF-8 解析。循环：<br>for pos, char := range “a发x” {<br>fmt.Printf(“character ‘%c’ starts at byte position %d\n”, char, pos)<br>}<br>打印：<br>character ‘a’ starts at byte position 0<br>character ‘发’ starts at byte position 1<br>character ‘x’ starts at byte position 4  //发took 3 bytes</p>
+<p>6.switch<br>Go 的switch 非常灵活。表达式不必是常量或整数，执行的过程从上至下，直到找到匹配项，而如果switch 没有表达式，它会匹配true 。这产生一种可能——使用switch 编写if-else-if-else 判断序列。<br>func unhex(c byte) byte {<br>switch {<br>case ‘0’ &lt;= c &amp;&amp; c &lt;= ‘9’:<br>return c - ‘0’<br>case ‘a’ &lt;= c &amp;&amp; c &lt;= ‘f’:<br>return c - ‘a’ + 10<br>case ‘A’ &lt;= c &amp;&amp; c &lt;= ‘F’:<br>return c - ‘A’ + 10<br>}<br>return 0<br>}<br>它不会匹配失败后自动向下尝试，但是可以使用fallthrough 使其这样做。没有fallthrough：<br>switch i {<br>case 0: // 空的case 体<br>case 1:<br>f() // 当i == 0 时，f 不会被调用！<br>}<br>而这样：<br>switch i {<br>case 0: fallthrough<br>case 1:<br>f() // 当i == 0 时，f 会被调用！<br>}<br>用default 可以指定当其他所有分支都不匹配的时候的行为。<br>switch i {<br>case 0:<br>case 1:<br>f()<br>default:<br>g() // 当i 不等于0 或1 时调用<br>}<br>分支可以使用逗号分隔的列表。<br>func shouldEscape(c byte) bool {<br>switch c {<br>case ‘ ‘, ‘?’, ‘&amp;’, ‘=’, ‘#’, ‘+’:   , as “or”<br>return true<br>}<br>return false<br>}<br>这里有一个使用两个switch 对字节数组进行比较的例子：<br>// 比较返回两个字节数组字典数序先后的整数。<br>// 如果a == b 返回0，如果a &lt; b 返回-1，而如果a &gt; b 返回+1<br>func Compare(a, b []byte) int {<br>for i := 0; i &lt; len(a) &amp;&amp; i &lt; len(b); i++ {<br>switch {<br>case a[i] &gt; b[i]:<br>return 1<br>case a[i] &lt; b[i]:<br>return -1<br>}<br>}<br>// 长度不同，则不相等<br>switch {<br>case len(a) &lt; len(b):<br>return -1<br>case len(a) &gt; len(b):<br>return 1<br>}<br>return 0 // 字符串相等<br>}</p>
+<p>6、内建函数<br>预定义了少数函数，这意味着无需引用任何包就可以使用它们。<br>close new panic complex<br>delete make recover real<br>len append print imag<br>cap copy println    </p>
+<p>close 用于channel 通讯。使用它来关闭channel<br>delete 用于在map 中删除实例。<br>len 和cap 可用于不同的类型， len 用于返回字符串、slice 和数组的长度.<br>new 用于各种类型的内存分配。<br>make 用于内建类型（map、slice 和channel）的内存分配。<br>copy 用于复制slice<br>append 用于追加slice。<br>panic 和recover 用于异常处理机制<br>print 和println 是底层打印函数，可以在不引入fmt 包的情况下使用。<br>complex、real 和imag 全部用于处理复数</p>
+<p>7、array、slices 和map<br>可以利用array 在列表中进行多个值的排序，或者使用更加灵活的：slice。字典或哈希类型同样可以使用，在Go 中叫做map。</p>
+<p>1.array<br>array 由[n]<type> 定义， n 标示array 的长度，而<type> 标示希望存储的内容的类型。对array 的元素赋值或索引是由方括号完成的：<br>var arr [10]int<br>arr[0] = 42<br>arr[1] = 13<br>fmt.Printf(“The first element is %d\n”, arr[0])</type></type></p>
+<p>像var arr = [10]int 这样的数组类型有固定的大小。大小是类型的一部分。由于不同的大小是不同的类型，因此不能改变大小。<br>数组同样是值类型的：将一个数组赋值给另一个数组，会复制所有的元素。尤其是当向函数内传递一个数组的时候，它会获得一个数组的副本，而不是数组的指针。</p>
+<p>可以像这样声明一个数组：var a [3]int，如果不使用零来初始化它，则用复合声明：a := [3]int{1, 2, 3} 也可以简写为a := […]int{1, 2, 3}，Go 会自动统计元素的个数。注意，所有项目必须都指定。因此，如果你使用多维数组，有一些内容你必须录入：<br>a := [2][2]int{ [2]int{1,2}, [2]int{3,4} }<br>类似于：<br>a := [2][2]int{ […]int{1,2}, […]int{3,4} }<br>上面的例子可以修改为：<br>a := [2][2]int{ {1,2}, {3,4} }</p>
+<p>2.slice<br>slice 与array 接近，但是在新的元素加入的时候可以增加长度。slice 总是指向底层的一个array。slice 是一个指向array 的指针，这是其与array 不同的地方；slice 是引用类型， 这意味着当赋值某个slice 到另外一个变量，两个引用会指向同一个array。<br>例如，如果一个函数需要一个slice 参数，在其内对slice 元素的修改也会体现在函数调用者中，这和传递底层的array 指针类似。通过：<br>sl := make([]int, 10)<br>创建了一个保存有10 个元素的slice。需要注意的是底层的array 并无不同。slice 总是与一个固定长度的array 成对出现。其影响slice 的容量和长度。</p>
+<p>// array[n:m] 从array 创建了一个slice，具有元素n 到m-1<br>a := […]int{1, 2, 3, 4, 5}<br>s1 := a[2:4]<br>s2 := a[1:5]<br>s3 := a[:]<br>s4 := a[:4]<br>s5 := s2[:]<br>定义一个5个元素的array，序号从0到4；<br>array、slices 和map 21<br>从序号2至3创建slice，它包含元素3, 4；<br>从序号1至4创建，它包含元素2, 3, 4, 5；<br>用array中的所有元素创建slice，这是a[0:len(a)] 的简化写法；<br>从序号0至3创建，这是a[0:4]的简化写法，得到1, 2, 3, 4；<br>从slice s2 创建slice，注意s5 仍然指向array a。</p>
+<p>如果你想要扩展slice，有一堆内建函数让你的日子更加好过一些： append和copy。<br>函数append 向slice s 追加零值或其他x 值，并且返回追加后的新的、与s 有相同类型的slice。如果s 没有足够的容量存储追加的值，append 分配一个足够大的、新的slice 来存放原有slice 的元素和追加的值。因此，返回的slice 可能指向不同的底层array。</p>
+<p>s0 := []int{0, 0}<br>s1 := append(s0, 2)<br>s2 := append(s1, 3, 5, 7)<br>s3 := append(s2, s0…)<br>追加一个元素，s1 == []int{0, 0, 2}；<br>追加多个元素，s2 == []int{0, 0, 2, 3, 5, 7}；<br>追加一个slice，s3 == []int{0, 0, 2, 3, 5, 7, 0, 0}。注意这三个点！<br>还有函数copy 从源slice src 复制元素到目标dst，并且返回复制的元素的个数。源和目标可能重叠。复制的数量是len(src) 和len(dst) 中的最小值。<br>var a = […]int{0, 1, 2, 3, 4, 5, 6, 7}<br>var s = make([]int, 6)<br>n1 := copy(s, a[0:])  //n1 == 6, s == []int{0, 1, 2, 3, 4, 5}<br>n2 := copy(s, s[2:])   //n2 == 4, s == []int{2, 3, 4, 5, 4, 5}</p>
+<p>3.map<br>许多语言都内建了类似的类型，例如Perl 有哈希，Python 有字典，而C++ 同样也有map（作为库）。在Go 中有map 类型。map 可以认为是一个用字符串做索引的数组（在其最简单的形式下）。下面定义了map 类型，用于将string（月的缩写）转换为int – 那个月的天数。一般定义map 的方法是：map[<from type="">]<to type="">。<br>monthdays := map[string]int{<br>“Jan”: 31, “Feb”: 28, “Mar”: 31,<br>“Apr”: 30, “May”: 31, “Jun”: 30,<br>“Jul”: 31, “Aug”: 31, “Sep”: 30,<br>“Oct”: 31, “Nov”: 30, “Dec”: 31,   //逗号是必须的<br>}</to></from></p>
+<p>留意，当只需要声明一个map 的时候，使用make 的形式： monthdays := make(map[string]int)<br>当在map 中索引（搜索）时，使用方括号。例如打印出12 月的天数：<br>fmt.Printf(“%d\n”, monthdays[“Dec”])</p>
+<p>当对array、slice、string 或者map 循环遍历的时候，range 会帮助你，每次调用，它都会返回一个键和对应的值。<br>year := 0<br>for <em>, days := range monthdays {  //键没有使用，因此用</em>, days<br>year += days<br>}<br>fmt.Printf(“Numbers of days in a year: %d\n”, year)<br>向map 增加元素，可以这样做：<br>monthdays[“Undecim”] = 30   //添加一个月<br>monthdays[“Feb”] = 29   //闰年时重写这个元素<br>检查元素是否存在，可以使用下面的方式：<br>var value int<br>var present bool<br>value, present = monthdays[“Jan”]   //如果存在，present 则有值true<br>//或者更接近Go 的方式<br>v, ok := monthdays[“Jan”] //“逗号ok”形式<br>也可以从map 中移除元素：<br>delete(monthdays, “Mar”)   //删除”Mar” 吧，总是下雨的月份<br>通常来说语句delete(m, x) 会删除map 中由m[x] 建立的实例。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2012/09/12/js-ajax/" rel="next" title="XSRF攻击实例，注入cnodejs.org官网">
+                <i class="fa fa-chevron-left"></i> XSRF攻击实例，注入cnodejs.org官网
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2012/09/24/js-ajax/" rel="prev" title="http请求头的顺序">
+                http请求头的顺序 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

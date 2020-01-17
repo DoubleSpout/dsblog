@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="转载翻译，原文地址1：http://jpetazzo.github.io/2014/06/23/docker-ssh-considered-evil/原文地址2：http://blog.docker.com/2014/06/why-you-dont-need-to-run-sshd-in-docker/ 在刚接触docker的时候，人们经常会说：“我们怎么进入到我的container中去呢？”，其">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用docker，不要用ssh连接到你的container">
+<meta property="og:url" content="http://yoursite.com/2014/08/20/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="转载翻译，原文地址1：http://jpetazzo.github.io/2014/06/23/docker-ssh-considered-evil/原文地址2：http://blog.docker.com/2014/06/why-you-dont-need-to-run-sshd-in-docker/ 在刚接触docker的时候，人们经常会说：“我们怎么进入到我的container中去呢？”，其">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.878Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用docker，不要用ssh连接到你的container">
+<meta name="twitter:description" content="转载翻译，原文地址1：http://jpetazzo.github.io/2014/06/23/docker-ssh-considered-evil/原文地址2：http://blog.docker.com/2014/06/why-you-dont-need-to-run-sshd-in-docker/ 在刚接触docker的时候，人们经常会说：“我们怎么进入到我的container中去呢？”，其">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/08/20/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用docker，不要用ssh连接到你的container | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/08/20/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用docker，不要用ssh连接到你的container
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-08-20 14:08:59" itemprop="dateCreated datePublished" datetime="2014-08-20T14:08:59+08:00">2014-08-20</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/08/20/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/08/20/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>转载翻译，原文地址1：<a href="http://jpetazzo.github.io/2014/06/23/docker-ssh-considered-evil/" target="_blank" rel="noopener">http://jpetazzo.github.io/2014/06/23/docker-ssh-considered-evil/</a><br>原文地址2：<a href="http://blog.docker.com/2014/06/why-you-dont-need-to-run-sshd-in-docker/" target="_blank" rel="noopener">http://blog.docker.com/2014/06/why-you-dont-need-to-run-sshd-in-docker/</a></p>
+<p>在刚接触docker的时候，人们经常会说：“我们怎么进入到我的container中去呢？”，其他人会告诉他：“ 在container里面装一个ssh server，这样你就可以连入你的container了。” 但是这是糟糕的尝试，下面我将告诉大家为什么这么做是错误的，并且我们用什么方式来替代它。</p>
+<a id="more"></a>
+<p>在container里安装一个ssh server是非常诱人的，因为这样我们就可以直接连接container并且进入它的内部，我们中的大部分人每天都会用到ssh，我们用公钥私钥来进行登录，或者使用端口映射等其他方式。</p>
+<p>所以也不奇怪，人们会建议，在container中创建一个ssh server，但是我们在这么做之前需要考虑以下问题：<br>1、你需要ssh来干什么？<br>大部分需求是，你要检查日志，做备份，或者重启进程，调整配置，查看服务器情况，下面将介绍如果不使用ssh来做到以上这些事情。</p>
+<p>2、你如何来管理密钥和密码？<br>大部分的可能是，你将你的密钥和密码一起装进你的image中，或者将他们放在文件卷中，想一想如果你要更新你的密钥或者密码，你应该怎么做呢？<br>如果你把它们装载进image中，那你每次更新都需要重新创建image，重新发布image，然后重启container。这样做是不是不是很优雅。<br>一个更好的办法是将这些东西放在一个文件卷标中，它能工作，但是也有显著的缺点，你必须保证你的container没有对这个文件卷标有写的权限，否则可能会污染你的密钥和密码，从而造成你无法登录这个container。而且事情可能因为你为多个container共享这些东西而变的更加难以管理和糟糕。</p>
+<p>3、你如何管理你的安全升级<br>SSH server 是非常安全的，但是一旦你的密钥或密码泄漏，你不得不升级所有使用SSH的container，并且重启他们。这也以为着注入memcache这样的内存缓存服务器的缓存将全部丢失，你不得不重建缓存。</p>
+<p>4、你是否需要“加入SSH server”就能工作？<br>不是的，你还需要加入进程管理软件，Monit 或 Supervisor等监控软件，让应用开启多个进程运行。换而言之，你把一个简单的container转变为一个复杂的东西了。如果你的应用停止了，你不得不从你的进程管理软件那里获得信息，因为Docker只能管理单进程。</p>
+<p>5、你负责把一个应用转载进一个container，但你也负责访问策略和安全规范？<br>在一些小的场景中，这没什么问题，但是在大的应用中，你是将应用装载进container的开发人员，可能有另外的人负责对这个应用的访问策略部署。你的公司可能有严格的权限管控，因此公司肯定不希望在container中安装ssh server。</p>
+<p>但是不使用ssh，我们改如何做以下事情呢？<br>1、备份我的数据<br>你的数据必须是一个volumn，这样你可以启动另外一个container，并且通过 –volumes-from 来共享你的应用的container的数据，这个新的container会来处理数据备份的事情。额外的好处，如果你项对你的数据文件（比如：日志）进行压缩长久保存，那完全可以在一个新的container中处理，这样你的应用container就是干净的</p>
+<p>2、检查日志<br>使用文件volumn，和之前一样的方法，重新启动一个日志分析的container，让它来处理日志和检查日志。</p>
+<p>3、重启我的应用服务<br>当你发出” /etc/init.d/foo restart “ 或 ”service foo restart“，它几乎总是导致向进程发送一个特殊的信号，你可以使用如下的命令发送这个信号：”docker kill -s <signal>.“<br>一些服务他不监听信号，但是接受一个特殊的命令在socket套接字上，如果是tcp server，那就仅仅通过网络链接他，如果他使用unix socket，那就又要用到 volumn了。设置container中的服务，让他控制的sockert在一个特殊的目录中，这个目录就是volumn，然后你可以启动一个新的container，使用这个文件 volumn。</signal></p>
+<p>但是这相当复杂吗？假设你有一个服务叫 foo，创建一个foo.sock 文件在 /var/run/foo.sock,现在需要重启这个服务。我们只需要在启动foo服务时，加上 -v /var/run，（或者加上 VOLUME /var/run），然后当你重启时，执行–volumes-from 参数就可以让新的foo服务启动起来了。</p>
+<h1 id="Starting-the-service"><a href="#Starting-the-service" class="headerlink" title="Starting the service"></a>Starting the service</h1><p>CID=$(docker run -d -v /var/run fooservice)</p>
+<h1 id="Restarting-the-service-with-a-sidekick-container"><a href="#Restarting-the-service-with-a-sidekick-container" class="headerlink" title="Restarting the service with a sidekick container"></a>Restarting the service with a sidekick container</h1><p>docker run –volumes-from $CID fooservice fooctl restart</p>
+<p>4、修改我的配置文件<br>如果你正在执行一个持久的配置变更，你最好把他的改变放在image中，如果你又启动一个container，那么服务还是使用的老的配置，你的配置变更将丢失，所以不要使用ssh来访问container。<br>“但是我需要在应用存活期间，改变我的配置，例如增加一个新的虚拟站点”<br>这样的话还是需要使用volumn来处理，并且通过服务的api来动态读取配置，这样所有的应用container都可以快速的临时变更配置。</p>
+<p>5、调试我的应用<br>这可能是唯一需要进入container的场景了，这样你就需要 nsenter 软件</p>
+<p>介绍 nsenter<br>nsenter是一个小的工具，用来进入命名空间中，它可以进入命名空间，或者在现有的命名空间中产生一个新的进程，命名空间是什么?他们是container的重要组成部分。<br>简单点说，通过使用 nsenter 你可以进入一个已经存在的container中，尽管这个container没有安装ssh server或者其他类似软件。<br>项目地址：jpetazzo/nsenter<br>或者简单的来安装：<br>docker run -v /usr/local/bin:/target jpetazzo/nsenter<br>它将会把nsenter安装到主机的 /usr/bin 中，你就可以方便的使用它了。<br>使用方法：<br>1、找出你想要进入的container的pid<br>PID=$(docker inspect –format { {.State.Pid} } &lt;container_name_or_ID&gt;)<br>2、根据pid进入container内部<br>$ sudo nsenter –target $PID –mount –uts –ipc –net –pid<br>3、如何远程访问<br>如果你想要远程访问这个container，那么你至少有2种方法<br>通过SSH链接到你的docker主机，并且使用 nsenter。<br>通过SSH链接到你的docker主机，通过一个特殊的密钥参数授权esenter命令。</p>
+<p>如果你遇到：<br>$ docker run -v /usr/local/bin:/target jpetazzo/nsenter<br>Installing nsenter to /target<br>cp: cannot create regular file ‘/target/nsenter’: Permission denied<br>Installing docker-enter to /target<br>cp: cannot create regular file ‘/target/docker-enter’: Permission denied<br>那就需要手动将 container 里的 nsenter 命令拷贝到 /usr/local/bin 目录下了<br>1、先把jpetazzo/nsenter运行起来：<br> docker run -d -i -t jpetazzo/nsenter /bin/bash<br>2、根据docker ps 找到container的id，然后执行cp命令：<br>cp /var/lib/docker/devicemapper/mnt/<containid>/rootfs/nsenter /usr/local/bin/<br>cp /var/lib/docker/devicemapper/mnt/<containid>/rootfs/docker-enter /usr/local/bin/<br>注意：devicemapper 是centos的路径名，windows下是aufs</containid></containid></p>
+<p>如果遇到在container里无法解析域名，则需要手动增加dns服务器，方法如下：<br>DOCKER_OPTS=” –dns 8.8.8.8”<br>service docker restart</p>
+<p>总结<br>docker允许你根据自己工作习惯处理，但是请跳出这样的概念：“我的container是一个小的vps”，要知道还有其他的解决方案来处理需要SSH的问题</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/08/19/js-ajax/" rel="next" title="利用docker快速部署应用">
+                <i class="fa fa-chevron-left"></i> 利用docker快速部署应用
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/08/21/js-ajax/" rel="prev" title="Dockerfile 常用命令">
+                Dockerfile 常用命令 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Starting-the-service"><span class="nav-number">1.</span> <span class="nav-text">Starting the service</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Restarting-the-service-with-a-sidekick-container"><span class="nav-number">2.</span> <span class="nav-text">Restarting the service with a sidekick container</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

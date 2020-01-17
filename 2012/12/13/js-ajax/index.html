@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="自从node出现，感觉事情一切都变的很美好，依靠node的异步和事件驱动做流程，抵御I/O的大并发，很多人攻击js做cpu密集型操作似乎有性能问题，于是我们可以利用c++做node模块来处理cpu密集型的操作，当然这样看上去似乎我们找到了通吃大部分情况的完美解决方案，而且node配合C++，多牛B多装B的组合，说出去特有面子。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++写node笔记（六）">
+<meta property="og:url" content="http://yoursite.com/2012/12/13/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="自从node出现，感觉事情一切都变的很美好，依靠node的异步和事件驱动做流程，抵御I/O的大并发，很多人攻击js做cpu密集型操作似乎有性能问题，于是我们可以利用c++做node模块来处理cpu密集型的操作，当然这样看上去似乎我们找到了通吃大部分情况的完美解决方案，而且node配合C++，多牛B多装B的组合，说出去特有面子。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.844Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++写node笔记（六）">
+<meta name="twitter:description" content="自从node出现，感觉事情一切都变的很美好，依靠node的异步和事件驱动做流程，抵御I/O的大并发，很多人攻击js做cpu密集型操作似乎有性能问题，于是我们可以利用c++做node模块来处理cpu密集型的操作，当然这样看上去似乎我们找到了通吃大部分情况的完美解决方案，而且node配合C++，多牛B多装B的组合，说出去特有面子。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2012/12/13/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>C++写node笔记（六） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2012/12/13/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">C++写node笔记（六）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2012-12-13 14:53:53" itemprop="dateCreated datePublished" datetime="2012-12-13T14:53:53+08:00">2012-12-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2012/12/13/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2012/12/13/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>自从node出现，感觉事情一切都变的很美好，依靠node的异步和事件驱动做流程，抵御I/O的大并发，很多人攻击js做cpu密集型操作似乎有性能问题，于是我们可以利用c++做node模块来处理cpu密集型的操作，当然这样看上去似乎我们找到了通吃大部分情况的完美解决方案，而且node配合C++，多牛B多装B的组合，说出去特有面子。</p>
+<a id="more"></a>
+<p>可喜可贺的是我们用了斐波那契算法排名第二的语言开发应用，而且开发效率绝对比第一的C要高很多，斐波那契算法排名地址，感谢苏千的测试：</p>
+<p><a href="http://fengmk2.github.com/blog/2011/fibonacci/nodejs-python-php-ruby-lua.html" target="_blank" rel="noopener">http://fengmk2.github.com/blog/2011/fibonacci/nodejs-python-php-ruby-lua.html</a></p>
+<p>但是在我近一个月的c++模块和v8引擎摸索后，我发现事情似乎不如想象中那么美好（当然只能是业余时间，有写错望大牛们指正）。</p>
+<p>先上一个不是很完美的c++模块，用来做验证的，虽然有时候他的确比node本身要快：</p>
+<p><a href="https://github.com/DoubleSpout/node-hvalidator" target="_blank" rel="noopener">https://github.com/DoubleSpout/node-hvalidator</a></p>
+<p>你也可以 npm install hvalidator 进行安装。</p>
+<p>我们来看下replace操作的测试结果：</p>
+<p>我们利用hvalidator模块中的toXss函数来替换掉可能xss注入攻击的字符串，使用方法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var hv = require(&apos;hvalidator&apos;);</span><br><span class="line">hv.toXss(str);//Remove common XSS attack</span><br></pre></td></tr></table></figure>
+<p>然后我们同样构建js的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">function toxss(text)&#123;</span><br><span class="line"> text = text.replace(/&amp;/g, &quot;&amp;amp;&quot;);</span><br><span class="line"> text = text.replace(/&quot;/g, &quot;&amp;quot;&quot;);</span><br><span class="line"> text = text.replace(/&lt;/g, &quot;&amp;lt;&quot;);</span><br><span class="line"> text = text.replace(/&gt;/g, &quot;&amp;gt;&quot;);</span><br><span class="line"> text = text.replace(/&apos;/g, &quot;&amp;#146;&quot;);</span><br><span class="line"> return  text;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ok，我们构建测试字符串：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var t=&apos;&lt;body&gt;&lt;div id=&quot;&#123;$userid&#125;&quot;&gt;&#123;$username&#125;&lt;/div&gt;&lt;div id=&quot;userid&quot;&gt;&#123;$usersex&#125;&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;&apos;;</span><br></pre></td></tr></table></figure>
+<p>然后我们分别执行1000次，看下测试结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nodejs: 19ms</span><br><span class="line">c++: 9ms</span><br></pre></td></tr></table></figure>
+<p>是不是感觉结果正常，然后我们加大到10000次的匹配，看下测试结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nodejs: 50ms</span><br><span class="line">c++: 62ms</span><br></pre></td></tr></table></figure>
+<p>是不是感觉很疑惑，为什么c++的速度要开始稍稍落后于node了，我个人感觉就3种可能：</p>
+<p>a、V8引擎太牛X了，性能直逼c++。</p>
+<p>b、本人水平太差，写出了比js性能更差的c++代码。</p>
+<p>c、因为频繁的v8接口调用和数据类型转换，造成的消耗已经超过了c++代码本身执行的时间。</p>
+<p>接下来的测试，可能会让大家感到吃惊，我们把字符串的长度加长到100倍，也就是说上面的变量t被加长100次，然后执行100次匹配，我看下测试结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nodejs: 24ms</span><br><span class="line">c++: 506ms</span><br></pre></td></tr></table></figure>
+<p>这让我直接怀疑我写的C++是不是真的很渣，由于字符串的长度变的很长，所以导致c++性能直线下降，而node却还是保持着一个很好的性能。</p>
+<p>当然这其中的原因可能跟我在对v8::local<string>类型转换时发生的，也可能是c++的replace函数写的有问题，但是这也发出了一个信号，并不是说写了C++模块肯定是优于node本身的代码性能。</string></p>
+<p>测试代码：<a href="https://github.com/DoubleSpout/node-hvalidator/blob/master/benchmark/toXss.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/node-hvalidator/blob/master/benchmark/toXss.js</a></p>
+<p>（如果有C++大牛方便解答下我的问题，c++的replace函数在多次对大字符串替换的时候性能很差，有什么办法吗？特别是当我对字符串加长到原来1000倍以上时，C++代码可能溢出了，卡死在那里。）</p>
+<p>replace函数的c++代码：</p>
+<p><a href="https://github.com/DoubleSpout/node-hvalidator/blob/master/addon/SimpleFilter.cc" target="_blank" rel="noopener">https://github.com/DoubleSpout/node-hvalidator/blob/master/addon/SimpleFilter.cc</a></p>
+<p>我们再来看下hvalidator对比node的其他性能：</p>
+<p>下面是利用hvalidator对比一些格式验证的测试，执行1000次：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nodejs: 73ms</span><br><span class="line">c++: 36ms</span><br></pre></td></tr></table></figure>
+<p>这些验证都是很简单的一些验证，直接调用v8::value 类下面的一些 比如 IsArray这类的方法，然后返回bool值给node，在小并发情况下c++的验证速度要优于node，但是随着执行次数的增加比如我们增加到10W次，我们再来看结果：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nodejs: 2549ms</span><br><span class="line">c++: 1918ms</span><br></pre></td></tr></table></figure></p>
+<p>他们之间的差距在逐渐缩小，这时候C++函数的调用成为了比计算更为消耗的地方。</p>
+<p>测试代码：<a href="https://github.com/DoubleSpout/node-hvalidator/blob/master/benchmark/benchmark.js" target="_blank" rel="noopener">https://github.com/DoubleSpout/node-hvalidator/blob/master/benchmark/benchmark.js</a></p>
+<p>说了这么多就是想找一个合适的场景来为node写c++模块，究竟什么样的情况下我们需要c++模块，而不是为了写c++模块而写。目前我也没有答案，当我充满信心的去写C++模块后，hvalidator模块的性能测试结果让我充满失败感，希望有大牛能指点一二。</p>
+<p>下一篇再总结自己这些天写c++模块的一些心得吧。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2012/12/12/js-ajax/" rel="next" title="C/C++ 字符串replace替换函数">
+                <i class="fa fa-chevron-left"></i> C/C++ 字符串replace替换函数
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2012/12/21/js-ajax/" rel="prev" title="nodejs通过代理（proxy）发请求（request）">
+                nodejs通过代理（proxy）发请求（request） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

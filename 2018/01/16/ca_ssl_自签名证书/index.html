@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近想做一个简单的HTTPS抓包小工具，记录一下生成一个域名的证书并用CA证书对他进行签名的简单过程。">
+<meta name="keywords" content="openresty,自签名证书">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用CA证书签名任意域名的SSL证书">
+<meta property="og:url" content="http://yoursite.com/2018/01/16/ca_ssl_自签名证书/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="最近想做一个简单的HTTPS抓包小工具，记录一下生成一个域名的证书并用CA证书对他进行签名的简单过程。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.881Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="利用CA证书签名任意域名的SSL证书">
+<meta name="twitter:description" content="最近想做一个简单的HTTPS抓包小工具，记录一下生成一个域名的证书并用CA证书对他进行签名的简单过程。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/01/16/ca_ssl_自签名证书/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>利用CA证书签名任意域名的SSL证书 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/16/ca_ssl_自签名证书/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">利用CA证书签名任意域名的SSL证书
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-01-16 10:25:50" itemprop="dateCreated datePublished" datetime="2018-01-16T10:25:50+08:00">2018-01-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/openresty/" itemprop="url" rel="index"><span itemprop="name">openresty</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/01/16/ca_ssl_自签名证书/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2018/01/16/ca_ssl_自签名证书/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近想做一个简单的HTTPS抓包小工具，记录一下生成一个域名的证书并用CA证书对他进行签名的简单过程。<br><a id="more"></a></p>
+<h2 id="1、在CA目录下创建两个初始文件"><a href="#1、在CA目录下创建两个初始文件" class="headerlink" title="1、在CA目录下创建两个初始文件"></a>1、在CA目录下创建两个初始文件</h2><p>如过出现<code>TXT_DATABASE ERR</code>这种错误，就去 <code>/etc/pki/CA/</code> 目录把<code>index.txt</code>删除，重新生成一下就可以<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># cd /etc/pki/CA/</span><br><span class="line"># touch index.txt serial</span><br><span class="line"># echo 01 &gt; serial</span><br><span class="line">//备份openssl.cnf</span><br><span class="line"># cp /etc/pki/tls/openssl.cnf /etc/pki/tls/openssl.cnf.bak</span><br></pre></td></tr></table></figure></p>
+<h2 id="2、创建指定的ssl目录，生成ca-cnf配置文件"><a href="#2、创建指定的ssl目录，生成ca-cnf配置文件" class="headerlink" title="2、创建指定的ssl目录，生成ca.cnf配置文件"></a>2、创建指定的<code>ssl</code>目录，生成ca.cnf配置文件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># mkdir -p /var/ssl/</span><br><span class="line"># cd /var/ssl/</span><br><span class="line"># vi /etc/pki/tls/openssl.cnf</span><br></pre></td></tr></table></figure>
+<p>生成 <code>openssl.cnf</code> 配置文件如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br></pre></td><td class="code"><pre><span class="line">#</span><br><span class="line"># OpenSSL example configuration file.</span><br><span class="line"># This is mostly being used for generation of certificate requests.</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line"># This definition stops the following lines choking if HOME isn&apos;t</span><br><span class="line"># defined.</span><br><span class="line">HOME            = .</span><br><span class="line">RANDFILE        = $ENV::HOME/.rnd</span><br><span class="line"></span><br><span class="line"># Extra OBJECT IDENTIFIER info:</span><br><span class="line">#oid_file       = $ENV::HOME/.oid</span><br><span class="line">oid_section     = new_oids</span><br><span class="line"></span><br><span class="line"># To use this configuration file with the &quot;-extfile&quot; option of the</span><br><span class="line"># &quot;openssl x509&quot; utility, name here the section containing the</span><br><span class="line"># X.509v3 extensions to use:</span><br><span class="line"># extensions        = </span><br><span class="line"># (Alternatively, use a configuration file that has only</span><br><span class="line"># X.509v3 extensions in its main [= default] section.)</span><br><span class="line"></span><br><span class="line">[ new_oids ]</span><br><span class="line"></span><br><span class="line"># We can add new OIDs in here for use by &apos;ca&apos;, &apos;req&apos; and &apos;ts&apos;.</span><br><span class="line"># Add a simple OID like this:</span><br><span class="line"># testoid1=1.2.3.4</span><br><span class="line"># Or use config file substitution like this:</span><br><span class="line"># testoid2=$&#123;testoid1&#125;.5.6</span><br><span class="line"></span><br><span class="line"># Policies used by the TSA examples.</span><br><span class="line">tsa_policy1 = 1.2.3.4.1</span><br><span class="line">tsa_policy2 = 1.2.3.4.5.6</span><br><span class="line">tsa_policy3 = 1.2.3.4.5.7</span><br><span class="line"></span><br><span class="line">####################################################################</span><br><span class="line">[ ca ]</span><br><span class="line">default_ca  = CA_default        # The default ca section</span><br><span class="line"></span><br><span class="line">####################################################################</span><br><span class="line">[ CA_default ]</span><br><span class="line"></span><br><span class="line">dir     = /etc/pki/CA       # Where everything is kept</span><br><span class="line">certs       = $dir/certs        # Where the issued certs are kept</span><br><span class="line">crl_dir     = $dir/crl      # Where the issued crl are kept</span><br><span class="line">database    = $dir/index.txt    # database index file.</span><br><span class="line">#unique_subject = no            # Set to &apos;no&apos; to allow creation of</span><br><span class="line">                    # several ctificates with same subject.</span><br><span class="line">new_certs_dir   = $dir/newcerts     # default place for new certs.</span><br><span class="line"></span><br><span class="line">certificate = $dir/cacert.pem   # The CA certificate</span><br><span class="line">serial      = $dir/serial       # The current serial number</span><br><span class="line">crlnumber   = $dir/crlnumber    # the current crl number</span><br><span class="line">                    # must be commented out to leave a V1 CRL</span><br><span class="line">crl     = $dir/crl.pem      # The current CRL</span><br><span class="line">private_key = $dir/private/cakey.pem# The private key</span><br><span class="line">RANDFILE    = $dir/private/.rand    # private random number file</span><br><span class="line"></span><br><span class="line">x509_extensions = usr_cert      # The extentions to add to the cert</span><br><span class="line"></span><br><span class="line"># Comment out the following two lines for the &quot;traditional&quot;</span><br><span class="line"># (and highly broken) format.</span><br><span class="line">name_opt    = ca_default        # Subject Name options</span><br><span class="line">cert_opt    = ca_default        # Certificate field options</span><br><span class="line"></span><br><span class="line"># Extension copying option: use with caution.</span><br><span class="line"># copy_extensions = copy</span><br><span class="line"></span><br><span class="line"># Extensions to add to a CRL. Note: Netscape communicator chokes on V2 CRLs</span><br><span class="line"># so this is commented out by default to leave a V1 CRL.</span><br><span class="line"># crlnumber must also be commented out to leave a V1 CRL.</span><br><span class="line"># crl_extensions    = crl_ext</span><br><span class="line"></span><br><span class="line">default_days    = 365           # how long to certify for</span><br><span class="line">default_crl_days= 30            # how long before next CRL</span><br><span class="line">default_md  = default       # use public key default MD</span><br><span class="line">preserve    = no            # keep passed DN ordering</span><br><span class="line"></span><br><span class="line"># A few difference way of specifying how similar the request should look</span><br><span class="line"># For type CA, the listed attributes must be the same, and the optional</span><br><span class="line"># and supplied fields are just that :-)</span><br><span class="line">policy      = policy_match</span><br><span class="line"></span><br><span class="line"># For the CA policy</span><br><span class="line">[ policy_match ]</span><br><span class="line">countryName     = match</span><br><span class="line">stateOrProvinceName = match</span><br><span class="line">organizationName    = match</span><br><span class="line">organizationalUnitName  = optional</span><br><span class="line">commonName      = supplied</span><br><span class="line">emailAddress        = optional</span><br><span class="line"></span><br><span class="line"># For the &apos;anything&apos; policy</span><br><span class="line"># At this point in time, you must list all acceptable &apos;object&apos;</span><br><span class="line"># types.</span><br><span class="line">[ policy_anything ]</span><br><span class="line">countryName     = optional</span><br><span class="line">stateOrProvinceName = optional</span><br><span class="line">localityName        = optional</span><br><span class="line">organizationName    = optional</span><br><span class="line">organizationalUnitName  = optional</span><br><span class="line">commonName      = supplied</span><br><span class="line">emailAddress        = optional</span><br><span class="line"></span><br><span class="line">####################################################################</span><br><span class="line">[ req ]</span><br><span class="line">default_bits        = 2048</span><br><span class="line">default_md      = sha1</span><br><span class="line">default_keyfile     = privkey.pem</span><br><span class="line">distinguished_name  = req_distinguished_name</span><br><span class="line">attributes      = req_attributes</span><br><span class="line">x509_extensions = v3_ca # The extentions to add to the self signed cert</span><br><span class="line"></span><br><span class="line"># Passwords for private keys if not present they will be prompted for</span><br><span class="line"># input_password = secret</span><br><span class="line"># output_password = secret</span><br><span class="line"></span><br><span class="line"># This sets a mask for permitted string types. There are several options. </span><br><span class="line"># default: PrintableString, T61String, BMPString.</span><br><span class="line"># pkix   : PrintableString, BMPString (PKIX recommendation before 2004)</span><br><span class="line"># utf8only: only UTF8Strings (PKIX recommendation after 2004).</span><br><span class="line"># nombstr : PrintableString, T61String (no BMPStrings or UTF8Strings).</span><br><span class="line"># MASK:XXXX a literal mask value.</span><br><span class="line"># WARNING: ancient versions of Netscape crash on BMPStrings or UTF8Strings.</span><br><span class="line">string_mask = utf8only</span><br><span class="line"></span><br><span class="line"># req_extensions = v3_req # The extensions to add to a certificate request</span><br><span class="line">req_extensions = req_ext</span><br><span class="line"></span><br><span class="line">[ req_distinguished_name ]</span><br><span class="line">#countryName            = Country Name (2 letter code)</span><br><span class="line">#countryName_default        = XX</span><br><span class="line">#countryName_min            = 2</span><br><span class="line">#countryName_max            = 2</span><br><span class="line"></span><br><span class="line">#stateOrProvinceName        = State or Province Name (full name)</span><br><span class="line">#stateOrProvinceName_default    = Default Province</span><br><span class="line"></span><br><span class="line">#localityName           = Locality Name (eg, city)</span><br><span class="line">#localityName_default   = Default City</span><br><span class="line"></span><br><span class="line">#0.organizationName     = Organization Name (eg, company)</span><br><span class="line">#0.organizationName_default = Default Company Ltd</span><br><span class="line"></span><br><span class="line"># we can do this but it is not needed normally :-)</span><br><span class="line">#1.organizationName     = Second Organization Name (eg, company)</span><br><span class="line">#1.organizationName_default = World Wide Web Pty Ltd</span><br><span class="line"></span><br><span class="line">#organizationalUnitName     = Organizational Unit Name (eg, section)</span><br><span class="line">#organizationalUnitName_default =</span><br><span class="line"></span><br><span class="line">#commonName         = Common Name (eg, your name or your server\&apos;s hostname)</span><br><span class="line">#commonName_max         = 64</span><br><span class="line"></span><br><span class="line">#emailAddress           = Email Address</span><br><span class="line">#emailAddress_max       = 64</span><br><span class="line"></span><br><span class="line"># SET-ex3           = SET extension number 3</span><br><span class="line"></span><br><span class="line">countryName                 = Country Name (2 letter code)</span><br><span class="line">countryName_default         = US</span><br><span class="line">stateOrProvinceName         = State or Province Name (full name)</span><br><span class="line">stateOrProvinceName_default = New York</span><br><span class="line">localityName                = Locality Name (eg, city)</span><br><span class="line">localityName_default        = Rochester</span><br><span class="line">organizationName            = Organization Name (eg, company)</span><br><span class="line">organizationName_default    = localhost</span><br><span class="line">organizationalUnitName      = organizationalunit</span><br><span class="line">organizationalUnitName_default = Development</span><br><span class="line">commonName                  = Common Name (e.g. server FQDN or YOUR name)</span><br><span class="line">commonName_default          = localhost</span><br><span class="line">commonName_max              = 64</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[ req_attributes ]</span><br><span class="line">challengePassword       = A challenge password</span><br><span class="line">challengePassword_min       = 4</span><br><span class="line">challengePassword_max       = 20</span><br><span class="line"></span><br><span class="line">unstructuredName        = An optional company name</span><br><span class="line"></span><br><span class="line">[ usr_cert ]</span><br><span class="line"></span><br><span class="line"># These extensions are added when &apos;ca&apos; signs a request.</span><br><span class="line"></span><br><span class="line"># This goes against PKIX guidelines but some CAs do it and some software</span><br><span class="line"># requires this to avoid interpreting an end user certificate as a CA.</span><br><span class="line"></span><br><span class="line">basicConstraints=CA:FALSE</span><br><span class="line"></span><br><span class="line"># Here are some examples of the usage of nsCertType. If it is omitted</span><br><span class="line"># the certificate can be used for anything *except* object signing.</span><br><span class="line"></span><br><span class="line"># This is OK for an SSL server.</span><br><span class="line"># nsCertType            = server</span><br><span class="line"></span><br><span class="line"># For an object signing certificate this would be used.</span><br><span class="line"># nsCertType = objsign</span><br><span class="line"></span><br><span class="line"># For normal client use this is typical</span><br><span class="line"># nsCertType = client, email</span><br><span class="line"></span><br><span class="line"># and for everything including object signing:</span><br><span class="line"># nsCertType = client, email, objsign</span><br><span class="line"></span><br><span class="line"># This is typical in keyUsage for a client certificate.</span><br><span class="line"># keyUsage = nonRepudiation, digitalSignature, keyEncipherment</span><br><span class="line"></span><br><span class="line"># This will be displayed in Netscape&apos;s comment listbox.</span><br><span class="line">nsComment           = &quot;OpenSSL Generated Certificate&quot;</span><br><span class="line"></span><br><span class="line"># PKIX recommendations harmless if included in all certificates.</span><br><span class="line">subjectKeyIdentifier=hash</span><br><span class="line">authorityKeyIdentifier=keyid,issuer</span><br><span class="line"></span><br><span class="line"># This stuff is for subjectAltName and issuerAltname.</span><br><span class="line"># Import the email address.</span><br><span class="line"># subjectAltName=email:copy</span><br><span class="line"># An alternative to produce certificates that aren&apos;t</span><br><span class="line"># deprecated according to PKIX.</span><br><span class="line"># subjectAltName=email:move</span><br><span class="line"></span><br><span class="line"># Copy subject details</span><br><span class="line"># issuerAltName=issuer:copy</span><br><span class="line"></span><br><span class="line">#nsCaRevocationUrl      = http://www.domain.dom/ca-crl.pem</span><br><span class="line">#nsBaseUrl</span><br><span class="line">#nsRevocationUrl</span><br><span class="line">#nsRenewalUrl</span><br><span class="line">#nsCaPolicyUrl</span><br><span class="line">#nsSslServerName</span><br><span class="line"></span><br><span class="line"># This is required for TSA certificates.</span><br><span class="line"># extendedKeyUsage = critical,timeStamping</span><br><span class="line"></span><br><span class="line">[ v3_req ]</span><br><span class="line"></span><br><span class="line"># Extensions to add to a certificate request</span><br><span class="line"></span><br><span class="line">basicConstraints = CA:FALSE</span><br><span class="line">keyUsage = nonRepudiation, digitalSignature, keyEncipherment</span><br><span class="line"></span><br><span class="line">[ v3_ca ]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Extensions for a typical CA</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># PKIX recommendation.</span><br><span class="line"></span><br><span class="line">subjectKeyIdentifier=hash</span><br><span class="line"></span><br><span class="line">authorityKeyIdentifier=keyid:always,issuer</span><br><span class="line"></span><br><span class="line"># This is what PKIX recommends but some broken software chokes on critical</span><br><span class="line"># extensions.</span><br><span class="line">#basicConstraints = critical,CA:true</span><br><span class="line"># So we do this instead.</span><br><span class="line">basicConstraints = CA:true</span><br><span class="line"></span><br><span class="line"># Key usage: this is typical for a CA certificate. However since it will</span><br><span class="line"># prevent it being used as an test self-signed certificate it is best</span><br><span class="line"># left out by default.</span><br><span class="line"># keyUsage = cRLSign, keyCertSign</span><br><span class="line"></span><br><span class="line"># Some might want this also</span><br><span class="line"># nsCertType = sslCA, emailCA</span><br><span class="line"></span><br><span class="line"># Include email address in subject alt name: another PKIX recommendation</span><br><span class="line"># subjectAltName=email:copy</span><br><span class="line"># Copy issuer details</span><br><span class="line"># issuerAltName=issuer:copy</span><br><span class="line"></span><br><span class="line"># DER hex encoding of an extension: beware experts only!</span><br><span class="line"># obj=DER:02:03</span><br><span class="line"># Where &apos;obj&apos; is a standard or added object</span><br><span class="line"># You can even override a supported extension:</span><br><span class="line"># basicConstraints= critical, DER:30:03:01:01:FF</span><br><span class="line"></span><br><span class="line">[ crl_ext ]</span><br><span class="line"></span><br><span class="line"># CRL extensions.</span><br><span class="line"># Only issuerAltName and authorityKeyIdentifier make any sense in a CRL.</span><br><span class="line"></span><br><span class="line"># issuerAltName=issuer:copy</span><br><span class="line">authorityKeyIdentifier=keyid:always</span><br><span class="line"></span><br><span class="line">[ proxy_cert_ext ]</span><br><span class="line"># These extensions should be added when creating a proxy certificate</span><br><span class="line"></span><br><span class="line"># This goes against PKIX guidelines but some CAs do it and some software</span><br><span class="line"># requires this to avoid interpreting an end user certificate as a CA.</span><br><span class="line"></span><br><span class="line">basicConstraints=CA:FALSE</span><br><span class="line"></span><br><span class="line"># Here are some examples of the usage of nsCertType. If it is omitted</span><br><span class="line"># the certificate can be used for anything *except* object signing.</span><br><span class="line"></span><br><span class="line"># This is OK for an SSL server.</span><br><span class="line"># nsCertType            = server</span><br><span class="line"></span><br><span class="line"># For an object signing certificate this would be used.</span><br><span class="line"># nsCertType = objsign</span><br><span class="line"></span><br><span class="line"># For normal client use this is typical</span><br><span class="line"># nsCertType = client, email</span><br><span class="line"></span><br><span class="line"># and for everything including object signing:</span><br><span class="line"># nsCertType = client, email, objsign</span><br><span class="line"></span><br><span class="line"># This is typical in keyUsage for a client certificate.</span><br><span class="line"># keyUsage = nonRepudiation, digitalSignature, keyEncipherment</span><br><span class="line"></span><br><span class="line"># This will be displayed in Netscape&apos;s comment listbox.</span><br><span class="line">nsComment           = &quot;OpenSSL Generated Certificate&quot;</span><br><span class="line"></span><br><span class="line"># PKIX recommendations harmless if included in all certificates.</span><br><span class="line">subjectKeyIdentifier=hash</span><br><span class="line">authorityKeyIdentifier=keyid,issuer</span><br><span class="line"></span><br><span class="line"># This stuff is for subjectAltName and issuerAltname.</span><br><span class="line"># Import the email address.</span><br><span class="line"># subjectAltName=email:copy</span><br><span class="line"># An alternative to produce certificates that aren&apos;t</span><br><span class="line"># deprecated according to PKIX.</span><br><span class="line"># subjectAltName=email:move</span><br><span class="line"></span><br><span class="line"># Copy subject details</span><br><span class="line"># issuerAltName=issuer:copy</span><br><span class="line"></span><br><span class="line">#nsCaRevocationUrl      = http://www.domain.dom/ca-crl.pem</span><br><span class="line">#nsBaseUrl</span><br><span class="line">#nsRevocationUrl</span><br><span class="line">#nsRenewalUrl</span><br><span class="line">#nsCaPolicyUrl</span><br><span class="line">#nsSslServerName</span><br><span class="line"></span><br><span class="line"># This really needs to be in place for it to be a proxy certificate.</span><br><span class="line">proxyCertInfo=critical,language:id-ppl-anyLanguage,pathlen:3,policy:foo</span><br><span class="line"></span><br><span class="line">####################################################################</span><br><span class="line">[ tsa ]</span><br><span class="line"></span><br><span class="line">default_tsa = tsa_config1   # the default TSA section</span><br><span class="line"></span><br><span class="line">[ tsa_config1 ]</span><br><span class="line"></span><br><span class="line"># These are used by the TSA reply generation only.</span><br><span class="line">dir     = ./demoCA      # TSA root directory</span><br><span class="line">serial      = $dir/tsaserial    # The current serial number (mandatory)</span><br><span class="line">crypto_device   = builtin       # OpenSSL engine to use for signing</span><br><span class="line">signer_cert = $dir/tsacert.pem  # The TSA signing certificate</span><br><span class="line">                    # (optional)</span><br><span class="line">certs       = $dir/cacert.pem   # Certificate chain to include in reply</span><br><span class="line">                    # (optional)</span><br><span class="line">signer_key  = $dir/private/tsakey.pem # The TSA private key (optional)</span><br><span class="line"></span><br><span class="line">default_policy  = tsa_policy1       # Policy if request did not specify it</span><br><span class="line">                    # (optional)</span><br><span class="line">other_policies  = tsa_policy2, tsa_policy3  # acceptable policies (optional)</span><br><span class="line">digests     = md5, sha1     # Acceptable message digests (mandatory)</span><br><span class="line">accuracy    = secs:1, millisecs:500, microsecs:100  # (optional)</span><br><span class="line">clock_precision_digits  = 0 # number of digits after dot. (optional)</span><br><span class="line">ordering        = yes   # Is ordering defined for timestamps?</span><br><span class="line">                # (optional, default: no)</span><br><span class="line">tsa_name        = yes   # Must the TSA name be included in the reply?</span><br><span class="line">                # (optional, default: no)</span><br><span class="line">ess_cert_id_chain   = no    # Must the ESS cert id chain be included?</span><br><span class="line">                # (optional, default: no)</span><br><span class="line"></span><br><span class="line">                </span><br><span class="line">[req_ext]</span><br><span class="line">subjectAltName = @alt_names</span><br><span class="line"></span><br><span class="line">[v3_ca]</span><br><span class="line">subjectAltName = @alt_names</span><br><span class="line"></span><br><span class="line">[alt_names]</span><br><span class="line">DNS.1   = localhost</span><br><span class="line">DNS.2   = 127.0.0.1</span><br><span class="line">DNS.3   = www.abc.com</span><br></pre></td></tr></table></figure></p>
+<h2 id="3、创建顶级CA的公钥证书和私钥文件"><a href="#3、创建顶级CA的公钥证书和私钥文件" class="headerlink" title="3、创建顶级CA的公钥证书和私钥文件"></a>3、创建顶级CA的公钥证书和私钥文件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//生成顶级CA的公钥证书和私钥文件，有效期10年（RSA 1024bits，默认）  </span><br><span class="line"># openssl req -new -x509 -days 3650 -keyout CARoot.key -out CARoot.crt</span><br><span class="line">//一路回车，输入密码</span><br><span class="line">// 为顶级CA的私钥文件去除保护口令  </span><br><span class="line"># openssl rsa -in CARoot.key -out CARoot.key</span><br></pre></td></tr></table></figure>
+<h2 id="4、生成私钥文件和证书"><a href="#4、生成私钥文件和证书" class="headerlink" title="4、生成私钥文件和证书"></a>4、生成私钥文件和证书</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># openssl genrsa -out app.key 2048 </span><br><span class="line"># openssl req -new -key app.key -out app.csr</span><br><span class="line">// 一路回车</span><br><span class="line"># openssl ca -extensions v3_ca -in app.csr -out app.crt -cert CARoot.crt -keyfile CARoot.key -days 1826 -policy policy_anything</span><br><span class="line">// 一路回车</span><br></pre></td></tr></table></figure>
+<p>这时候就把 CA证书和应用证书都生成了，目录下应该有这么多文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-rw-r--r-- 1 root root 4.2K May  8 17:13 app.crt</span><br><span class="line">-rw-r--r-- 1 root root 1.2K May  8 17:12 app.csr</span><br><span class="line">-rw-r--r-- 1 root root 1.7K May  8 17:12 app.key</span><br><span class="line">-rw-r--r-- 1 root root 5.1K May  8 17:11 ca.cnf</span><br><span class="line">-rw-r--r-- 1 root root 1.4K May  8 17:11 CARoot.crt</span><br><span class="line">-rw-r--r-- 1 root root 1.7K May  8 17:11 CARoot.key</span><br></pre></td></tr></table></figure>
+<h2 id="5、配置nginx加载ssl文件"><a href="#5、配置nginx加载ssl文件" class="headerlink" title="5、配置nginx加载ssl文件"></a>5、配置nginx加载ssl文件</h2><p>这里只贴上关键部分了，修改完毕，并<code>reload</code>下<code>nginx</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">	listen 443 ssl;</span><br><span class="line">	ssl_certificate /var/ssl/app.crt;</span><br><span class="line">	ssl_certificate_key /var/ssl/app.key;</span><br><span class="line">	location / &#123;</span><br><span class="line">		return 200 &quot;ok&quot;;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="6、把CARoot-crt证书添加到chrome信任"><a href="#6、把CARoot-crt证书添加到chrome信任" class="headerlink" title="6、把CARoot.crt证书添加到chrome信任"></a>6、把<code>CARoot.crt</code>证书添加到chrome信任</h2><p>这里就不详细说了</p>
+<h2 id="7、大功告成"><a href="#7、大功告成" class="headerlink" title="7、大功告成"></a>7、大功告成</h2><p>访问 <code>https://www.abc.com</code> 就会有信任的标识了，如果想加入新的域名，需要手动修改<code>/etc/pki/tls/openssl.cnf</code>最后的域名信息，然后再手动之行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># openssl ca -extensions v3_ca -in app.csr -out app.crt -cert CARoot.crt -keyfile CARoot.key -days 1826 -policy policy_anything</span><br></pre></td></tr></table></figure></p>
+<p>重新生成新的域名证书，客户端<code>chrome</code>不用重新导入<code>CARoot.crt</code>证书</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/openresty/" rel="tag"># openresty</a>
+          
+            <a href="/tags/自签名证书/" rel="tag"># 自签名证书</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/20/lua/" rel="next" title="记录一个因为nginx配置不规范导致的缓存击穿的问题">
+                <i class="fa fa-chevron-left"></i> 记录一个因为nginx配置不规范导致的缓存击穿的问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/16/ngx_say_and_print/" rel="prev" title="由ngx.say和ngx.print差异引发的血案">
+                由ngx.say和ngx.print差异引发的血案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、在CA目录下创建两个初始文件"><span class="nav-number">1.</span> <span class="nav-text">1、在CA目录下创建两个初始文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、创建指定的ssl目录，生成ca-cnf配置文件"><span class="nav-number">2.</span> <span class="nav-text">2、创建指定的ssl目录，生成ca.cnf配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、创建顶级CA的公钥证书和私钥文件"><span class="nav-number">3.</span> <span class="nav-text">3、创建顶级CA的公钥证书和私钥文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、生成私钥文件和证书"><span class="nav-number">4.</span> <span class="nav-text">4、生成私钥文件和证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、配置nginx加载ssl文件"><span class="nav-number">5.</span> <span class="nav-text">5、配置nginx加载ssl文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、把CARoot-crt证书添加到chrome信任"><span class="nav-number">6.</span> <span class="nav-text">6、把CARoot.crt证书添加到chrome信任</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7、大功告成"><span class="nav-number">7.</span> <span class="nav-text">7、大功告成</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

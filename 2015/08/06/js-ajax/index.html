@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Mongodb是一个高性能，可扩展数据库，并具有低延迟，高吞吐率的性能。但是使用过程中难免会有所坑，下面将介绍一些优化方案。以下建议翻译自 亚马逊的 《Performance Best Practices for MongoDB 2015》补充是自己在Mongodb实践中的总结">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mongodb 实战优化">
+<meta property="og:url" content="http://yoursite.com/2015/08/06/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="Mongodb是一个高性能，可扩展数据库，并具有低延迟，高吞吐率的性能。但是使用过程中难免会有所坑，下面将介绍一些优化方案。以下建议翻译自 亚马逊的 《Performance Best Practices for MongoDB 2015》补充是自己在Mongodb实践中的总结">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.849Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mongodb 实战优化">
+<meta name="twitter:description" content="Mongodb是一个高性能，可扩展数据库，并具有低延迟，高吞吐率的性能。但是使用过程中难免会有所坑，下面将介绍一些优化方案。以下建议翻译自 亚马逊的 《Performance Best Practices for MongoDB 2015》补充是自己在Mongodb实践中的总结">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/08/06/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Mongodb 实战优化 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/08/06/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Mongodb 实战优化
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2015-08-06 14:50:55" itemprop="dateCreated datePublished" datetime="2015-08-06T14:50:55+08:00">2015-08-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/08/06/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2015/08/06/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Mongodb是一个高性能，可扩展数据库，并具有低延迟，高吞吐率的性能。但是使用过程中难免会有所坑，下面将介绍一些优化方案。<br>以下建议翻译自 亚马逊的 《Performance Best Practices for MongoDB 2015》<br>补充是自己在Mongodb实践中的总结</p>
+<a id="more"></a>
+<p>1、Mongodb引擎<br>Mongodb 3.0 支持了2种引擎：<br>A、默认的 MMAPv1 引擎，老版本一种使用<br>B、WiredTiger 引擎，新支持的db引擎<br>这两种引擎可以在一个副本集中共存，他们之前的迁移是很容易，也就是说，从 MMAPv1 老的引擎升级到新的 WiredTiger 引擎是不会破坏原有数据的。<br>这两种引擎是为不同的业务场景做的优化，下面的优化方案会提及支持的相关引擎。</p>
+<p>2、硬件优化<br>2.1、确保足够的内存：<br>保证内存大于数据存储大小，优化内存是最显而易见的方案<br>补充：实践证明，尽量保证数据块大小不要超出系统内存的一半，性能最优</p>
+<p>2.2、在高写入应用中，使用SSD硬盘<br>Mongodb的落盘操作是随机的，一般60s落盘，100ms写journal，所以使用SSD硬盘一般会有很显著的写入20-50倍的提升。<br>补充：当内存在合理范围内，更换SSD硬盘并不会显著提升写性能，关闭journal会提升一些性能，但是可能会带来数据丢失的风险</p>
+<p>2.3、压缩存储和I/O密集型负载<br>新的存储引擎 WiredTiger 允许压缩存储，设置合理的压缩配置，可以防止压缩过大导致的I/O密集型的CPU负载过高的情况。</p>
+<p>2.4、使用更快的CPU<br>这点毋容置疑，新的存储引擎WiredTiger可以比MMAPv1更好的利用多核。</p>
+<p>2.5、尽量将Mongodb实例独享物理设备<br>这儿也不用多说，独享设备肯定是最好</p>
+<p>2.6、使用多个mongos<br>当集群增加后，也要相应的增加mongos</p>
+<p>3、应用层优化<br>3.1、只更新需要更新的字段：<br>不是更新所有的字段，而只是更新需要更新的改变过的字段，这样可以避免检索文档所有的字段，减少网络传输和数据库负载。</p>
+<p>3.2、避免单一 非 条件的查询：<br>如果单一的非条件查询，会进行全表扫描，尽量避免它</p>
+<p>3.3、在你的应用中，使用 explain() 测试你的每一条语句<br>执行计划explain()可以让你有很多意想不到的收获</p>
+<p>3.4、覆盖索引的查询<br>这个无需多说了，查询的条件尽可能多的覆盖索引</p>
+<p>3.5、避免不带片键查询<br>在集群中，如果不带片键查询，会去每片查询，避免这样的操作</p>
+<p>3.6、读写分离<br>因为主库和从库的同步延迟，如果应用能容忍延迟，最好是从库读，主库写</p>
+<p>3.7、使用最新的客户端连接库<br>mongodb一直在不断的更新，尽量使用官方提供的最新连接库</p>
+<p>3.8、分片均匀<br>如果 mongodb 采用分片，片键的选择非常重要，又要能分片均匀，又要保证读写性能高，还要保证可扩展</p>
+<p>3.9、选择合适的片键<br>同上</p>
+<p>补充：<br>4.0、大量更新批量操作<br>实际经验，如果一个集合有大量的upate或insert操作，那么与其一个个操作的去连接，不如汇聚到1000-5000条左右，一次性批量写入，可以有效减少锁的竞争情况，性能有显著提高。</p>
+<p>4、结构设计和索引<br>4.1、尽量把数据存成一个文档<br>在合适的时候把数据存储为一个文档，可以非常高效的利于查询，这样搜索的条数就很少，打开展平对于搜索是不利的，但是过重的一个文档可能也会带来写的问题。</p>
+<p>4.2、避免过大文档<br>Mongodb一个文档最大为16MB，在实际情况中，很多文档都是小于几KB的，比如在文档里维护一个很大的列表，应该将列表打开，一行一条记录。</p>
+<p>4.3、避免文档无限的增长<br>Mongodb为了节约存储空间，会以 usePowerOf2Sizes 来增长一个文档的存储空间，举个例子：<br>比如：第一次插入这个文档，文档大小为1KB，这时Mongodb会以2KB来存储，在文档增长到2KB以内时，是不会移动文档和索引存储块的。当这个文档增长到 2KB 后，Mongodb又会设置 4KB 来存储它，每次都是以2倍的量存储，保证了空间的利用和存储块移动之间的平衡。如果一个文档不停的无限增长，可能会因为频繁的移动存储块而影响性能。<br>补充：实际情况中设置usePowerOf2Sizes这个参数，并没有显著的性能提升</p>
+<p>4.4、避免大的索引数组<br>多字段索引可能会利于查询，但是会让写操作变慢，所以要权衡一下。</p>
+<p>4.5、避免过长的字段名<br>Mongodb的字段名和sql不同，会占用文档的空间，增加网络传输压力，尽量用短小精简的字段名，可以在程序那边做映射。<br>补充：实际情况，设置短小精简的字段名，可以显著提升查询性能</p>
+<p>4.6、避免 select * 的查询<br>这点和sql一样，用不到的字段不要返回了<br>补充：实际情况也是如此，不查询不需要的字段，显著提升性能</p>
+<p>4.7、优化索引<br>避免索引命中不散列，比如对一个枚举，布尔值做索引，都是无效的</p>
+<p>4.8、组合索引可以包含单个索引<br>比如有一个组合索引 {“lastname”:1, “firstname”:1}，是没必要建立 {“lastname”:1} 这个索引的，因为已经被包括在了组合索引里了</p>
+<p>4.9、避免正则表达式没有命中索引<br>这个类似sql的like，如果要命中索引，必须从头开始匹配</p>
+<p>4.10、使用 wiredtiger 引擎，索引放其他地方存储<br>使用 wiredtiger 引擎，索引可以放在其他地方存储，比如更快的硬盘，资源争抢I/O更少的磁盘</p>
+<p>5、磁盘I/O<br>5.1、readhead需要设置为32<br>为了mongodb的性能，readhead这个值不能设置少于32，如果设置过多会浪费内存。</p>
+<p>5.2、使用EXT4或者XFS文件系统，避免EXT3<br>EXT3文件系统太过陈旧，没有对数据库进行优化，不够高效</p>
+<p>5.3、关闭 access time 设置<br>关闭对文件最后一次访问的时间记录，因为database一直在访问文件，所以关闭它能够提升性能</p>
+<p>5.4、不要使用大量的虚拟内存<br>将虚拟内存设置为合理大小，不要设置过大</p>
+<p>5.5、使用Raid10<br>使用Raid10来做存储，性能和数据安全都有保证</p>
+<p>6、性能配置<br>6.1、做好性能测试<br>在应用上线之前，需要做性能测试来评估</p>
+<p>6.2、片键<br>如果没有范围的片键搜索，建议使用hash来使用片键，如果有范围的搜索，建议将他们提前处理，然后并行搜索获取。</p>
+<p>6.3、关闭块自动平衡<br>关闭自动移动块平衡，提升性能<br>补充：实际情况中，这个设置没有显著提升性能，建议还是打开</p>
+<p>6.4、预热系统几分钟<br>这个看上去没啥用</p>
+<p>6.5、对系统瓶颈进行监控<br>这个也是必须的</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/08/05/js-ajax/" rel="next" title="分享一次 Mongodb 真实案例">
+                <i class="fa fa-chevron-left"></i> 分享一次 Mongodb 真实案例
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/19/python/" rel="prev" title="Sqlalchemy count 巨慢的坑">
+                Sqlalchemy count 巨慢的坑 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

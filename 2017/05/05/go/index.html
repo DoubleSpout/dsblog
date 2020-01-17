@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Testing HTTP handlers in Go原文地址：https://lanreadelowo.com/blog/2017/04/08/testing-http-handlers-go/">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go写http控制器的单元测试">
+<meta property="og:url" content="http://yoursite.com/2017/05/05/go/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="Testing HTTP handlers in Go原文地址：https://lanreadelowo.com/blog/2017/04/08/testing-http-handlers-go/">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.860Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="go写http控制器的单元测试">
+<meta name="twitter:description" content="Testing HTTP handlers in Go原文地址：https://lanreadelowo.com/blog/2017/04/08/testing-http-handlers-go/">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/05/05/go/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>go写http控制器的单元测试 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/05/go/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">go写http控制器的单元测试
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-05-05 14:50:07" itemprop="dateCreated datePublished" datetime="2017-05-05T14:50:07+08:00">2017-05-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/go/" itemprop="url" rel="index"><span itemprop="name">go</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/05/05/go/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2017/05/05/go/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Testing HTTP handlers in Go<br>原文地址：<a href="https://lanreadelowo.com/blog/2017/04/08/testing-http-handlers-go/" target="_blank" rel="noopener">https://lanreadelowo.com/blog/2017/04/08/testing-http-handlers-go/</a></p>
+<a id="more"></a>
+<p>It is no news that quality, integrity and reliability are what we always want to deliver with software. And an integral part of that is Software testing. Some even propose a jail term for those who don’t write tests.</p>
+<p>Ok, maybe that was extreme, but testing is such an important process since it helps us verify the system works as intended. There are tons of information readily available on the internet - from books to blog posts - that describes the whys of testing.</p>
+<p>Being a big fan of software testing, it was one of the first things i was eager to learn when i started learning Go. The Go team made this even much easier by providing a testing framework out of the box and a simple command to run them all go test. Coming from PHP, this is a relieve since PHPunit, the testing framework is userland code and you have to add this as a (dev)dependency to every project. But in Go, all i do is append _test to a file name and it’s content becomes a testsuite.</p>
+<p>Primer</p>
+<p>If you are totally new to testing in Go, you might want to read this section else feel free to keep on scrolling.</p>
+<p>The obligatory Calculator test</p>
+<p>//calculator.go<br>package calculator</p>
+<p>func Add(x, y int) int {<br>    return x + y<br>}</p>
+<p>func Multiply(x, y int) int {<br>    return x * y<br>}<br>package calculator</p>
+<p>import (<br>    “testing”<br>)</p>
+<p>func TestAdd(t *testing.T) {</p>
+<pre><code>expected := 18
+
+if got := Add(10, 8); got != expected {
+    t.Errorf(&quot;expected %d. Got %d instead&quot;, expected, got)
+}
+</code></pre><p>}</p>
+<p>func TestMultiply(t *testing.T) {<br>    expected := 100</p>
+<pre><code>if got := Multiply(10, 10); got != expected {
+    t.Errorf(&quot;Expected %d. Got %d&quot;, expected, got)
+}
+</code></pre><p>}</p>
+<p>go test is the command you need to run.<br>Testing Handlers</p>
+<p>While testing handlers (or anything in general), all we want to do is :=</p>
+<p>Arrange: Run some set up.<br>Act: Run the part of the code you want to test.<br>Assert: Compare your expected output to what was returned. Here, we would manually inspect the HTTP status code and the response body - we are returning JSON. Inspecting the persistence layer can also be a thing.<br>To put this idea through, we would be building a simple api for a dummy blog. To keep things extremely simple, the data would be held in-memory and it would have a very limited feature set ;</p>
+<p>Posts can be created.<br>Posts can be deleted.<br>A single post can be viewed.<br>All posts can be viewed.<br>For this project, we would be making use of gorilla/mux for the routing. As we add one route and handler, we would write it’s equivalent tests</p>
+<p>The code for this can be found on github<br>//main.go<br>package main</p>
+<p>import (<br>    “encoding/json”<br>    “fmt”<br>    “log”<br>    “net/http”<br>    “strconv”</p>
+<pre><code>&quot;github.com/gorilla/mux&quot;
+</code></pre><p>)</p>
+<p>var posts []*post</p>
+<p>type post struct {<br>    ID      int    <code>json:&quot;id&quot;</code><br>    Title   string <code>json:&quot;title&quot;</code><br>    Content string <code>json:&quot;content&quot;</code><br>}</p>
+<p>func init() {</p>
+<p>//Load blog posts in memory<br>    posts = []*post{<br>        {1, “New blog resolution”, “I have decided to give my blog a new life and would hence forth try to write as often”},<br>        {2, “Go is cool”, “Yeah i have been told that multiple times”},<br>        {3, “Interminttent fasting”, “You should try this out, it helps clear the brain and tons of health benefits”},<br>        {4, “Yet another blog post”, “I made a resolution earlier to keep on writing. Here is an affirmation of that”},<br>        {5, “Backpacking”, “Yup, i did just that”},<br>    }<br>}</p>
+<p>func main() {</p>
+<pre><code>r := mux.NewRouter()
+
+r.HandleFunc(&quot;/&quot;, func(w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(&quot;Hello world..\n Visit the &apos;/posts&apos; (GET) route to get all posts. &quot; +
+        &quot;\n &apos;/posts/id&apos; (GET) to get a specific post.&quot; +
+        &quot;\n &apos;/posts/id&apos; (POST) to create a new post . \n &quot; +
+        &quot;&apos;/posts/delete&apos; (PUT) to delete a post  &quot;))
+}).Methods(&quot;GET&quot;)
+
+r.HandleFunc(&quot;/posts&quot;, articlesHandler).Methods(&quot;GET&quot;, &quot;POST&quot;)
+r.HandleFunc(&quot;/posts/{id:[0-9]+}&quot;, articleHandler).Methods(&quot;GET&quot;)
+r.HandleFunc(&quot;/posts/delete&quot;, deleteArticleHandler).Methods(&quot;DELETE&quot;)
+
+log.Println(&quot;Starting server at port 4000&quot;)
+
+http.ListenAndServe(&quot;:4000&quot;, r)
+</code></pre><p>}<br>Nothing here, just yet another web server we created. So let’s implement the handlers.</p>
+<p>You might want to comment out unimplemented handlers so an error shouldn’t occur.<br>//Fetches all posts<br>func articlesHandler(w http.ResponseWriter, r *http.Request) {</p>
+<pre><code>if r.Method == &quot;POST&quot; {
+    createArticle(w, r)
+    return
+}
+
+users, _ := json.Marshal(posts) //Handle errors in real life
+
+w.WriteHeader(http.StatusOK)
+fmt.Fprintf(w, string(users))
+</code></pre><p>}<br>Create a test file called main_test.go</p>
+<p>package main</p>
+<p>import (<br>    “net/http”<br>    “net/http/httptest”<br>    “testing”</p>
+<pre><code>&quot;github.com/stretchr/testify/assert&quot;
+</code></pre><p>)</p>
+<p>func checkError(err error, t *testing.T) {<br>    if err != nil {<br>        t.Errorf(“An error occurred. %v”, err)<br>    }<br>}</p>
+<p>func TestArticlesHandler(t *testing.T) {</p>
+<pre><code>req, err := http.NewRequest(&quot;GET&quot;, &quot;/posts&quot;, nil)
+
+checkError(err, t)
+
+rr := httptest.NewRecorder()
+
+//Make the handler function satisfy http.Handler
+//https://lanreadelowo.com/blog/2017/04/03/http-in-go/
+http.HandlerFunc(articlesHandler).
+    ServeHTTP(rr, req)
+
+//Confirm the response has the right status code
+if status := rr.Code; status != http.StatusOK {
+    t.Errorf(&quot;Status code differs. Expected %d .\n Got %d instead&quot;, http.StatusOK, status)
+}
+
+//Confirm the returned json is what we expected
+//Manually build up the expected json string
+expected := string(`[{&quot;id&quot;:1,&quot;title&quot;:&quot;New blog resolution&quot;,&quot;content&quot;:&quot;I have decided to give my blog a new life and would hence forth try to write as often&quot;},{&quot;id&quot;:2,&quot;title&quot;:&quot;Go is cool&quot;,&quot;content&quot;:&quot;Yeah i have been told that multiple times&quot;},{&quot;id&quot;:3,&quot;title&quot;:&quot;Interminttent fasting&quot;,&quot;content&quot;:&quot;You should try this out, it helps clear the brain and tons of health benefits&quot;},{&quot;id&quot;:4,&quot;title&quot;:&quot;Yet another blog post&quot;,&quot;content&quot;:&quot;I made a resolution earlier to keep on writing. Here is an affirmation of that&quot;},{&quot;id&quot;:5,&quot;title&quot;:&quot;Backpacking&quot;,&quot;content&quot;:&quot;Yup, i did just that&quot;}]`)
+
+//The assert package checks if both JSON string are equal and for a plus, it actually confirms if our manually built JSON string is valid
+assert.JSONEq(t, expected, rr.Body.String(), &quot;Response body differs&quot;)
+</code></pre><p>}</p>
+<p>I have laced the test with comments in other for it to be exlanatory but what we are basically doing here is making sure our handler returns the correct HTTP status code and correct JSON. If you are persisting stuffs to a store, you might as well want to check that to make sure all is well.</p>
+<p>The main thing to note here is we made use of a ResponseRecorder, this is key to testing HTTP In Go since it allows us inspect the response.</p>
+<p>We have a dependency on github.com/stretchr/testify/assert, it’s more like getting the xUnit test style and that is just my personal preference. You can achieve the same with reflect.DeepEqual.<br>Remember to tun go test.<br>To fetch a blog post via the link /posts/4, we would have an implementation like :</p>
+<p>//main.go<br>func articleHandler(w http.ResponseWriter, r *http.Request) {</p>
+<pre><code>if r.Method == &quot;POST&quot; {
+    createArticle(w, r)
+    return
+}
+
+vars := mux.Vars(r)
+
+id := vars[&quot;id&quot;]
+
+//Gorilla mux stores url mappings as strings,
+//We would have to convert them to an int in other to use it as an index for fetchong the specified post
+postId, _ := strconv.Atoi(id)
+
+var postFound bool
+var p *post
+
+for _, v := range posts {
+    if v.ID == postId {
+        postFound = true
+        p = v
+        break
+    }
+}
+
+if postFound {
+    w.WriteHeader(http.StatusOK)
+    requestedPost, _ := json.Marshal(p)
+    fmt.Fprintf(w, string(requestedPost))
+    return
+}
+
+//Throw a 404
+w.WriteHeader(http.StatusNotFound)
+w.Write([]byte(http.StatusText(http.StatusNotFound)))
+</code></pre><p>}</p>
+<p>func createArticle(w http.ResponseWriter, r *http.Request) {<br>    //STUB<br>}<br>To test this, we have to verify the returned JSON is the same as what we have in the array.</p>
+<p>func TestArticleHandlerWithValidPost(t *testing.T) {<br>    req, err := http.NewRequest(“GET”, “/posts/2”, nil)</p>
+<pre><code>checkError(err, t)
+
+rr := httptest.NewRecorder()
+
+r := mux.NewRouter()
+
+r.HandleFunc(&quot;/posts/{id:[0-9]+}&quot;, articleHandler).Methods(&quot;GET&quot;)
+
+r.ServeHTTP(rr, req)
+
+if status := rr.Code; status != http.StatusOK {
+    t.Errorf(&quot;Status code differs. Expected %d.\n Got %d&quot;, http.StatusOK, status)
+}
+
+expected := string(`{&quot;id&quot;:2,&quot;title&quot;:&quot;Go is cool&quot;,&quot;content&quot;:&quot;Yeah i have been told that multiple times&quot;}`)
+
+assert.JSONEq(t, expected, rr.Body.String(), &quot;Response body differs&quot;)
+</code></pre><p>}</p>
+<p>This is quite diffferent from what we had in the previous test.</p>
+<p>Why instantiate a gorilla/mux instance when we could have simply done http.HandlerFunc(handler).ServeHTTP(rr,req) ? This is because in the handler implementation, we had to retrieve the url param. Not instantiating mux would mean we wouldn’t be able to fetch the url parameter. Heck, we’d even get a nice panic. We don’t want that.</p>
+<p>Apart from that, nothing changed. We still called mux’s ServeHTTP method with the response recorder, checked the status and asserted the return JSON.</p>
+<p>Tests are supposed to cover both positive and negative inputs. In the articleHandler, we have a check that says If post cannot be found, throw a 404 error. How are we sure that works ?</p>
+<p>func TestArticleHandlerWithAnInvalidPost(t *testing.T) {</p>
+<pre><code>//we don&apos;t have a post with an id of 42, we expect and error
+req, err := http.NewRequest(&quot;POST&quot;, &quot;/posts/42&quot;, nil)
+
+checkError(err, t)
+
+rr := httptest.NewRecorder()
+
+r := mux.NewRouter()
+
+r.HandleFunc(&quot;/posts/{id:[0-9]+}&quot;, articleHandler).Methods(&quot;GET&quot;)
+
+r.ServeHTTP(rr, req)
+
+if status := rr.Code; status != http.StatusNotFound { //Must be 404
+    t.Errorf(&quot;Status code differs. Expected %d \n. Got %d&quot;, http.StatusNotFound, status)
+}
+
+expected := &quot;404 page not found\n&quot;
+
+assert.Equal(t, expected, rr.Body.String(), &quot;Response body differs&quot;)
+</code></pre><p>}</p>
+<p>That is going on fine, our tests are passing but we still have un covered feature sets. Our api cannot handle posts creation and deletion right now.</p>
+<p>For this features, i have added only very little tests (positive input only). You might want to try out writing the tests with negative inputs. Just remember that the github repo has the test suite heavily covered with both positive and negative input if you need a place to look.<br>The following code block would include the production code for both features while the second one would contain the tests.</p>
+<p>func deleteArticleHandler(w http.ResponseWriter, r *http.Request) {<br>    type d struct {<br>        ID int <code>json:&quot;id&quot;</code><br>    }</p>
+<pre><code>var data d
+
+if err := json.NewDecoder(r.Body).Decode(&amp;data); err != nil {
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write([]byte(&quot;Invalid request&quot;))
+    return
+}
+
+var postFound bool
+
+for _, v := range posts {
+    if v.ID == data.ID {
+        postFound = true
+        break
+    }
+}
+
+if !postFound {
+    w.WriteHeader(http.StatusNotFound)
+    w.Write([]byte(http.StatusText(http.StatusNotFound)))
+    return
+}
+
+//Get all posts except the one with the key we want to delete.
+//What is being done here basically is moving &quot;back left&quot; and &quot;front right&quot; of the key we want to delete.
+//More like summing up a matrix
+//Hence the key becomes stale and is dropped from the new array.
+
+po := posts[:data.ID-1]
+
+posts = po
+
+posts = append(posts, posts[data.ID-1:]...)
+
+w.WriteHeader(http.StatusOK)
+w.Write([]byte(&quot;The blog post was deleted successfully&quot;))
+</code></pre><p>}</p>
+<p>func createArticle(w http.ResponseWriter, r *http.Request) {<br>    type d struct {<br>        Title   string <code>json:&quot;title&quot;</code><br>        Content string <code>json:&quot;content&quot;</code><br>    }</p>
+<pre><code>var data d
+
+if err := json.NewDecoder(r.Body).Decode(&amp;data); err != nil {
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write([]byte(http.StatusText(http.StatusBadRequest)))
+    return
+}
+
+if data.Title == &quot;&quot; || data.Content == &quot;&quot; {
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write([]byte(&quot;Invalid data... The title and/or content for a blog posts cannot be empty&quot;))
+    return
+}
+
+newPost := &amp;post{
+    len(posts) + 1,
+    data.Title,
+    data.Content,
+}
+
+posts = append(posts, newPost)
+
+log.Println(posts)
+
+w.WriteHeader(http.StatusOK)
+w.Write([]byte(&quot;The blog post have been created&quot;))
+</code></pre><p>}<br>func TestArticleHandlerWithValidPost(t *testing.T) {<br>    req, err := http.NewRequest(“GET”, “/posts/2”, nil)</p>
+<pre><code>checkError(err, t)
+
+rr := httptest.NewRecorder()
+
+r := mux.NewRouter()
+
+r.HandleFunc(&quot;/posts/{id:[0-9]+}&quot;, articleHandler).Methods(&quot;GET&quot;)
+
+r.ServeHTTP(rr, req)
+
+if status := rr.Code; status != http.StatusOK {
+    t.Errorf(&quot;Status code differs. Expected %d.\n Got %d&quot;, http.StatusOK, status)
+}
+
+expected := string(`{&quot;id&quot;:2,&quot;title&quot;:&quot;Go is cool&quot;,&quot;content&quot;:&quot;Yeah i have been told that multiple times&quot;}`)
+
+assert.JSONEq(t, expected, rr.Body.String(), &quot;Response body differs&quot;)
+</code></pre><p>}</p>
+<p>func TestCanDeleteAPost(t *testing.T) {<br>    req, err := http.NewRequest(“DELETE”, “/posts”, bytes.NewBuffer([]byte(<code>{&quot;id&quot; : 5}</code>)))</p>
+<pre><code>checkError(err, t)
+
+rr := httptest.NewRecorder()
+
+http.HandlerFunc(deleteArticleHandler).ServeHTTP(rr, req)
+
+if status := rr.Code; status != http.StatusOK {
+    t.Errorf(&quot;Status code differs. Expected %d. Got %d&quot;, http.StatusOK, status)
+}
+
+expected := &quot;The blog post was deleted successfully&quot;
+
+assert.Equal(t, expected, rr.Body.String(), &quot;Response body differs&quot;)
+
+if len(posts) != 4 { //we deleted one already. Remember the in memory store has 5 posts
+    t.Errorf(&quot;An error occurred while post was being deleted, Post count is %d&quot;, len(posts))
+}
+</code></pre><p>}</p>
+<p>This isn’t diffferent from what we have done earlier on. We inspect everything that matters to us. For example, we took a peek into the in memory data store in other to truly confirm our handler was properly deleting the post.</p>
+<p>For kicks, you can even check the store doesn’t have a post with the specified key.<br>I love testing. Testing is fun. Go even makes it much more fun by incorporating this tools into our workflow.</p>
+<p>I hope this post helps someone confused about how to get started with testing.</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/03/js-ajax/" rel="next" title="关于移动端和苹果设备的防爬虫注意">
+                <i class="fa fa-chevron-left"></i> 关于移动端和苹果设备的防爬虫注意
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/22/golang_inherit/" rel="prev" title="go里面的几种继承写法">
+                go里面的几种继承写法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

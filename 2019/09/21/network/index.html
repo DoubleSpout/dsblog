@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="二层交换机:二层交换技术是发展比较成熟，二层交换机属数据链路层设备，可以识别数据包中的MAC地址信息，根据MAC地址进行转发，并将这些MAC地址与对应的端口记录在自己内部的一个地址表中。具体如下：">
+<meta name="keywords" content="network">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二层,三层交换机（转）">
+<meta property="og:url" content="http://yoursite.com/2019/09/21/network/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="二层交换机:二层交换技术是发展比较成熟，二层交换机属数据链路层设备，可以识别数据包中的MAC地址信息，根据MAC地址进行转发，并将这些MAC地址与对应的端口记录在自己内部的一个地址表中。具体如下：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-10-24T06:56:51.094Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二层,三层交换机（转）">
+<meta name="twitter:description" content="二层交换机:二层交换技术是发展比较成熟，二层交换机属数据链路层设备，可以识别数据包中的MAC地址信息，根据MAC地址进行转发，并将这些MAC地址与对应的端口记录在自己内部的一个地址表中。具体如下：">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/09/21/network/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>二层,三层交换机（转） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/21/network/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">二层,三层交换机（转）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-21 11:33:38" itemprop="dateCreated datePublished" datetime="2019-09-21T11:33:38+08:00">2019-09-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-24 14:56:51" itemprop="dateModified" datetime="2019-10-24T14:56:51+08:00">2019-10-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/network/" itemprop="url" rel="index"><span itemprop="name">network</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/09/21/network/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/09/21/network/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>二层交换机:二层交换技术是发展比较成熟，二层交换机属数据链路层设备，可以识别数据包中的MAC地址信息，根据MAC地址进行转发，并将这些MAC地址与对应的端口记录在自己内部的一个地址表中。<br>具体如下：<br><a id="more"></a></p>
+<p>（1）当交换机从某个端口收到一个数据包，它先读取包头中的源MAC地址，这样它就知道源MAC地址的机器是连在哪个端口上；</p>
+<p>（2）再去读取包头中的目的MAC地址，并在地址表中查找相应的端口；</p>
+<p>（3）如表中有与这目的MAC地址对应的端口，把数据包直接复制到这端口上。</p>
+<p>三层交换机: 三层交换技术就是将路由技术与交换技术合二为一的技术。在对第一个数据流进行路由后，它将会产生一个MAC地址与IP地址的映射表，当同样的数据流再次通过时，将根据此表直接从二层通过而不是再次路由，从而消除了路由器进行路由选择而造成网络的延迟，提高了数据包转发的效率。</p>
+<p>路由器：传统地，路由器工作于OSI七层协议中的第三层，其主要任务是接收来自一个网络接口的数据包，根据其中所含的目的地址，决定转发到下一个目的地址。因此，路由器首先得在转发路由表中查找它的目的地址，若找到了目的地址，就在数据包的帧格前添加下一个MAC地址，同时IP数据包头的TTL（Time To Live）域也开始减数，并重新计算校验和。当数据包被送到输出端口时，它需要按顺序等待，以便被传送到输出链路上。</p>
+<p>路由器在工作时能够按照某种路由通信协议查找设备中的路由表。如果到某一特定节点有一条以上的路径，则基本预先确定的路由准则是选择最优（或最经济）的传输路径。由于各种网络段和其相互连接情况可能会因环境变化而变化，因此路由情况的信息一般也按所使用的路由信息协议的规定而定时更新。</p>
+<p>主要区别：二层交换机工作在数据链路层，三层交换机工作在网络层，路由器工作在网络层。</p>
+<p>具体区别如下：</p>
+<p>二层交换机和三层交换机的区别：</p>
+<p>三层交换机使用了三层交换技术</p>
+<p>简单地说，三层交换技术就是：二层交换技术＋三层转发技术。它解决了局域网中网段划分之后，网段中子网必须依赖路由器进行管理的局面，解决了传统路由器低速、复杂所造成的网络瓶颈问题。</p>
+<p>什么是三层交换</p>
+<p>三层交换（也称多层交换技术，或IP交换技术）是相对于传统交换概念而提出的。众所周知，传统的交换技术是在OSI网络标准模型中的第二层——数据链路层进行*作的，而三层交换技术是在网络模型中的第三层实现了数据包的高速转发。简单地说，三层交换技术就是：二层交换技术＋三层转发技术。</p>
+<p>三层交换技术的出现，解决了局域网中网段划分之后，网段中子网必须依赖路由器进行管理的局面，解决了传统路由器低速、复杂所造成的网络瓶颈问题。</p>
+<p>其原理是：假设两个使用IP协议的站点A、B通过第三层交换机进行通信，发送站点A在开始发送时，把自己的IP地址与B站的IP地址比较，判断B站是否与自己在同一子网内。若目的站B与发送站A在同一子网内，则进行二层的转发。若两个站点不在同一子网内，如发送站A要与目的站B通信，发送站A要向“缺省网关”发出ARP(地址解析)封包，而“缺省网关”的IP地址其实是三层交换机的三层交换模块。当发送站A对“缺省网关”的IP地址广播出一个ARP请求时，如果三层交换模块在以前的通信过程中已经知道B站的MAC地址，则向发送站A回复B的MAC地址。否则三层交换模块根据路由信息向B站广播一个ARP请求，B站得到此ARP请求后向三层交换模块回复其MAC地址，三层交换模块保存此地址并回复给发送站A,同时将B站的MAC地址发送到二层交换引擎的MAC地址表中。从这以后，当A向B发送的数据包便全部交给二层交换处理，信息得以高速交换。由于仅仅在路由过程中才需要三层处理，绝大部分数据都通过二层交换转发，因此三层交换机的速度很快，接近二层交换机的速度，同时比相同路由器的价格低很多。</p>
+<p>第二层交换机和路由器的区别：</p>
+<p>传统交换机从网桥发展而来，属于OSI第二层即数据链路层设备。它根据MAC地址寻址，通过站表选择路由，站表的建立和维护由交换机自动进行。路由器属于OSI第三层即网络层设备，它根据IP地址进行寻址，通过路由表路由协议产生。交换机最大的好处是快速，由于交换机只须识别帧中MAC地址，直接根据MAC地址产生选择转发端口算法简单，便于ASIC实现，因此转发速度极高。但交换机的工作机制也带来一些问题。</p>
+<p>1.回路：根据交换机地址学习和站表建立算法，交换机之间不允许存在回路。一旦存在回路，必须启动生成树算法，阻塞掉产生回路的端口。而路由器的路由协议没有这个问题，路由器之间可以有多条通路来平衡负载，提高可靠性。</p>
+<p>2.负载集中：交换机之间只能有一条通路，使得信息集中在一条通信链路上，不能进行动态分配，以平衡负载。而路由器的路由协议算法可以避免这一点，OSPF路由协议算法不但能产生多条路由，而且能为不同的网络应用选择各自不同的最佳路由。</p>
+<p>3.广播控制：交换机只能缩小冲突域，而不能缩小广播域。整个交换式网络就是一个大的广播域，广播报文散到整个交换式网络。而路由器可以隔离广播域，广播报文不能通过路由器继续进行广播。</p>
+<p>4.子网划分：交换机只能识别MAC地址。MAC地址是物理地址，而且采用平坦的地址结构，因此不能根据MAC地址来划分子网。而路由器识别IP地址，IP地址由网络管理员分配，是逻辑地址且IP地址具有层次结构，被划分成网络号和主机号，可以非常方便地用于划分子网，路由器的主要功能就是用于连接不同的网络。</p>
+<p>5.保密问题：虽说交换机也可以根据帧的源MAC地址、目的MAC地址和其他帧中内容对帧实施过滤，但路由器根据报文的源IP地址、目的IP地址、TCP端口地址等内容对报文实施过滤，更加直观方便。</p>
+<p>6.介质相关：交换机作为桥接设备也能完成不同链路层和物理层之间的转换，但这种转换过程比较复杂，不适合ASIC实现，势必降低交换机的转发速度。因此目前交换机主要完成相同或相似物理介质和链路协议的网络互连，而不会用来在物理介质和链路层协议相差甚元的网络之间进行互连。而路由器则不同，它主要用于不同网络之间互连，因此能连接不同物理介质、链路层协议和网络层协议的网络。路由器在功能上虽然占据了优势，但价格昂贵，报文转发速度低。近几年，交换机为提高性能做了许多改进，其中最突出的改进是虚拟网络和三层交换。</p>
+<p>划分子网可以缩小广播域，减少广播风暴对网络的影响。路由器每一接口连接一个子网，广播报文不能经过路由器广播出去，连接在路由器不同接口的子网属于不同子网，子网范围由路由器物理划分。对交换机而言，每一个端口对应一个网段，由于子网由若干网段构成，通过对交换机端口的组合，可以逻辑划分子网。广播报文只能在子网内广播，不能扩散到别的子网内，通过合理划分逻辑子网，达到控制广播的目的。由于逻辑子网由交换机端口任意组合，没有物理上的相关性，因此称为虚拟子网，或叫虚拟网。虚拟网技术不用路由器就解决了广播报文的隔离问题，且虚拟网内网段与其物理位置无关，即相邻网段可以属于不同虚拟网，而相隔甚远的两个网段可能属于不同虚拟网，而相隔甚远的两个网段可能属于同一个虚拟网。不同虚拟网内的终端之间不能相互通信，增强了对网络内数据的访问控制。</p>
+<p>第三层交换机和路由器的区别：</p>
+<p>在第三层交换技术出现之前，几乎没有必要将路由功能器件和路由器区别开来，他们完全是相同的：提供路由功能正在路由器的工作，然而，现在第三层交换机完全能够执行传统路由器的大多数功能。作为网络互连的设备，第三层交换机具有以下特征：</p>
+<p>1.转发基于第三层地址的业务流；</p>
+<p>2.完全交换功能；</p>
+<p>3.可以完成特殊服务，如报文过滤或认证；</p>
+<p>4.执行或不执行路由处理。</p>
+<p>第三层交换机与传统路由器相比有如下优点：</p>
+<p>1.子网间传输带宽可任意分配：传统路由器每个接口连接一个子网，子网通过路由器进行传输的速率被接口的带宽所限制。而三层交换机则不同，它可以把多个端口定义成一个虚拟网，把多个端口组成的虚拟网作为虚拟网接口，该虚拟网内信息可通过组成虚拟网的端口送给三层交换机，由于端口数可任意指定，子网间传输带宽没有限制。</p>
+<p>2.合理配置信息资源：由于访问子网内资源速率和访问全局网中资源速率没有区别，子网设置单独服务器的意义不大，通过在全局网中设置服务器群不仅节省费用，更可以合理配置信息资源。</p>
+<p>3.降低成本：通常的网络设计用交换机构成子网，用路由器进行子网间互连。目前采用三层交换机进行网络设计，既可以进行任意虚拟子网划分，又可以通过交换机三层路由功能完成子网间通信，为此节省了价格昂贵的路由器。</p>
+<p>4.交换机之间连接灵活：作为交换机，它们之间不允许存在回路，作为路由器，又可有多条通路来提高可靠性、平衡负载。三层交换机用生成树算法阻塞造成回路的端口，但进行路由选择时，依然把阻塞掉的通路作为可选路径参与路由选择。</p>
+<p>交换机和路由器是性能和功能的矛盾体，交换机交换速度快，但控制功能弱，路由器控制性能强，但报文转发速度慢。解决这个矛盾的最新技术是三层交换，既有交换机线速转发报文能力，又有路由器良好的控制功能。</p>
+<p>一、三层交换机与路由器的主要区别之所以有人搞不清三层交换机和路由器之间的区别，最根本就是三层交换机也具有“路由”功能，与传统路由器的路由功能总体上是一致的。虽然如此，三层交换机与路由器还是存在着相当大的本质区别的，下面分别予以介绍。1. 主要功能不同 虽然三层交换机与路由器都具有路由功能，但我们不能因此而把它们等同起来，正如现在许多网络设备同时具备多种传统网络设备功能一样，就如现在有许多宽带路由器不仅具有路由功能，还提供了交换机端口、硬件防火墙功能，但不能把它与交换机或者防火墙等同起来一样。因为这些路由器的主要功能还是路由功能，其它功能只不过是其附加功能，其目的是使设备适用面更广、使其更加实用。这里的三层交换机也一样，它仍是交换机产品，只不过它是具备了一些基本的路由功能的交换机，它的主要功能仍是数据交换。也就是说它同时具备了数据交换和路由由发两种功能，但其主要功能还是数据交换；而路由器仅具有路由转发这一种主要功能。2. 主要适用的环境不一样三层交换机的路由功能通常比较简单，因为它所面对的主要是简单的局域网连接。正因如此，三层交换机的路由功能通常比较简单，路由路径远没有路由器那么复杂。它用在局域网中的主要用途还是提供快速数据交换功能，满足局域网数据交换频繁的应用特点。而路由器则不同，它的设计初哀就是为了满足不同类型的网络连接，虽然也适用于局域网之间的连接，但它的路由功能更多的体现在不同类型网络之间的互联上，如局域网与广域网之间的连接、不同协议的网络之间的连接等，所以路由器主要是用于不同类型的网络之间。它最主要的功能就是路由转发，解决好各种复杂路由路径网络的连接就是它的最终目的，所以路由器的路由功能通常非常强大，不仅适用于同种协议的局域网间，更适用于不同协议的局域网与广域网间。它的优势在于选择最佳路由、负荷分担、链路备份及和其他网络进行路由信息的交换等等路由器所具有功能。为了与各种类型的网缌?樱?酚善鞯慕涌诶嘈头浅７岣唬???憬换换?蛞话憬鐾?嘈偷木钟蛲?涌冢?浅＜虻ァ?3. 性能体现不一样 从技术上讲，路由器和三层交换机在数据包交换操作上存在着明显区别。路由器一般由基于微处理器的软件路由引擎执行数据包交换，而三层交换机通过硬件执行数据包交换。三层交换机在对第一个数据流进行路由后，它将会产生一个MAC地址与IP地址的映射表，当同样的数据流再次通过时，将根据此表直接从二层通过而不是再次路由，从而消除了路由器进行路由选择而造成网络的延迟，提高了数据包转发的效率。同时，三层交换机的路由查找是针对数据流的，它利用缓存技术，很容易利用ASIC技术来实现，因此，可以大大节约成本，并实现快速转发。而路由器的转发采用最长匹配的方式，实现复杂，通常使用软件来实现，转发效率较低。正因如此，从整体性能上比较的话，三层交换机的性能要远优于路由器，非常适用于数据交换频繁的局域网中；而路由器虽然路由功能非常强大，但它的数据包转发效率远低于三层交换机，更适合于数据交换不是很频繁的不同类型网络的互联，如局域网与互联网的互联。如果把路由器，特别是高档路由器用于局域网中，则在相当大程度上是一种浪费（就其强大的路由功能而言），而且还不能很好地满足局域网通信性能需求，影响子网间的正常通信。综上所述，三层交换机与路由器之间还是存在着非常大的本质区别的。无论从哪方面来说，在局域网中进行多子网连接，最好还选用三层交换机，特别是在不同子网数据交换频繁的环境中。一方面可以确保子网间的通信性能需求，另一方面省去了另外购买交换机的投资。当然，如果子网间的通信不是很频繁，采用路由器也无可厚非，也可达到子网安全隔离相互通信的目的。具体要根据实际需求来定</p>
+<p>三层交换机的最重要的目的是加快大型局域网内部的数据交换，所具有的路由功能也是为这目的服务的，能够做到一次路由<br>，多次转发。对于数据包转发等规律性的过程由硬件高速实现，而像路由信息更新、路由表维护、路由计算、路由<br>确定等功能，由软件实现。</p>
+<p>出于安全和管理方便的考虑，主要是为了减小广播风暴的危害，必须把大型局域网按功能或地域等因素化成一个个小的<br>局域网，这就使得VLAN技术在网络中得到大量应用，而不同VLAN之间的通信都要经过路由器来完成转发，<br>随着网间互访的不断增加。单纯使用路由器来实现网间访问，不但由于端口数量有限，而且路由速度较慢。从而<br>限制了网络的规模和访问速度。基于这种情况三层交换机便应用而生。三层交换机是为IP设计的，接口类型简单；<br>拥有很强二层包处理能力，非常适合用于大型局域网内的数据路由与交换，它既可以工作在协议第三层替代或是部分完成<br>传统路由器的功能，同时又具有几乎第二层交换的速度，且价格相对便宜。</p>
+<p>三层交换机出现最重要的目的是加快大型局域网内部的数据交换，所具有的路由功能也多是围绕这个目的而展开的，所以它的<br>路由功能没有同一档次的专业路由器强。毕竟在安全、协议支持等方面还有许多欠缺，并不能完全取代路由器的工作。</p>
+<p>在实际中的典型用法是：处于同一个局域网中的各个子网的互联以及局域网中VLAN间的路由，用三层交换机来代替路由。<br>而只有局域网与公网互联之间要实现跨地域的网络访问，才通过专业路由器。</p>
+<p>从表面上看，第三层交换机是第二层交换器与路由器的合二为一，然而这种结合并非简单的物理结合，而是各取所长的逻辑<br>结合。其重要表现是，当某一信息源的第一个数据流进行第三层交换后，其中的路由系统会产生一个MAC地址与IP地址的映射表，<br>并将该表存储起来，当同一信息源的后续数据流再次进入交换环境时，交换机将根据第一次产生并保存的地址映射表，直接从第二层<br>由源地址传输到目的地址，不再经过第三路由系统处理，从而消除路由选择的网络延迟。</p>
+<p>————————————————</p>
+<p>版权声明：本文为CSDN博主「SELF_IMPR小灰」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a href="https://blog.csdn.net/shmily_cml0603/article/details/9334795" target="_blank" rel="noopener">https://blog.csdn.net/shmily_cml0603/article/details/9334795</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/network/" rel="tag"># network</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/24/etcd/" rel="next" title="etcdV2的basicauth开启">
+                <i class="fa fa-chevron-left"></i> etcdV2的basicauth开启
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/18/network/" rel="prev" title="2019-qcon-openresty">
+                2019-qcon-openresty <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

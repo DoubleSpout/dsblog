@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="近期的一个phonegap项目把我做的焦头烂额，最让人蛋疼的就是安卓4.1.x对html5的定位获取经纬度有个无比巨大的坑，一般我们利用如下代码进行html5的定位">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="phonegap利用百度地图sdk定位">
+<meta property="og:url" content="http://yoursite.com/2014/05/20/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="近期的一个phonegap项目把我做的焦头烂额，最让人蛋疼的就是安卓4.1.x对html5的定位获取经纬度有个无比巨大的坑，一般我们利用如下代码进行html5的定位">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/1.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/2.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/3.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/4.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/5.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/6.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/7.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/8.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/9.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/10.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/11.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/12.png">
+<meta property="og:image" content="http://yoursite.com/img/baidusdk/13.png">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.872Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="phonegap利用百度地图sdk定位">
+<meta name="twitter:description" content="近期的一个phonegap项目把我做的焦头烂额，最让人蛋疼的就是安卓4.1.x对html5的定位获取经纬度有个无比巨大的坑，一般我们利用如下代码进行html5的定位">
+<meta name="twitter:image" content="http://yoursite.com/img/baidusdk/1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/05/20/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>phonegap利用百度地图sdk定位 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/05/20/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">phonegap利用百度地图sdk定位
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-05-20 21:07:39" itemprop="dateCreated datePublished" datetime="2014-05-20T21:07:39+08:00">2014-05-20</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/05/20/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/05/20/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>近期的一个phonegap项目把我做的焦头烂额，最让人蛋疼的就是安卓4.1.x对html5的定位获取经纬度有个无比巨大的坑，一般我们利用如下代码进行html5的定位</p>
+<a id="more"></a>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">navigator.geolocation.getCurrentPosition(function(pos)&#123;</span><br><span class="line">               alert(JSON.stringify(pos))</span><br><span class="line">        &#125;,function(err)&#123;</span><br><span class="line">               alert(JSON.stringify(err))</span><br><span class="line">          &#125;, &#123;</span><br><span class="line">    enableHighAccuracy: false,</span><br><span class="line">    timeout: 60*1000,</span><br><span class="line">    maximumAge: 1000*60*10</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>上述代码在ios上一切正常，在安卓4.3及以后的机器也可以正常访问，但是在安卓4.1上就会出现timeout，如果我们把 enableHighAccuracy 设置为 true，那么在室外，空气良好的地方，安卓4.1将能够通过卫星进行定位，但是速度巨慢，其实我们很多时候并不是想要非常精准的定位信息，完全可以通过基站或者wifi来定位，虽然html5提供给了我们这样的接口，但是安卓4.1上支持的不是很好。</p>
+<p>另外一个巨坑也直接影响了我对这个问题的判断，如果我重启了安卓4.1的机器，那么上述代码将能够正常跑大约几小时，甚至半天，可是到了第二天又会出现同样的问题，无尽的timeout。总不能让客户每次使用定位功能都重启一次机器吧，涉及这个问题的机器有包括我的华为，三星note2，oppo等目前主流的安卓4.1系统的机子，在另外几台例如glasky3、红米等安卓4.3的机器上没有出现。</p>
+<p>然后我直接将上述代码在浏览器中运行，发现安卓4.1也是无法跑起来，天真的我以为是安卓4.1对html5的接口支持问题，于是利用cordova加载geolocation插件，想利用cordova的native方法解决这个问题，但是问题依旧，其中意外的发现我的华为和note2能够跑起来了，其实只不过碰巧刚重启过而已。</p>
+<p>这个是我在stackoverflow上发的问题，碰到这类问题的中外友人巨多。<br><a href="http://stackoverflow.com/questions/23383750/phonegap-geolocation-sometimes-not-working-on-android" target="_blank" rel="noopener">http://stackoverflow.com/questions/23383750/phonegap-geolocation-sometimes-not-working-on-android</a></p>
+<p>如何填补这个坑呢？我搜遍了整个网络，发现国外可以使用google地图来解决，而国内只有使用百度的定位SDK来解决了，不过最新的安卓百度定位SDK4.1同样巨坑无比，直接下载官方的demo跑在真机上各种无法定位，一直报errorcode 602，于是逛了下百度SDK的论坛，发现很多人说4.1版本的SDK问题很多，不如用回4.0版本，于是我报着试试看的心情用回了SDK4.0版本，最终在安卓4.1的机器上定位成功，不存在需要重启的情况，然后我根据 andybuit 作者的代码，小幅改动，封装成支持新版 cordova 3.4.1 的插件放在github上，供碰到同样问题的朋友使用，希望能够帮助到他们。再次感谢 andybuit 提供的百度定位代码，谢谢！</p>
+<p>新版本插件地址：<br><a href="https://github.com/DoubleSpout/phonegap_baidu_sdk_location" target="_blank" rel="noopener">https://github.com/DoubleSpout/phonegap_baidu_sdk_location</a></p>
+<p>下面步入正题，通过一个简单的安卓 hello world 程序来运用百度定位插件<br>1、建立 hello world 项目：<br>cordova create hello com.example.hello HelloWorld<br>2、建立安卓支持，目前本插件只支持安卓，似乎也只要支持安卓，ios对html5的定位支持的非常好，无须百度定位SDK<br>cordova platform add android<br>3、安装 baidu 定位的插件：<br>可以通过git来下载远程的，需要安装git命令<br> cordova plugin add <a href="https://github.com/DoubleSpout/phonegap_baidu_sdk_location.git" target="_blank" rel="noopener">https://github.com/DoubleSpout/phonegap_baidu_sdk_location.git</a><br>也可以将插件下载到 hello\plugins 目录下，文件夹重命名为 com.spout.phonegap.plugins.baidulocation，然后执行命令：<br>cordova plugin install com.spout.phonegap.plugins.baidulocation<br>4、插件安装完成之后，执行一次 build 命令，将插件的配置文件写入安卓平台目录：<br>cordova build android<br>5、打开eclipse，对hello项目进行配置：</p>
+<p>5.1、新建工程<br><img src="/img/baidusdk/1.png" alt=""></p>
+<p>5.2、从已有代码库添加<br><img src="/img/baidusdk/2.png" alt=""></p>
+<p>5.3、找到安卓的项目路径<br><img src="/img/baidusdk/3.png" alt=""></p>
+<p>5.4、编辑项目属性<br><img src="/img/baidusdk/4.png" alt=""></p>
+<p>5.5、添加百度sdk的jar文件<br><img src="/img/baidusdk/5.png" alt=""></p>
+<p>5.6、选择locSDK<br><img src="/img/baidusdk/6.png" alt=""></p>
+<p>5.7、编辑source 附件<br><img src="/img/baidusdk/7.png" alt=""></p>
+<p>5.8、同样选择百度sdk的jar<br><img src="/img/baidusdk/8.png" alt=""></p>
+<p>5.9、保存路径<br><img src="/img/baidusdk/9.png" alt=""></p>
+<p>5.10、选择order and export 将前面全部打勾<br><img src="/img/baidusdk/10.png" alt=""></p>
+<p>5.11、将文本编辑编码改为utf-8<br><img src="/img/baidusdk/11.png" alt=""></p>
+<p>5.12、打开 hello\platforms\android\src\com\spout\phonegap\plugins\baidulocation\BaiduLocation.java 文件，修改自己的apkkey（其实不修改也能使用），大约在64行：<br><img src="/img/baidusdk/12.png" alt=""></p>
+<p>key的生成和获取详见百度sdk的key获取页面，地址：<br><a href="http://developer.baidu.com/map/geosdk.htm" target="_blank" rel="noopener">http://developer.baidu.com/map/geosdk.htm</a> </p>
+<p>6、找到 hello\www\js\index.js 文件，修改并增加如下几行，通过百度SDK获取经纬度：<br>    onDeviceReady: function() {<br>        app.receivedEvent(‘deviceready’);</p>
+<pre><code>    //通过百度sdk来获取经纬度,并且alert出经纬度信息
+    var noop = function(){}
+    window.locationService.getCurrentPosition(function(pos){
+        alert(JSON.stringify(pos))
+        window.locationService.stop(noop,noop)
+    },function(e){
+        alert(JSON.stringify(e))
+        window.locationService.stop(noop,noop)
+    });
+},
+</code></pre><p>7、完成上述工作后，执行命令打包生产APK，注意百度定位的SDK在模拟器上是无法运行的，会曝出167错误码<br>cordova build android</p>
+<p>8、将 hello\platforms\android\ant-build\HelloWorld-debug-unaligned.apk 文件拷贝到之前有问题的安卓4.1的机器上，显示如下图，通过wifi成功快速获取到经纬度信息，再也不用重启机子了：<br><img src="/img/baidusdk/13.png" alt=""></p>
+<p>至此百度SDK说明完毕，希望能够帮助到利用phonegap开发安卓应用，又碰到我这样问题的朋友~</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/05/13/python/" rel="next" title="scrapy简易安装程序">
+                <i class="fa fa-chevron-left"></i> scrapy简易安装程序
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/06/07/mongodb/" rel="prev" title="mongodb 数据导入导出数据">
+                mongodb 数据导入导出数据 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

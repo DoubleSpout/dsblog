@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近在当当网上买了一本《node.js开发指南》，从学习node.js到现在看的第一本中文教程，也算献出了自己处子之身啊，哈哈。前后大约花了4，5个小时通读了node.js部分，附录部分只是略过了，谈一下感想把。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《node.js开发指南》观后感">
+<meta property="og:url" content="http://yoursite.com/2012/08/23/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="最近在当当网上买了一本《node.js开发指南》，从学习node.js到现在看的第一本中文教程，也算献出了自己处子之身啊，哈哈。前后大约花了4，5个小时通读了node.js部分，附录部分只是略过了，谈一下感想把。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.877Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《node.js开发指南》观后感">
+<meta name="twitter:description" content="最近在当当网上买了一本《node.js开发指南》，从学习node.js到现在看的第一本中文教程，也算献出了自己处子之身啊，哈哈。前后大约花了4，5个小时通读了node.js部分，附录部分只是略过了，谈一下感想把。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2012/08/23/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>《node.js开发指南》观后感 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2012/08/23/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">《node.js开发指南》观后感
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2012-08-23 23:55:45" itemprop="dateCreated datePublished" datetime="2012-08-23T23:55:45+08:00">2012-08-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2012/08/23/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2012/08/23/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近在当当网上买了一本《node.js开发指南》，从学习node.js到现在看的第一本中文教程，也算献出了自己处子之身啊，哈哈。前后大约花了4，5个小时通读了node.js部分，附录部分只是略过了，谈一下感想把。</p>
+<a id="more"></a>
+<p>1、本书的定位：<br>就像书中的前言部分所述，确实是针对node.js还未入门的初学者准备的，但是有一个前提，如果之前没写过像php等后端的语言读本书可能有点迷茫。所以本书的定位人群应该是对后端脚本语言有过一定开发经验，并且熟悉javascript语法的人。</p>
+<p>2、本书的组成部分：<br>个人感觉分为3块，前面一大部分是node.js介绍安装，中间一块和最后node.js的核心API介绍和热门模块，最后是一个简单的微博web应用，主要介绍了模板和mongodb的增删改查。个人感觉前面node.js安装和介绍有点多，而实际应用有点少。</p>
+<p>3、总体感觉：<br>本书内容很丰富，很多知识面都谈到了，但是不够深入，真的很适合初学者。API的介绍也不够详细，仅仅介绍了几个主要的，比如cluster模块的多进程通信、buffer模块的深度应用事例以及net模块的TCP/IP服务器都没有深入。至少是第一本中文的node.js教程，希望大家多多支持啦。</p>
+<p>4、个人感觉书中有不妥的地方，列举几处，希望作者能够在改版中参考下，代表个人意见哦，可能说的不对。</p>
+<p>A)书中75页，httprequest.js，期中代码片如下：<br>var contents = querystring.stringify({<br>  name: ‘byvoid’,<br>  email: <a href="mailto:&#39;byvoid@byvoid.com" target="_blank" rel="noopener">&#39;byvoid@byvoid.com</a>‘,<br>  address: ‘Zijing 2#, Tsinghua University’,<br>});</p>
+<p>var options = {<br>  host: ‘<a href="http://www.byvoid.com&#39;" target="_blank" rel="noopener">www.byvoid.com&#39;</a>,<br>  path: ‘/application/node/post.php’,<br>  method: ‘POST’,<br>  headers: {<br>    ‘Content-Type’: ‘application/x-www-form-urlencoded’,<br>    ‘Content-Length’ : contents.length<br>  }<br>};</p>
+<p>大家注意这个contents.length，当contents都是英文及半角符号时没有问题，但是如果有中文，这样计算 Content-Length 会出现问题，应改为：Buffer.byteLength(contents, ‘utf8’)<br>当然这里作者使用了querystring.stringify 方法，能够自动将中文转义，所以不存在这个问题，这里可能是个小坑，要注意哦</p>
+<p>B)书中第115页，代码片段如下：<br>    // 讀取 users 集合<br>    db.collection(‘users’, function(err, collection) {<br>      if (err) {<br>        mongodb.close();<br>        return callback(err);<br>      }<br>      // 爲 name 屬性添加索引<br>      collection.ensureIndex(‘name’, {unique: true});<br>      // 寫入 user 文檔<br>      collection.insert(user, {safe: true}, function(err, user) {<br>        mongodb.close();<br>        callback(err, user);<br>      });<br>    });</p>
+<p>这边我感觉是作者的一个失误，因为这个代码片段属于User.prototype.save，是用户注册执行的方法。这里每注册一个用户就为集合users建立一次name的唯一索引实在欠妥，应该在app启动时初始化对数据库建立索引，并且应该先判断索引是否已经存在，而不必每次插入数据库创建一遍索引。</p>
+<p>C)同样是上面的一段代码，我们看期中绿色部分<br>大家注意到了{safe:true}这个设置了吧，作者没有说明这个{safe:true}的含义，我在这边简单介绍下。<br>1、不加{safe:true}表示我们mongodb客户端向数据库抛出这句insert语句后，立刻执行回调函数，而不去关心是否真的插入成功，类似往河里扔石头，扔了就告诉妈妈，我扔石头了。<br>2、加上{safe:true}表示mongodb数据库已经成功执行这条insert语句，并且插入完成或者报错后执行回调函数，类似往河里扔石头，看见水花起来了，或者不小心砸到河上的船了，然后告诉妈妈。</p>
+<p>D)书中114页，这样写到：<br>req.flash是express提供的一个奇妙的工具，通过它保存的变量只会在用户当前和下次的请求中被访问… ….<br>作者如此描述，感觉req.flash很厉害，瞬间让我产生了好奇，因为当初我写 rrestjs 框架时借鉴了很多expressjs的源代码，并没有发现有req.flash，翻看expressjs3.0的源码发现没有req.flash的方法，于是在connect-flash模块中找到了它，贴下它的源码：<br>var format = require(‘util’).format;<br>… …<br>function _flash(type, msg) {<br>  if (this.session === undefined) throw Error(‘req.flash() requires sessions’);<br>  var msgs = this.session.flash = this.session.flash || {};<br>  if (type &amp;&amp; msg) {<br>    // util.format is available in Node.js 0.6+<br>    if (arguments.length &gt; 2 &amp;&amp; format) {<br>      var args = Array.prototype.slice.call(arguments, 1);<br>      msg = format.apply(undefined, args);<br>    }<br>    return (msgs[type] = msgs[type] || []).push(msg);<br>  } else if (type) {<br>    var arr = msgs[type];<br>    delete msgs[type];<br>    return arr || [];<br>  } else {<br>    this.session.flash = {};<br>    return msgs;<br>  }<br>}<br>简单分析下：<br>如果没有开启session功能，则直接抛出异常，也就是说这个req.flash是存放在session里的，所以并没有像作者写的那么神奇，顿时很失落。1.如果type和msg都传参了，如果参数长度大于2，则执行format函数将msg字符串处理一下。然后往msgs[type]数组中插入msg字符串。<br>2.如果只有一个参数，则删除这个msgs[type],返回改数组，这里就是作者说的一次性的关键。<br>3.清空msgs对象，返回整个msgs对象。<br>其实这个函数还是很巧妙的，保证了req.flash的一次性使用，节能环保，呵呵，当然没有作者说的那样神奇啦。</p>
+<p>E)书中第124页，代码片段如下：<br>function Post(username, post, time) {<br>  this.user = username;<br>  this.post = post;<br>  if (time) {<br>    this.time = time;<br>  } else {<br>    this.time = new Date();<br>  }<br>};<br>作者直接使用 new Date()方法存放了时间。在数据库存放时间格式上一直很有争议，我个人一直是存时间戳的，原因有如下几个：<br>1.存储空间的节约，时间戳要比格林威治时间存储空间更小<br>2.便于比较和排序<br>3.如果有其他语言比如php也要共享这部分数据，只需要把js生成的时间戳除以1000既可以转化为时间格式了，php的time()返回是以秒为单位的时间戳。<br>所以建议这边作者改为 Date.now()</p>
+<p>最后当然是广告时间了：<br>看到作者为了判断除了首页，其他页面都需要用户登录写了如下代码片段：<br>app.get(‘/reg’, checkNotLogin);<br>… …<br>app.post(‘/reg’, checkNotLogin);<br>… …<br>app.post(‘/login’, checkNotLogin);<br>… …<br>app.get(‘/logout’, checkLogin);<br>… …<br>app.post(‘/post’, checkLogin);<br>… …<br>如果应用的页面越来越多，这样的代码会越来越来长，如果你使用了 rrestjs 框架，情况就完全不一样了，我们看下使用rrestjs框架的实现</p>
+<p>我们看下代码片段：<br>  var http = require(‘http’),<br>  rrest = require(‘rrest’),<br>  server = http.createServer(rrest(function (req, res) {<br>  var noCheckUrl = [‘index’, ‘other’];//rrestjs会默认把’/‘认为’/index’<br>  if(!~req.path[0].indexOf(noCheckUrl) &amp;&amp; !isLogin(req, res)) return res.redirect(‘/login’)<br>  //normal routes<br> })).listen(rrest.config.listenPort);<br>只需要在入口处判断哪些请求url需要验证登录即可全部搞定，无需重复的代码拷贝。<br>rrestjs框架地址：<a href="http://www.rrestjs.com/" target="_blank" rel="noopener">http://www.rrestjs.com/</a></p>
+<p>最后希望大家多多支持中文的node.js教程，都去买正版书籍把，《node.js开发指南》真是一本难得中文node.js好教材！推荐一个</p>
+<p>最后要给作者提一下啊，书中第6页，node.js和php+nginx对比测试的数据我的名字打错 ，应该是snoopyxdy，而不是snoopyxd。而且测试的数据没有把硬件以及node,linux,php版本号以及网络环境等相关因素写进去，不够严谨。</p>
+<p>另外关于nginx+node.js的小建议：<br>之前我曾经开4个node.js绑定4个CPU然后nginx开4个进程，绑定4个CPU，结果悲剧了，压测一直卡死，原来是node.js和nginx抢CPU造成的，后来楚汉分界，nginx用前2个CPU，而node.js拿后两个cpu。另外nginx也像汽车一样，要先热车，重启后先随便压测几次，然后过一会水温就上来了，就可以踩油门了，哈哈。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2012/08/22/js-ajax/" rel="next" title="一致性哈希算法">
+                <i class="fa fa-chevron-left"></i> 一致性哈希算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2012/08/31/js-ajax/" rel="prev" title="node.js-v0.8API解读（5）- Crypto">
+                node.js-v0.8API解读（5）- Crypto <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

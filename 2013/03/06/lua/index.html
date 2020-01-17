@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="nginx和lua的配合让我们眼前一亮，高性能的带逻辑和数据库访问的nginx诞生了，感觉它天生就是为了 http 接口或者代理而生的。现在有这样一些需求： 1、将公司所有的api放在后方，让ngx_lua顶在最前面，作为 api 服务的前置入口，安全性要好 2、要能抗住压力，毕竟公司所有的 api 接口都将从ngx_lua这条总线走，不能有太长的响应 3、要可以扩展，如果一台服务器扛不住压力，可">
+<meta name="keywords" content="lua">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx_lua(3) - openapi项目实战">
+<meta property="og:url" content="http://yoursite.com/2013/03/06/lua/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="nginx和lua的配合让我们眼前一亮，高性能的带逻辑和数据库访问的nginx诞生了，感觉它天生就是为了 http 接口或者代理而生的。现在有这样一些需求： 1、将公司所有的api放在后方，让ngx_lua顶在最前面，作为 api 服务的前置入口，安全性要好 2、要能抗住压力，毕竟公司所有的 api 接口都将从ngx_lua这条总线走，不能有太长的响应 3、要可以扩展，如果一台服务器扛不住压力，可">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.867Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nginx_lua(3) - openapi项目实战">
+<meta name="twitter:description" content="nginx和lua的配合让我们眼前一亮，高性能的带逻辑和数据库访问的nginx诞生了，感觉它天生就是为了 http 接口或者代理而生的。现在有这样一些需求： 1、将公司所有的api放在后方，让ngx_lua顶在最前面，作为 api 服务的前置入口，安全性要好 2、要能抗住压力，毕竟公司所有的 api 接口都将从ngx_lua这条总线走，不能有太长的响应 3、要可以扩展，如果一台服务器扛不住压力，可">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2013/03/06/lua/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>nginx_lua(3) - openapi项目实战 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/03/06/lua/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">nginx_lua(3) - openapi项目实战
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2013-03-06 20:14:38" itemprop="dateCreated datePublished" datetime="2013-03-06T20:14:38+08:00">2013-03-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/lua/" itemprop="url" rel="index"><span itemprop="name">lua</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/03/06/lua/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2013/03/06/lua/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>nginx和lua的配合让我们眼前一亮，高性能的带逻辑和数据库访问的nginx诞生了，感觉它天生就是为了 http 接口或者代理而生的。现在有这样一些需求：</p>
+<p>1、将公司所有的api放在后方，让ngx_lua顶在最前面，作为 api 服务的前置入口，安全性要好</p>
+<p>2、要能抗住压力，毕竟公司所有的 api 接口都将从ngx_lua这条总线走，不能有太长的响应</p>
+<p>3、要可以扩展，如果一台服务器扛不住压力，可以很方便的进行水平扩展</p>
+<p>4、要稳定，不能隔三差五的挂一次，不能影响公司的 api 服务</p>
+<p>5、要好维护，出现问题能及时解决</p>
+<a id="more"></a>
+<p>对于以上5点，我们使用ngx_lua完全满足，其中可维护和稳定性是我们不使用node.js的主要原因。我们主要使用openresty来作为我们openapi项目的架构。<br>下面使用一些代码片段来简单介绍一下ngx_lua在实际使用中的特性：</p>
+<p>1、ngx配置：<br>worker_processes  1;<br>error_log logs/error.log debug;<br>pid /usr/local/openresty/nginx/logs/nginx.pid; </p>
+<p>#events配置<br>events {<br>    use epoll;<br>    worker_connections 1024;<br>}<br>http {</p>
+<pre><code>    #设置dns服务器
+    resolver 10.1.1.1;
+
+#设置lua缓存off,product应该开启
+lua_code_cache off;
+
+# 设置lua模块的require路径
+lua_package_path &apos;lib/?.lua;lua/class/?.lua;lua/db/?.lua;;&apos;;
+
+# 设置lua的c模块的require路径
+lua_package_cpath &apos;lib/?.so;;&apos;;
+
+#执行lua初始化
+init_by_lua_file &apos;lua/init/init.lua&apos;;
+
+#加载server配置
+include vhost/server_debug.conf;
+</code></pre><p>}<br>vhost.conf<br>server {        </p>
+<pre><code>#侦听80端口
+listen       80;
+#定义使用www.xx.com访问
+server_name  test.api6998.com;    
+#反向代理的配置           
+location /favicon.ico{
+    echo &apos;favicon.ico&apos;;
+}
+location / {
+    content_by_lua_file &apos;lua/access/access.lua&apos;;
+    }    
+location /lua_test {
+    content_by_lua_file &apos;test/test.lua&apos;;
+    }    
+</code></pre><p>}<br>注意点：<br>1、dns服务器如果在内网的话需要制定，否则resty.http会无法发起请求<br>2、设定pid保存路径可以支持 nginx -s reload<br>3、lua_code_cache off; 是便于开发的，将lua缓存关闭，避免每次都重启ngx<br>4、require路径是指lua的require包，会依次去这些路径获取lua包，注意相对目录是当前ngx启动目录<br>5、特别注意，init_by_lua_file 是在nginx启动，让lua做一些初始化动作使用的，只可以使用一次，不能有多个init_by_lua_file。<br>6、这里我们设置了2个路径/作为api的通用路径，让lua去处理一些路由匹配的事情，/lua_test是用来执行整个openapi的测试代码的</p>
+<p>2、启动nginx<br>nginx -p <code>pwd</code>/ -c conf/nginx_main_debug.conf;<br>在跟了参数-p之后，我们上面的ngx配置就可以使用相对路径了</p>
+<p>3、lua连接和使用mysql<br>lua连接mysql也相对的简单，openresty封装了mysql的链接库供lua使用，使用C编写的，相当搞笑。<br>Mysql_CLass = {<br>  host = “192.168.28.4”,<br>  port = 3306,<br>  database = “openapi”,<br>  user = “root”,<br>  password = “123456”,<br>  max_packet_size = 1024 * 1024<br>}</p>
+<p>function Mysql_CLass:connect()</p>
+<p>local db, err = mysql:new()<br>if not db then<br>    ngx.log(ngx.ERR, “mysql library error “ .. err)   –  如果mysql模块出错，则记录错误日志<br>    return ngx.HTTP_INTERNAL_SERVER_ERROR, nil, ERR_MYSQL_LIB<br>end</p>
+<p>db:set_timeout(1000) – 1 sec</p>
+<p>local ok, err, errno, sqlstate = db:connect{<br>    host = self.host,<br>    port = self.port,<br>    database = self.database,<br>    user = self.user,<br>    password = self.password,<br>    max_packet_size = self.max_packet_size<br>}</p>
+<p>if not ok then<br>    ngx.log(ngx.ERR, “mysql not connect: “ .. err .. “: “ .. errno .. “: “.. sqlstate .. “.”)  –如果数据库连接错误则记录日志<br>    return ngx.HTTP_INTERNAL_SERVER_ERROR, nil, ERR_MYSQL_DB<br>end</p>
+<p>return ngx.HTTP_OK, db, nil</p>
+<p>end</p>
+<p>如果一切顺利，我们就可以使用返回的 db 类来操作mysql数据库了，一个简单的联表查询：<br> local res2, err, errno, sqlstate =<br>              db:query(“SELECT name,apikey,ApiSecret from ApiUserRoleTag as a JOIN ApiUser as b ON a.ApiUserId = b.id where a.ServiceRoleId = “ .. api_service_table.serviceroleid )<br>         if not res2 then<br>              ngx.log(ngx.ERR, “bad result: “ .. err .. “: “ .. errno .. “: “.. sqlstate .. “.”) –出错记录错误日志<br>              return ngx.HTTP_INTERNAL_SERVER_ERROR, nil, ERR_MYSQL_ERROR<br>         end<br>直接在db:query()里写sql语句即可，当然我们也可以封装成ORM，不过既然ngx_lua被定义为接口，自然对数据库访问不会向做后台系统那么频繁，所以只需要简单的写一些sql语句就可以了</p>
+<p>4、一些逻辑判断<br>local code, service_table, error_code = Mysql_CLass:query_api_service(db, ngx.var.uri)<br>if(code ~= ngx.HTTP_OK) then<br>   return res:send({status=code, error_code = error_code})<br>end<br>local req = Filter:new(service_table)<br>local code, error_code = req:check_all()<br>if(code ~= ngx.HTTP_OK) then<br>   return res:send({status=code, error_code = error_code})<br>end<br>比如上述代码就是根据mysql返回值和用户请求req的参数是否合法进行的不同的响应，代码不用细看，这样我们就可以让nginx拥有更加强大的逻辑判断，在openapi项目中，nginx更是获得了验证用户公钥和签名验证的能力，直接在nginx中判断比之前proxy到后端验证再响应高效很多。</p>
+<p>5、根据需要进行http request<br>我们使用ngx_lua不仅要解决参数错误，签名有误和一些访问日志以及访问频率的限制，更需要将合法的请求转发到后端的应用服务器中，应用服务器可能在各个地方，拥有各种域名或ip，所以我们需要让lua具有发送http请求的能力，同时就算我们后端应用服务器更换ip或者down机了，也不用更改nginx配置和重启，只需要在mysql数据库或者redis数据库将相应的domain或ip变更即可，灵活度大大提高。<br>我们看一个利用resty.http模块简单的发送一个请求例子：<br>function Http_Class:send_request()<br>    self.data_array = {}<br>    local ok, code, headers, status, body = self.http_client:proxy_pass {<br>        url = self.url,  –例如 <a href="http://www.baidu.com" target="_blank" rel="noopener">http://www.baidu.com</a><br>        headers = self.header, –各种http请求头部，table格式<br>        method = self.method, –POST,GET,PUT,DELETE<br>        body = self.body, –KEY,VALUE<br>        body_callback = function(data, …)<br>           table.insert(self.data_array, data)<br>        end<br>    }<br>    if(ngx.header[“Transfer-Encoding”]) then<br>        ngx.header[“Transfer-Encoding”] = nil<br>    end<br>    if(ngx.header[“Connection”]) then<br>        ngx.header[“Connection”] = nil<br>    end<br>    self.data = table.concat(self.data_array, “”)<br>    return ok, code, headers, status, body<br>end<br>注意点：<br>1、为什么将 Transfer-Encoding 设置为 nil，这里我发现一个小坑，可能是我不会用，如果不设置他为nil，则在响应给客户端时会出现2个Transfer-Encoding和Connection<br>2、body_callback 这个回调函数肯能会被执行多次，这个回调表示当ngx接受到数据就会执行这个回调，所以如果不定义这个回调，resty.http库会自动调用ngx.print(data)直接响应给客户端了，为什么不用 str = str + data，虽然不清楚resty.http是否支持2进制的返回，这样str = str + data对2进制返回必然不友好。<br>即使返回 string 类型，使用table将其保存，并且最终利用 table.concat 将他们连接起来要比之前字符串直接拼接高效<br>3、另外真正的返回 http.status 是在 code 中</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lua/" rel="tag"># lua</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/03/04/lua/" rel="next" title="lua程序设计(4)">
+                <i class="fa fa-chevron-left"></i> lua程序设计(4)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/03/09/lua/" rel="prev" title="lua程序设计(6) - 协同程序">
+                lua程序设计(6) - 协同程序 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

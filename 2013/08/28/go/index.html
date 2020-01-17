@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="函数的定义看起来像这样：">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="golang入门(2)">
+<meta property="og:url" content="http://yoursite.com/2013/08/28/go/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="函数的定义看起来像这样：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.859Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="golang入门(2)">
+<meta name="twitter:description" content="函数的定义看起来像这样：">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2013/08/28/go/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>golang入门(2) | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/08/28/go/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">golang入门(2)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2013-08-28 13:59:59" itemprop="dateCreated datePublished" datetime="2013-08-28T13:59:59+08:00">2013-08-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/go/" itemprop="url" rel="index"><span itemprop="name">go</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/08/28/go/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2013/08/28/go/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>函数的定义看起来像这样：</p>
+<a id="more"></a>
+<p>type mytype int<br>func (p mytype) funcname(q int) (r,s int) { return 0,0 }<br>1、保留字 func 用于定义一个函数；<br>2、函数可以定义用于特定的类型，这类函数更加通俗的称呼是 method。这部分称作 receiver 而它是可选的。<br>3、funcname 是你函数的名字<br>4、int 类型的变量 q 作为输入参数。参数用 pass-by-value 方式传递，意味着它们会被复制<br>变量 r 和 s 是这个函数的命名返回值。在 Go 的函数中可以返回多个值。参阅第 32 页的 “多值返回”。如果不想对返回的参数命名，只需要提供类型：(int,int)。如果只有一个返回值，可以省略圆括号。如果函数是一个子过程，并且没有任何返回值，也可以省略这些内容<br>5、这是函数体，注意 return 是一个语句，所以包裹参数的括号是可选的。</p>
+<p>这里有两个例子，左边的函数没有返回值，右边的只是简单的将输入返回。<br>func subroutine(in int) {<br>   return<br>}<br>func identity(in int) int {<br>    return in<br>}<br>可以随意安排函数定义的顺序，编译器会在执行前扫描每个文件。所以函数原型在 Go 中都是过期的旧物。Go 不允许函数嵌套。然而你可以利用匿名函数实现它</p>
+<p>递归函数跟其他语言是一样的：<br>func rec(i int) {<br>if i == 10 {<br>return<br>}<br>rec(i+1)<br>fmt.Printf(“%d “, i)<br>}<br>这会打印：9 8 7 6 5 4 3 2 1 0。</p>
+<p>作用域<br>在 Go 中，定义在函数外的变量是全局的，那些定义在函数内部的变量，对于函数来说是局部的。如果命名覆盖——一个局部变量与一个全局变量有相同的名字——在函数执行的时候，局部变量将覆盖全局变量。</p>
+<p>多值返回<br>Go 一个非常特别的特性（对于编译语言而言）是函数和方法可以返回多个值（Python 和 Perl 同样也可以）。这可以用于改进一大堆在 C 程序中糟糕的惯例用法：修改参数的方式，返回一个错误（例如遇到 EOF 则返回 -1）。在 Go 中，Write 返回一个计数值和一个错误：“是的，你写入了一些字节，但是由于设备异常，并不是全部都写入了。”。 os 包中的 <em>File.Write 是这样声明的：<br>func (file </em>File) Write(b []byte) (n int, err error)<br>如同文档所述，它返回写入的字节数，并且当 n != len(b) 时，返回非 nil的 error。这是 Go 中常见的方式。<br>类似的方法避免了传递指针模拟引用参数来返回值。这里有个样例函数，从字节数组的指定位上取得数值，返回这个值和下一个位置。<br>func nextInt(b []byte, i int) (int, int) {<br>x := 0<br>// 假设所有的都是数字<br>for ; i &lt; len(b); i++ {<br>x = x*10 + int(b[i])-‘0’<br>}<br>return x, i<br>}<br>你可以在输入的数组中扫描数字，像这样：<br>a := []byte{‘1’, ‘2’, ‘3’, ‘4’}<br>var x int<br>for i := 0; i &lt; len(a); { //没有 i++<br>x, i = nextInt(a, i)<br>println(x)<br>}</p>
+<p>命名返回值<br>Go 函数的返回值或者结果参数可以指定一个名字，并且像原始的变量那样使用，就像输入参数那样。如果对其命名，在函数开始时，它们会用其类型的零值初始化；如果函数在不加参数的情况下执行了 return 语句，结果参数的当前值会作为返回值返回。用这个特性，允许（再一次的）用较少的代码做更多的事。<br>名字不是强制的，但是它们可以使得代码更加健壮和清晰： 这是文档。例如命名 int 类型的 nextPos 返回值，就能说明哪个代表哪个。<br>func nextInt(b []byte, pos int) (value, nextPos int) { /<em> … </em>/ }<br>由于命名结果会被初始化并关联于无修饰的 return，它们可以非常简单并且清晰。这里有一段 io.ReadFull 的代码，很好的运用了它：<br>func ReadFull(r Reader, buf []byte) (n int, err error) {<br>for len(buf) &gt; 0 &amp;&amp; err == nil {<br>var nr int<br>nr, err = r.Read(buf)<br>n += nr<br>buf = buf[nr:len(buf)]<br>}<br>return<br>}</p>
+<p>延迟代码<br>假设有一个函数，打开文件并且对其进行若干读写。在这样的函数中，经常有提前返回的地方。如果你这样做，就需要关闭正在工作的文件描述符。这经常导致产生下面的代码：<br>func ReadWrite() bool {<br>file.Open(“file”)<br>// 做一些工作<br>if failureX {<br>file.Close()<br>return false<br>}<br>if failureY {<br>file.Close()<br>return false<br>}<br>file.Close()<br>return true<br>}<br>在这里有许多重复的代码。为了解决这些，Go 有了 defer 语句。在 defer 后指定的函数会在函数退出前调用。<br>上面的代码可以被改写为下面这样。将 Close 对应的放置于 Open 后，能够使函数更加可读、健壮。<br>func ReadWrite() bool {<br>file.Open(“file”)<br>defer file.Close()   file.Close() 被添加到了 defer 列表<br>// 做一些工作<br>if failureX {<br>return false   Close() 现在自动调用<br>}<br>if failureY {<br>return false   这里也是<br>}<br>return true<br>}<br>可以将多个函数放入 “延迟列表”中<br>for i := 0; i &lt; 5; i++ {<br>defer fmt.Printf(“%d “, i)<br>}<br>延迟的函数是按照后进先出（LIFO）的顺序执行，所以上面的代码打印： 4 3 2 1 0。<br>利用 defer 甚至可以修改返回值，假设正在使用命名结果参数和函数符号<br>func f() (ret int) {   //ret 初始化为零<br>    defer func() {<br>    ret++//ret 增加为 1<br>    }()<br>    return 10//返回的是 11 而不是 10！<br>}</p>
+<p>变参<br>接受变参的函数是有着不定数量的参数的。为了做到这点，首先需要定义函数使其接受变参：<br>func myfunc(arg …int) {}<br>arg … int 告诉 Go 这个函数接受不定数量的参数。注意，这些参数的类型全部是 int。在函数体中，变量 arg 是一个 int 类型的 slice：<br>for _, n := range arg {<br>fmt.Printf(“And the number is: %d\n”, n)<br>}<br>如果不指定变参的类型，默认是空的接口 interface{}（参阅第 6 章）。假设有另一个变参函数叫做 myfunc2，下面的例子演示了如何向其传递变参：<br>func myfunc(arg …int) {<br>myfunc2(arg…)   按原样传递<br>myfunc2(arg[:2]…)   传递部分<br>}</p>
+<p>函数作为值<br>就像其他在 Go 中的其他东西一样，函数也是值而已。它们可以像下面这样赋值给变量：<br>func main() {<br>a := func() {   定义一个匿名函数，并且赋值给 a<br>println(“Hello”)<br>}   这里没有 ()<br>a()   调用函数<br>}<br>函数作为值，也会被用在其他一些地方，例如 map。这里将整数转换为函数：<br>var xs = map[int]func() int{<br>1: func() int { return 10 },<br>2: func() int { return 20 },<br>3: func() int { return 30 }, //必须有逗号<br>/<em> … </em>/<br>}</p>
+<p>回调<br>当函数作为值时，就可以很容易的传递到其他函数里，然后可以作为回调。首先定义一个函数，对整数做一些 “事情”：<br>这个函数的标识是 func printit(int)，或者没有函数名的：func(int)。创建新的函数使用这个作为回调，需要用到这个标识：<br>func callback(y int, f func(int)) { //f 将会保存函数<br>f(y)   //调用回调函数 f 输入变量 y<br>}</p>
+<p>恐慌（Panic）和恢复（Recover）<br>Go 没有像 Java 那样的异常机制：不能抛出一个异常。作为替代，它使用了恐慌和恢复（panic-and-recover）机制。一定要记得，这应当作为最后的手段被使用，你的代码中应当没有，或者很少的令人恐慌的东西。这是个强大的工具，明智的使用它。</p>
+<p>Panic<br>是一个内建函数，可以中断原有的控制流程，进入一个令人恐慌的流程中。当函数 F 调用 panic，函数 F 的执行被中断，并且 F 中的延迟函数会正常执行，然后 F 返回到调用它的地方。在调用的地方， F 的行为就像调用了 panic。这一过程继续向上，直到程序崩溃时的所有goroutine 返回。恐慌可以直接调用 panic 产生。也可以由运行时错误产生，例如访问越界的数组。</p>
+<p>Recover<br>是一个内建的函数，可以让进入令人恐慌的流程中的 goroutine 恢复过来。recover 仅在延迟函数中有效。在正常的执行过程中，调用 recover 会返回 nil 并且没有其他任何效果。如果当前的 goroutine 陷入恐慌，调用 recover 可以捕获到 panic 的输入值，并且恢复正常的执行。</p>
+<p>这个函数检查作为其参数的函数在执行时是否会产生 panic:<br>unc throwsPanic(f func()) (b bool) {<br>defer func() {<br>    if x := recover(); x != nil {<br>    b = true<br>    }<br>}()<br>f()<br>return<br>}<br>1.定义一个新函数 throwsPanic 接受一个函数作为参数，参看 “函数作为值”。当这个函数产生 panic，就返回 true，否则返回 false；<br>2.定义了一个利用 recover 的 defer 函数，如果当前的 goroutine 产生了 panic，这个 defer 函数能够发现。当 recover() 返回非 nil 值，设置 b 为 true；<br>3.调用作为参数接收的函数。<br>4.返回 b 的值。由于 b 是命名返回值</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/08/20/js-ajax/" rel="next" title="etag session保存http会话">
+                <i class="fa fa-chevron-left"></i> etag session保存http会话
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/08/28/go/" rel="prev" title="golang入门(3)">
+                golang入门(3) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

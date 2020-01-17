@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1、fibo数组">
+<meta name="keywords" content="erlang">
+<meta property="og:type" content="article">
+<meta property="og:title" content="erlang入门（1）">
+<meta property="og:url" content="http://yoursite.com/2013/06/27/erlang/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="1、fibo数组">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.855Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="erlang入门（1）">
+<meta name="twitter:description" content="1、fibo数组">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2013/06/27/erlang/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>erlang入门（1） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/06/27/erlang/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">erlang入门（1）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2013-06-27 11:10:24" itemprop="dateCreated datePublished" datetime="2013-06-27T11:10:24+08:00">2013-06-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/erlang/" itemprop="url" rel="index"><span itemprop="name">erlang</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/06/27/erlang/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2013/06/27/erlang/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>1、fibo数组</p>
+<a id="more"></a>
+<p>-module(tut1).<br>-export([fac/1]).<br>fac(1) -&gt;<br>1;<br>fac(N) -&gt;<br>N * fac(N - 1).<br>5&gt; c(tut1).<br>{ok,tut1}<br>6&gt; tut1:fac(4).<br>24<br>注意，执行pwd().可以显示当前的erlang读取路径，通过cd(“c:\xxx”).来改变路径，一定在后面加上”.”</p>
+<p>2、元子是在Erlang中的另一个数据类型。元子以小写字母开头，元子只是一个简单的名字，其它什么都不是。他们不像变量可以带有一个值。<br>-module(tut2).<br>-export([convert/2]).<br>convert(M, inch) -&gt;<br>M / 2.54;<br>convert(N, centimeter) -&gt;<br>N * 2.54.<br>9&gt; c(tut2).<br>{ok,tut2}<br>10&gt; tut2:convert(3, inch).<br>1.18110<br>11&gt; tut2:convert(7, centimeter).<br>17.7800<br>看看如果我们输入centimeter和inch以外的参数给convert函数后会发生什么。<br>13&gt; tut2:convert(3, miles).<br>=ERROR REPORT==== 28-May-2003::18:36:27 ===<br>Error in process &lt;0.25.0&gt; with exit value:<br>{function_clause,[{tut2,convert,[3,miles]},{erl_eval,expr,3},{erl_eval,expr<br>s,4},{shell,eval_loop,2}]}<br><strong> exited: {function_clause,[{tut2,convert,[3,miles]},<br>{erl_eval,expr,3},<br>{erl_eval,exprs,4},<br>{shell,eval_loop,2}]} </strong><br>convert函数的两个部分都调用了它的句话。在这里我们看到”miles”不在句话中。<br>Erlang系统无法匹配(match)任一个句话，所以我们得到一个错误信息<br>function_clause。</p>
+<p>3、元组以”{“和”}”括起来的，所以我们可以写{inch, 3}来表示3英寸，并以{centimeter, 5}来表示5厘米。现在让我们写一个新的程序，将厘米转换成英寸，反之亦然(文件名：tut3.erl)。<br>-module(tut3).<br>-export([convert_length/1]).<br>convert_length({centimeter, X}) -&gt;<br>{inch, X / 2.54};<br>convert_length({inch, Y}) -&gt;<br>{centimeter, Y * 2.54}.<br>14&gt; c(tut3).<br>{ok,tut3}<br>15&gt; tut3:convert_length({inch, 5}).<br>{centimeter,12.7000}<br>16&gt; tut3:convert_length(tut3:convert_length({inch, 5})).<br>{inch,5.00000}<br>注意16行。我们将5英寸转换为厘米，并把它转换回原来的值。此例说明，函数的参数也<br>可以是另一个函数的返回值。稍停片刻，来想一下16行的代码是如何工作的。我们给函数<br>的参数{inch, 5}，是第一个与convert_length第一句话匹配的参数。如：<br>convert_length({centimeter, X})我们认为{centimeter, X}与{inch, 5}不，<br>匹配失败了，我们找下一个句话。如，convert_length({inch, Y})，Y得到5以后，<br>就匹配了。<br>我们看到上面的元组有两部分组成，不过元组可以有很多部分，我们想要多就都可以。如，<br>提供一个世界上不同城市温度值，我们可以这个写。<br>{moscow, {c, -10}}<br>{cape_town, {f, 70}}<br>{paris, {f, 28}}<br>一组元组有一个固定的大小。我们称元组中的东西为‘元素’。所以在元组{moscow,{c,-<br>10}}中，元素1是moscow，元素2是{c, -10}。我已经把c的意思确定为摄氏度<br>(Centigrade or Celsius)，f确定为华氏度(Fahrenheit)。</p>
+<p>4、鉴于元组把东西组到一起，我们也希望提供一个列表一样的东西。列表在Erlang中被括<br>在”[“和”]”里。如一个不同城市温度的列表可能是这样的：<br>[{moscow, {c, -10}}, {cape_town, {f, 70}}, {stockholm, {c, -4}},<br>{paris, {f, 28}}, {london, {f, 36}}]<br>一个很有用的遍历列表的方法是使用”|”。<br>18&gt; [First |TheRest] = [1,2,3,4,5].<br>[1,2,3,4,5]<br>19&gt; First.<br>1<br>20&gt; TheRest.<br>[2,3,4,5]<br>25&gt; [A, B | C] = [1, 2].<br>[1,2]<br>26&gt; A.<br>1<br>27&gt; B.<br>2<br>28&gt; C.<br>[]<br>下面的例子告诉我们如何查出列表的长度：<br>-module(tut4).<br>-export([list_length/1]).<br>list_length([]) -&gt;<br>0;<br>list_length([First | Rest]) -&gt;<br>1 + list_length(Rest).<br>29&gt; c(tut4).<br>{ok,tut4}<br>30&gt; tut4:list_length([1,2,3,4,5,6,7]).<br>7</p>
+<p>5、Erlang并没有字符串类型，取而代之我们可以提供一个由ASCII字符组成的列表。所以列表[97,98,99]相当于”abc”。Erlang shell很“慧明”，它会推测我们使用列表的意思，并以最接近形式输出<br>31&gt; [97,98,99].<br>“abc”</p>
+<p>6、io:format，用以标准输出<br>32&gt; io:format(“hello world~n”, []).<br>hello world<br>ok<br>33&gt; io:format(“this outputs one Erlang term: ~w~n”, [hello]).<br>this outputs one Erlang term: hello<br>ok<br>34&gt; io:format(“this outputs two Erlang terms: ~w~w~n”, [hello, world]).<br>this outputs two Erlang terms: helloworld<br>ok<br>35&gt; io:format(“this outputs two Erlang terms: ~w ~w~n”, [hello, world]).<br>this outputs two Erlang terms: hello world<br>ok<br>复杂一点的例子：<br>%% This module is in file tut5.erl<br>-module(tut5).<br>-export([format_temps/1]).<br>%% Only this function is exported<br>format_temps([])-&gt; % No output for an empty list<br>ok;<br>format_temps([City | Rest]) -&gt;<br>print_temp(convert_to_celsius(City)),<br>format_temps(Rest).<br>convert_to_celsius({Name, {c, Temp}}) -&gt; % No conversion needed<br>{Name, {c, Temp}};<br>convert_to_celsius({Name, {f, Temp}}) -&gt; % Do the conversion<br>{Name, {c, (Temp - 32) * 5 / 9}}.<br>print_temp({Name, {c, Temp}}) -&gt;<br>io:format(“~-15w ~w c~n”, [Name, Temp]).</p>
+<p>36&gt; c(tut5).<br>{ok,tut5}<br>37&gt; tut5:format_temps([{moscow, {c, -10}}, {cape_town, {f, 70}},<br>{stockholm, {c, -4}}, {paris, {f, 28}}, {london, {f, 36}}]).<br>moscow -10 c<br>cape_town 21.1111 c<br>stockholm -4 c<br>paris -2.22222 c<br>london 2.22222 c<br>ok<br>要注意-export([format_temps/1]).一行只包含format_temps/1函数，另一个函数是局部(local)函数，他们无法被tut5模块以外的东西访问。<br>print_temp简单的调用io:format，和我们上面所描述的一样。注意~-15w说明以15做为栏位长度打印，并左对齐。</p>
+<p>7、取list最大值<br>-module(tut6).<br>-export([list_max/1]).<br>list_max([Head|Rest]) -&gt;<br>list_max(Rest, Head).<br>list_max([], Res) -&gt;<br>Res;<br>list_max([Head|Rest], Result_so_far) when Head &gt; Result_so_far -&gt;<br>New_result_far=Head<br>list_max(Rest, New_result_far);<br>list_max([Head|Rest], Result_so_far) -&gt;<br>list_max(Rest, Result_so_far).<br>39&gt; c(tut6).<br>{ok,tut6}<br>40&gt; tut6:list_max([1,2,3,4,5,7,4,3,2,1]).<br>7<br>首先注意我们这里有两个同名的函数list_max。虽然每个都带有不同数据的参数。在Erlang这些都会被认为是完全不同的函数。我们需要通过“名称/参数数量”区分这些我们写的函数，比如在这里是list_max/1和list_max/2。<br>在list_max/2中，遍历列表，当Head &gt; Result_so_far的时候，使用Head代替Result_so_far。在-&gt;之前的特定字符，表示－－我们只会在这个特定的条件满足的时候，才会执行函数的这个部分。我们叫这种类型的测试，叫守卫(guard)。如果守卫不是‘真’(我们称它为守卫失败)，我们会尝试执行函数的下一个部分。这种情况下如果Head不大于Result_so_far的话，它必定是小于等于它，所以我们在下一部分中，不需要再使用守卫。<br>一些守卫中常见的操作符有&lt; 小于，&gt; 大于，== 等于，&gt;= 大于等于，=&lt; 小于等于，/=不等于。<br>把上面的程序换成在列表中找最小值的程序，我们只需要把&lt;替换成&gt;。(不过最好也把函数的名字，改为list_min:-))。</p>
+<p>还记得我前面所提到的－－一个变量在它的作用域中只能做一次赋值吗？如上面所看到的，如：Result_so_far给赋了很多值。那是因为，我们每次调用list_max/2的时候，我们建立了一个新的作用域，Result_so_far在这个作用域中，都会被认为是完全不同的变量。另一个建立和给一个变量赋值的方法是使用 =。如果我写M = 5，那么一个名为M的变量会被创建，并赋于5这个值。如果在同一下作用域下，当我写M = 6，它就会发生错误。</p>
+<p>41&gt; M = 5.<br>5<br>42&gt; M = 6.<br><strong> exited: {<br>    {badmatch,6},[{erl_eval,expr,3}]<br>    } </strong><br>43&gt; M = M + 1.<br><strong> exited: {<br>    {badmatch,6},[{erl_eval,expr,3}]<br>    } </strong><br>44&gt; N = M + 1.<br>6<br>匹配操作符在通过一组元素创建新变量的时候很有用。<br>45&gt; {X, Y} = {paris, {f, 28}}.<br>{paris,{f,28}}<br>46&gt; X.<br>paris<br>47&gt; Y.<br>{f,28}<br>这里我们看到X的值被赋于paris，而Y是{f,28}。</p>
+<p>8、更多关于列表<br>|可以用来得到列表中的第一个元素，|也可以用来在列表的头部添加元素：<br>53&gt; L1 = [madrid | T1].<br>[madrid,london,rome]<br>54&gt; L1.<br>[madrid,london,rome]<br>现在举一个使用列表的例子－－反转列表：<br>-module(tut8).<br>-export([reverse/1]).<br>reverse(List) -&gt;<br>reverse(List, []).<br>reverse([Head | Rest], Reversed_List) -&gt;<br>reverse(Rest, [Head | Reversed_List]);<br>reverse([], Reversed_List) -&gt;<br>Reversed_List.<br>56&gt; c(tut8).<br>{ok,tut8}<br>57&gt; tut8:reverse([1,2,3]).<br>[3,2,1]</p>
+<p>9、If和Case<br>If这样工作的<br>if<br>Condition 1 -&gt;<br>Action 1;<br>Condition 2 -&gt;<br>Action 2;<br>Condition 3 -&gt;<br>Action 3;<br>Condition 4 -&gt;<br>Action 4<br>end<br>注意，在结尾没有”;”！条件(Conditions)和守卫一样，测试成功或是失败。Erlang会从最顶上开始向下，直到找到一个成功的条件为止，并执行行条件下面的动作，并且乎略掉其后面它的条件。如果没有条件匹配，会发生一个运行时(run-time)错误。元子true在条件中表示真，它常常被放在条件层，表示如果没有匹配的条件的话，应该做什么动作。</p>
+<p>一个if的例子，蛋疼的if，没有true条件会报错<br>-module(tut9).<br>-export([test_if/2]).<br>test_if(A, B) -&gt;<br>if<br>A == 5 -&gt;<br>io:format(“A = 5~n”, []),<br>a_equals_5;<br>B == 6 -&gt;<br>io:format(“B = 6~n”, []),<br>b_equals_6;<br>A == 2, B == 3 -&gt; %i.e. A equals 2 and B equals 3<br>io:format(“A == 2, B == 3~n”, []),<br>a_equals_2_b_equals_3;<br>A == 1 ; B == 7 -&gt; %i.e. A equals 1 or B equals 7<br>io:format(“A == 1 ; B == 7~n”, []),<br>a_equals_1_or_b_equals_7<br>end.<br>64&gt; c(tut9).<br>{ok,tut9}<br>65&gt; tut9:test_if(5,33).<br>A = 5<br>a_equals_5<br>66&gt; tut9:test_if(33,6).<br>B = 6<br>b_equals_6<br>67&gt; tut9:test_if(2, 3).<br>A == 2, B == 3<br>a_equals_2_b_equals_3<br>68&gt; tut9:test_if(1, 33).<br>A == 1 ; B == 7<br>a_equals_1_or_b_equals_7<br>69&gt; tut9:test_if(33, 7).<br>A == 1 ; B == 7<br>a_equals_1_or_b_equals_7<br>70&gt; tut9:test_if(33, 33).<br>=ERROR REPORT==== 11-Jun-2003::14:03:43 ===<br>Error in process &lt;0.85.0&gt; with exit value:<br>{if_clause,[{tut9,test_if,2},{erl_eval,exprs,4},{shell,eval_loop,2}]}<br><strong> exited: {if_clause,[{tut9,test_if,2},<br>{erl_eval,exprs,4},<br>{shell,eval_loop,2}]} </strong></p>
+<p>case是另一个Erlang结构：<br>-module(tut10).<br>-export([convert_length/1]).<br>convert_length(Length) -&gt;<br>case Length of<br>{centimeter, X} -&gt;<br>{inch, X / 2.54};<br>{inch, Y} -&gt;<br>{centimeter, Y <em> 2.54}<br>end.<br>71&gt; c(tut10).<br>{ok,tut10}<br>72&gt; tut10:convert_length({inch, 6}).<br>{centimeter,15.2400}<br>73&gt; tut10:convert_length({centimeter, 2.5}).<br>{inch,0.98425}<br>注意，case和if都有返回值，case的行为也可以使用守卫来代替。可能需要一个例子来澄清这一点。下面的例子告诉我们一个给定年份的某月份的长度。我们当然需要知道年份，在闰年中，2月有29天。<br>-module(tut11).<br>-export([month_length/2]).<br>month_length(Year, Month) -&gt;<br>%% All years divisible by 400 are leap<br>%% Years divisible by 100 are not leap (except the 400 rule above)<br>%% Years divisible by 4 are leap (except the 100 rule above)<br>Leap = if<br>trunc(Year / 400) </em> 400 == Year -&gt;<br>leap;<br>trunc(Year / 100) <em> 100 == Year -&gt;<br>not_leap;<br>trunc(Year / 4) </em> 4 == Year -&gt;<br>leap;<br>true -&gt;<br>not_leap<br>end,<br>case Month of<br>sep -&gt; 30;<br>apr -&gt; 30;<br>jun -&gt; 30;<br>nov -&gt; 30;<br>feb when Leap == leap -&gt; 29;<br>feb -&gt; 28;<br>jan -&gt; 31;<br>mar -&gt; 31;<br>may -&gt; 31;<br>jul -&gt; 31;<br>aug -&gt; 31;<br>oct -&gt; 31;<br>dec -&gt; 31<br>end.<br>74&gt; c(tut11).<br>{ok,tut11}<br>75&gt; tut11:month_length(2004, feb).<br>29<br>76&gt; tut11:month_length(2003, feb).<br>28<br>77&gt; tut11:month_length(1947, aug).<br>31</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/erlang/" rel="tag"># erlang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/06/26/erlang/" rel="next" title="erlang安装">
+                <i class="fa fa-chevron-left"></i> erlang安装
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/06/27/erlang/" rel="prev" title="erlang入门（2）">
+                erlang入门（2） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="接着上篇，这篇主要介绍document对象，document在浏览器中表示整个HTML页面，document对象是window对象的一个方法，因此可以省略window对象。下面介绍document对象的属性和方法：（学习javascript思想：一切皆对象）">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="javascript-node和document（2）">
+<meta property="og:url" content="http://yoursite.com/2011/06/19/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="接着上篇，这篇主要介绍document对象，document在浏览器中表示整个HTML页面，document对象是window对象的一个方法，因此可以省略window对象。下面介绍document对象的属性和方法：（学习javascript思想：一切皆对象）">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.861Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="javascript-node和document（2）">
+<meta name="twitter:description" content="接着上篇，这篇主要介绍document对象，document在浏览器中表示整个HTML页面，document对象是window对象的一个方法，因此可以省略window对象。下面介绍document对象的属性和方法：（学习javascript思想：一切皆对象）">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2011/06/19/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>javascript-node和document（2） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2011/06/19/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">javascript-node和document（2）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2011-06-19 01:27:23" itemprop="dateCreated datePublished" datetime="2011-06-19T01:27:23+08:00">2011-06-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2011/06/19/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2011/06/19/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>接着上篇，这篇主要介绍document对象，document在浏览器中表示整个HTML页面，document对象是window对象的一个方法，因此可以省略window对象。<br>下面介绍document对象的属性和方法：（学习javascript思想：一切皆对象）<br><a id="more"></a></p>
+<h2 id="1、nodeType、nodeName、nodeValue和parentNode"><a href="#1、nodeType、nodeName、nodeValue和parentNode" class="headerlink" title="1、nodeType、nodeName、nodeValue和parentNode"></a>1、nodeType、nodeName、nodeValue和parentNode</h2><p>以上的4个属性分别是：9、#document、null、null</p>
+<h2 id="2、documentElment和body"><a href="#2、documentElment和body" class="headerlink" title="2、documentElment和body"></a>2、documentElment和body</h2><p>这个指向页面的html节点，和document.childNodes[0] 或 document.firstChild 一样<br>而后者则指向body。</p>
+<h2 id="3、title"><a href="#3、title" class="headerlink" title="3、title"></a>3、title</h2><p>可以通过document.title来取得标题，同样也可以通过document.title = “xxx”来设置标题</p>
+<h2 id="4、url、domain-和-referrer"><a href="#4、url、domain-和-referrer" class="headerlink" title="4、url、domain 和 referrer"></a>4、url、domain 和 referrer</h2><p>第一个URL和location.href相同</p>
+<p>第二个domain大部分是用来和iframe内跨子域的调用方法或全局变量和利用它来AJAX跨子域操作，它可以突破javascript的同源策略。</p>
+<p>第三个大部分是用在来源统计上的，用来捕获客户端是通过哪个网站跳转过来的，可以方便的抓取客户端的来源，当然可能是伪造的。</p>
+<h2 id="5、getElementById-id"><a href="#5、getElementById-id" class="headerlink" title="5、getElementById(id)"></a>5、getElementById(id)</h2><p>大名鼎鼎的方法，不多解释，只提三句，第一这是获取节点最快的方法，第二注意大小写，第三请保持获取的ID在页面上的唯一性，包括其他元素的name属性也不要与ID相同！</p>
+<h2 id="6、getElementsByTagName-node-name"><a href="#6、getElementsByTagName-node-name" class="headerlink" title="6、getElementsByTagName(node_name)"></a>6、getElementsByTagName(node_name)</h2><p>在没有联想的editPlus里我一直少打一个S，真的郁闷，这个方法返回一个数组，jquery很多选择器都依靠这个方法，所以在使用jquery选择器时还是推荐使用$(“#id”)这样来做，最快！另外返回的这个数组有一个常用的方法：</p>
+<p>namedItem(name)或[name];用来筛选name是参数值的第一个节点。</p>
+<p>如果node_name参数为“*”，则表示查找页面上的所有元素。</p>
+<h2 id="6、getElementsByName-name"><a href="#6、getElementsByName-name" class="headerlink" title="6、getElementsByName(name)"></a>6、getElementsByName(name)</h2><p>同上，只不过这里查抄name。</p>
+<h2 id="7、anchors、applets、forms、images、links、embeds"><a href="#7、anchors、applets、forms、images、links、embeds" class="headerlink" title="7、anchors、applets、forms、images、links、embeds"></a>7、anchors、applets、forms、images、links、embeds</h2><p>分别表示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">anchors   文档中带有name特性的a元素</span><br><span class="line">applets    文档中所有applet元素</span><br><span class="line">forms       文档中所有forms元素</span><br><span class="line">images     文档中所有images元素</span><br><span class="line">links         文档中所有带有href的a元素</span><br><span class="line">embeds    文档中所有带有embed元素</span><br></pre></td></tr></table></figure></p>
+<h2 id="8、write-string-和writeln-string"><a href="#8、write-string-和writeln-string" class="headerlink" title="8、write(string)和writeln(string)"></a>8、write(string)和writeln(string)</h2><p>输出参数内的字符串，如果string是HTML元素会解析。唯一需要注意的是输出,需要将其拆开。</p>
+<h2 id="9、implementation"><a href="#9、implementation" class="headerlink" title="9、implementation"></a>9、implementation</h2><p>浏览器的DOM支持检测，他有很多属性，可以自己去百度一下，包括支持CSS什么版本，event事件是什么模型等等。</p>
+<p>他支持一个方法hasFeature(“css2”, “2.0”)；用来检测浏览器是否支持css2.0.</p>
+<h2 id="11、cookie"><a href="#11、cookie" class="headerlink" title="11、cookie"></a>11、cookie</h2><p>可以获得或者添加cookie操作</p>
+<h2 id="11、createElement-Tag-name"><a href="#11、createElement-Tag-name" class="headerlink" title="11、createElement(Tag_name)"></a>11、createElement(Tag_name)</h2><p>创建一个节点，需要appendChild()和insertBefore() 这2个方法配合使用。</p>
+<h2 id="12、createEvent-eventType"><a href="#12、createEvent-eventType" class="headerlink" title="12、createEvent(eventType)"></a>12、createEvent(eventType)</h2><p>创建一个新的Event对象，只能接受event对象模块名</p>
+<h2 id="13、createDocumentFragment"><a href="#13、createDocumentFragment" class="headerlink" title="13、createDocumentFragment()"></a>13、createDocumentFragment()</h2><p>创建一个新的document fragment文档节点，这个节点具有普通节点的属性和方法，可以利用这个文档节点来作为仓库，存放不会立即放入HTML页面的节点，等处理完了再一起放入HTML页面，这样可以避免每次放入反复渲染，减少开销。例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var  f = document.createDocumentFragment();</span><br><span class="line">f.appendChild(new_node);   //反复多次</span><br><span class="line">document.body.appendChild(f);  //最后将这个仓库放入HTML页面中，只进行一次渲染</span><br></pre></td></tr></table></figure></p>
+<h2 id="14、scrollIntoView-bool"><a href="#14、scrollIntoView-bool" class="headerlink" title="14、scrollIntoView(bool)"></a>14、scrollIntoView(bool)</h2><p>使当前element.scroolIntoView()可见，可以用其他方法代替</p>
+<h2 id="15、一些不常用的属性和方法："><a href="#15、一些不常用的属性和方法：" class="headerlink" title="15、一些不常用的属性和方法："></a>15、一些不常用的属性和方法：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">document.compatMode：用来判断当前浏览器采用的渲染方式。</span><br><span class="line">BackCompat：标准兼容模式关闭。</span><br><span class="line">CSS1Compat：标准兼容模式开启。</span><br><span class="line"></span><br><span class="line">document.contentType：     返回当前页的类型如：text/html</span><br><span class="line">document.characterSet:      得到当前页的chatset：只能读取</span><br><span class="line">document.lastModified：      最后修改时间</span><br><span class="line">document.elementFromPoint(x, y)         根据坐标获得DOM元素</span><br><span class="line">document.importNode(externalNode, deep)      引入其他文档模型的节点，第二个参数为是否深度引入</span><br><span class="line">open()和close()         打开和关闭网页输出流，在页面加载器无需使用</span><br><span class="line">createTextNode(data)         创建文本节点</span><br><span class="line">最后强大的execCommand：   只是FF支持的不好，IE支持，可以百度一下看下相关的技术文章，看了大跌眼镜，原来还能这样！</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2011/06/18/js-ajax/" rel="next" title="javascript-node和document（1）">
+                <i class="fa fa-chevron-left"></i> javascript-node和document（1）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2011/06/23/js-ajax/" rel="prev" title="关于javascript的继承">
+                关于javascript的继承 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、nodeType、nodeName、nodeValue和parentNode"><span class="nav-number">1.</span> <span class="nav-text">1、nodeType、nodeName、nodeValue和parentNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、documentElment和body"><span class="nav-number">2.</span> <span class="nav-text">2、documentElment和body</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、title"><span class="nav-number">3.</span> <span class="nav-text">3、title</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、url、domain-和-referrer"><span class="nav-number">4.</span> <span class="nav-text">4、url、domain 和 referrer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、getElementById-id"><span class="nav-number">5.</span> <span class="nav-text">5、getElementById(id)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、getElementsByTagName-node-name"><span class="nav-number">6.</span> <span class="nav-text">6、getElementsByTagName(node_name)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、getElementsByName-name"><span class="nav-number">7.</span> <span class="nav-text">6、getElementsByName(name)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7、anchors、applets、forms、images、links、embeds"><span class="nav-number">8.</span> <span class="nav-text">7、anchors、applets、forms、images、links、embeds</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8、write-string-和writeln-string"><span class="nav-number">9.</span> <span class="nav-text">8、write(string)和writeln(string)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9、implementation"><span class="nav-number">10.</span> <span class="nav-text">9、implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11、cookie"><span class="nav-number">11.</span> <span class="nav-text">11、cookie</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11、createElement-Tag-name"><span class="nav-number">12.</span> <span class="nav-text">11、createElement(Tag_name)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12、createEvent-eventType"><span class="nav-number">13.</span> <span class="nav-text">12、createEvent(eventType)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13、createDocumentFragment"><span class="nav-number">14.</span> <span class="nav-text">13、createDocumentFragment()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14、scrollIntoView-bool"><span class="nav-number">15.</span> <span class="nav-text">14、scrollIntoView(bool)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15、一些不常用的属性和方法："><span class="nav-number">16.</span> <span class="nav-text">15、一些不常用的属性和方法：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

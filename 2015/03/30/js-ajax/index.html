@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="新鲜出炉，PCIE卡SQLServer和SSD Mongodb集群4千万数据insert测试">
+<meta property="og:url" content="http://yoursite.com/2015/03/30/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/img/pcie/1.png">
+<meta property="og:image" content="http://yoursite.com/img/pcie/2.png">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.884Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="新鲜出炉，PCIE卡SQLServer和SSD Mongodb集群4千万数据insert测试">
+<meta name="twitter:description" content="http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？">
+<meta name="twitter:image" content="http://yoursite.com/img/pcie/1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/03/30/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>新鲜出炉，PCIE卡SQLServer和SSD Mongodb集群4千万数据insert测试 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/03/30/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">新鲜出炉，PCIE卡SQLServer和SSD Mongodb集群4千万数据insert测试
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2015-03-30 09:30:09" itemprop="dateCreated datePublished" datetime="2015-03-30T09:30:09+08:00">2015-03-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/03/30/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2015/03/30/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>http协议请求头我们再熟悉不过了，一些诸如content-type，etag等等的协议头规定了我们如何使用http协议，以及反映着一些资源的状态。但是我们有注意过http请求头的顺序吗？</p>
+<a id="more"></a>
+<p>最近公司需要测试1亿条数据10分钟插入数据库，主要是为了数据推送留存用。<br>最终我们讨论给出了2套方案<br>1、单台sqlserver 配合PCIE卡<br>2、Mongodb分片集群<br>因为目前数据量是4千万，所以我分别对4千万数据和1亿数据进行了写入测试。<br>被测试机器都是24CPU,64G内存的独立服务器<br>测试代码运行服务器也是24CPU，64G内存的独立服务器<br>网络环境是内网1G带宽。</p>
+<p>1、单台sqlserver 配合PCIE卡<br><img src="/img/pcie/1.png" alt=""></p>
+<p>性能测试总结：<br>使用新配置的720 PCI-E硬盘机器和SQLServer2014，性能非常强劲，单机可达3万条/秒的写入，由于前几次测试本机压测本机，对cpu有抢占情况，所以性能并没完全发挥出来。</p>
+<p>2、mongodb测试结果<br><img src="/img/pcie/2.png" alt=""></p>
+<p>性能测试总结：<br>尽管Mongodb单机性能不如带PCIE卡的SQLServer，但是一旦分片，性能将提升几倍<br>在分4片的情况下，写入可达60000条/s<br>在分5片的情况下，写入可达80000条/s<br>另外值得一提的是，由于分片不均匀，导致90%的数据仅使用了60%的时间，剩下10%的数据仅在单点插入，所以性能下降的很厉害，如果分片足够多，我们的片键足够散列，让每片存储平均，性能还能有进一步提升。</p>
+<p>3、汇总总结：<br>想要达到1亿条数据10分钟插入，必须达到插入速度在16万/秒，所以如果我们将分片达到10片，理论上就可以达到1亿条数据10分钟的插入了，由于机器有限无法完成测试，不过最终20分钟的插入速度也让人满意了。</p>
+<p>4、最后附上py测试脚本<br>sqlserver测试脚本：</p>
+<h1 id="coding-utf-8"><a href="#coding-utf-8" class="headerlink" title="-- coding: utf-8 --"></a>-<em>- coding: utf-8 -</em>-</h1><p>import _mssql<br>import pymssql<br>import datetime,time<br>from multiprocessing import Process</p>
+<p>def getTimestampFromDatetime(d=None):<br>    if d is None:<br>        d = datetime.datetime.now()<br>    return time.mktime(d.timetuple())</p>
+<p>def task(key):</p>
+<pre><code>server = &apos;localhost:2433&apos;
+user = &apos;testwzh&apos;
+password = &apos;123456&apos;
+dbname = &apos;TCMobileNotification&apos;
+str = u&apos;来的真巧！这么好的东西只为你准备，你忍心让给别人吗？&apos;
+
+all_data = (0,1,&apos;d0118d2cffaf8000d0118d2cffaf8000&apos;,0,1,&apos;2015-03-20 10:01:50.990&apos;,\
+    str,&apos;http://t.cn/RZsNwgG&apos;,71,\
+    6, 9,&apos;2015-03-27 10:01:50.990&apos;,0)
+listData = []
+for i in range(10000):
+    listData.append(all_data)
+
+
+tableName = &apos;PushMessageSystem_{0}&apos;.format(key)
+conn = pymssql.connect(server=server, user=user, password=password, database=dbname)
+cursor = conn.cursor()
+for i in range(0, 250000):
+    cursor.executemany(
+     &quot;INSERT INTO &quot;+tableName+&quot; VALUES (%d,%d,%s,%d,%d,%s,%s,%s,%d,%d,%d,%s,%d)&quot;,
+        listData)
+    conn.commit()
+conn.close()
+</code></pre><p>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    proc_record = []<br>    keyList = [0,1,2,3,4,5,6,7,8,9,’a’,’b’,’c’,’d’,’e’,’f’,]<br>    for i in range(0,16):<br>        p = Process(target = task, args=(keyList[i],))<br>        p.start()<br>        proc_record.append(p)</p>
+<pre><code>start = getTimestampFromDatetime()
+
+for p in proc_record:
+    p.join()
+
+end = getTimestampFromDatetime()
+print(&apos;time: {0}s&apos;.format(end-start))
+</code></pre><p>mongodb集群测试脚本：</p>
+<h1 id="coding-utf-8-1"><a href="#coding-utf-8-1" class="headerlink" title="-- coding: utf-8 --"></a>-<em>- coding: utf-8 -</em>-</h1><p>import pymongo<br>import json<br>import datetime,time<br>import sys<br>import copy<br>import sys, os<br>from multiprocessing import Process<br>from hashlib import md5</p>
+<p>def getTimestampFromDatetime(d=None):<br>    if d is None:<br>        d = datetime.datetime.now()<br>    return time.mktime(d.timetuple())</p>
+<p>def md5Hash(str):<br>    m = md5()<br>    m.update(str)<br>    return m.hexdigest().upper()</p>
+<p>def task(key):</p>
+<pre><code>mongoUri = &apos;mongodb://root:123456@10.1.24.75:10000/admin&apos;
+str = u&apos;来的真巧！这么好的东西只为你准备，你忍心让给别人吗？&apos;
+
+all_data = {
+    &apos;PMSID&apos;:1,
+    &apos;PMSPushTaskID&apos;:0,
+    &apos;PMSPlatform&apos;:1,
+    &apos;PMSDeviceID&apos;:md5Hash(key),
+    &apos;PMSReadCount&apos;:0,
+    &apos;PMSVisible&apos;:1,
+    &apos;PMSCreateTime&apos;:&apos;2014-06-24 16:40:00.000&apos;,
+    &apos;PMSContent&apos;:str,
+    &apos;PMSUrl&apos;:&apos;http://t.cn/RZsNwgG&apos;,
+    &apos;PMSTaskSN&apos;:71,
+    &apos;PMSPushType&apos;:6,
+    &apos;PMSProductType&apos;:3,
+    &apos;PMSExpiredTime&apos;:&apos;2015-03-27 10:01:50.990&apos;,
+    &apos;PMSContentType&apos;:0,
+}
+
+tableName = &apos;PushMessageSystem_{0}&apos;.format(0)
+
+client = pymongo.MongoClient(mongoUri, max_pool_size=100)
+db = client.TCMobileNotification
+
+for i in range(0, 125):
+    listData = []
+    for i in range(10000):
+        listData.append(copy.copy(all_data))
+    db[tableName].insert(listData)
+</code></pre><p>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    proc_record = []<br>    keyList = [0,1,2,3,4,5,6,7,8,9,’a’,’b’,’c’,’d’,’e’,’f’,0,1,2,3,4,5,6,7,8,9,’a’,’b’,’c’,’d’,’e’,’f’]<br>    for i in range(0,32):<br>        p = Process(target = task, args=(str(keyList[i]),))<br>        p.start()<br>        proc_record.append(p)</p>
+<pre><code>start = getTimestampFromDatetime()
+
+for p in proc_record:
+    p.join()
+
+end = getTimestampFromDatetime()
+print(&apos;time: {0}s&apos;.format(end-start))
+</code></pre>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/03/20/js-ajax/" rel="next" title="thrift 文件编写教程">
+                <i class="fa fa-chevron-left"></i> thrift 文件编写教程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/04/14/js-ajax/" rel="prev" title="linux常用命令">
+                linux常用命令 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#coding-utf-8"><span class="nav-number">1.</span> <span class="nav-text">-- coding: utf-8 --</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#coding-utf-8-1"><span class="nav-number">2.</span> <span class="nav-text">-- coding: utf-8 --</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

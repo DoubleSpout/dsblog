@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近用c++先后写了3个node_moudle，有2个放到了npm上，一个项目感觉性能不佳，流产了，总结一下吧： 两个上线项目分别是">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++写node笔记（七）">
+<meta property="og:url" content="http://yoursite.com/2013/01/25/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="最近用c++先后写了3个node_moudle，有2个放到了npm上，一个项目感觉性能不佳，流产了，总结一下吧： 两个上线项目分别是">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.844Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++写node笔记（七）">
+<meta name="twitter:description" content="最近用c++先后写了3个node_moudle，有2个放到了npm上，一个项目感觉性能不佳，流产了，总结一下吧： 两个上线项目分别是">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2013/01/25/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>C++写node笔记（七） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/01/25/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">C++写node笔记（七）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2013-01-25 14:49:07" itemprop="dateCreated datePublished" datetime="2013-01-25T14:49:07+08:00">2013-01-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/01/25/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2013/01/25/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近用c++先后写了3个node_moudle，有2个放到了npm上，一个项目感觉性能不佳，流产了，总结一下吧：</p>
+<p>两个上线项目分别是</p>
+<a id="more"></a>
+<p>A、hvalidator</p>
+<p>node简单验证模块，主要验证一些数据格式，以及email地址，ip，url等正则判断，这个模块算是第一个node addon的产出，处女作。</p>
+<p>npm install hvalidator</p>
+<p>github：<a href="https://github.com/DoubleSpout/node-hvalidator" target="_blank" rel="noopener">https://github.com/DoubleSpout/node-hvalidator</a></p>
+<p>B、ccap</p>
+<p>利用CImg图形库和libjpeg库让node不用依赖第三方库生成简单验证码。可以设置验证码的大小，内容，质量等。</p>
+<p>npm install ccap</p>
+<p>github：<a href="https://github.com/DoubleSpout/ccap" target="_blank" rel="noopener">https://github.com/DoubleSpout/ccap</a></p>
+<p>v8手册handle<value>类：<a href="http://bespin.cz/~ondras/html/classv8_1_1Value.html" target="_blank" rel="noopener">http://bespin.cz/~ondras/html/classv8_1_1Value.html</a></value></p>
+<p>1、一个node的addon基本入口格式应该如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#define BUILDING_NODE_EXTENSION</span><br><span class="line">#include &lt;node.h&gt;</span><br><span class="line">#include &quot;xxx.h&quot;</span><br><span class="line"></span><br><span class="line">using namespace v8;</span><br><span class="line">void Init(Handle&lt;Object&gt; target) &#123;</span><br><span class="line">  target-&gt;Set(String::NewSymbol(&quot;输出属性名&quot;),</span><br><span class="line">           FunctionTemplate::New(C++函数名)-&gt;GetFunction());</span><br><span class="line">&#125;</span><br><span class="line">NODE_MODULE(输出模块名, Init)</span><br></pre></td></tr></table></figure>
+<p>2、node官方的实例一般都是定义一个class，把要输出给node的方法设置为static静态方法，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;node.h&gt;</span><br><span class="line">#include &lt;string&gt;</span><br><span class="line"></span><br><span class="line">class SimpleF &#123;</span><br><span class="line"> public:</span><br><span class="line">  static v8::Handle&lt;v8::Value&gt; trim(const v8::Arguments&amp; args);</span><br><span class="line">  static v8::Handle&lt;v8::Value&gt; ltrim(const v8::Arguments&amp; args);</span><br><span class="line">  static v8::Handle&lt;v8::Value&gt; rtrim(const v8::Arguments&amp; args); </span><br><span class="line">  static v8::Handle&lt;v8::Value&gt; toXss(const v8::Arguments&amp; args);</span><br><span class="line">  static v8::Handle&lt;v8::Value&gt; replace(const v8::Arguments&amp; args);</span><br><span class="line">   </span><br><span class="line"> protected:</span><br><span class="line">  static void toCString(std::string&amp; str, v8::Handle&lt;v8::Value&gt; strp);</span><br><span class="line">  static void lTrimString(std::string&amp; str,const std::string&amp; filters = &quot;\r\t\n &quot;);</span><br><span class="line"></span><br><span class="line"> private:</span><br><span class="line">  SimpleF();</span><br><span class="line">  ~SimpleF();</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>比如上面这段代码就定义了一个SimpleF的类，然后定义了很多静态方法供输出给node</p>
+<p>3、一个简单的输出给node的静态类方法示例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Handle&lt;Value&gt; SimpleV::isArray(const Arguments&amp; args) &#123;//是否是数组</span><br><span class="line">  HandleScope scope;</span><br><span class="line">  return scope.Close(Boolean::New(args[0]-&gt;IsArray()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>比如上面这段就是输出给node，并且返回一个bool值，告诉node端第一个参数是否为数组</p>
+<p>4、静态方法可以返回给node各种不同的格式，比如整形，字符串，数组，对象等</p>
+<p>布尔值：return scope.Close(Boolean::New(1)); //返回true</p>
+<p>数字：return scope.Close(Number::New(1)); //返回数字1</p>
+<p>字符串：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">char *a = &apos;1&apos;;</span><br><span class="line">return scope.Close(Number::New(a)); //返回字符串a</span><br></pre></td></tr></table></figure>
+<p>数组：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Handle&lt;Array&gt; ary = Array::New(2);</span><br><span class="line">ary-&gt;Set(0,Integer::New(1));</span><br><span class="line">ary-&gt;Set(1,String::New(&quot;m&quot;));</span><br><span class="line">return scope.Close(ary);</span><br><span class="line">//返回数组[1,&quot;m&quot;];</span><br></pre></td></tr></table></figure>
+<p>对象：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Handle&lt;Object&gt; obj = Object::New();</span><br><span class="line">obj-&gt;Set(String::New(&quot;a&quot;) ,Integer::New(1));</span><br><span class="line">obj-&gt;Set(String::New(&quot;b&quot;), String::New(&quot;m&quot;));</span><br><span class="line">return scope.Close(obj);</span><br><span class="line">//返回数组&#123;a:1,b:&quot;m&quot;&#125;;</span><br></pre></td></tr></table></figure>
+<p>函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Handle&lt;Value&gt; MyFunction(const Arguments&amp; args) &#123;//这表定义了一个静态方法</span><br><span class="line"></span><br><span class="line">  HandleScope scope;</span><br><span class="line">  return scope.Close(String::New(&quot;hello world&quot;));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Local&lt;FunctionTemplate&gt; tpl = FunctionTemplate::New(MyFunction);//将上面的静态方法作为返回值返回node</span><br><span class="line">Local&lt;Function&gt; fn = tpl-&gt;GetFunction();</span><br><span class="line">fn-&gt;SetName(String::NewSymbol(&quot;theFunction&quot;)); // 忽略名字则表示匿名</span><br><span class="line">return scope.Close(fn);</span><br></pre></td></tr></table></figure>
+<p>5、获取node传递参数的值</p>
+<p>获得数字的值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">double：arg[0]-&gt;NumberValue ()</span><br><span class="line">int64_t：arg[0]-&gt;IntegerValue ()</span><br><span class="line">uint32_t：arg[0]-&gt;Uint32Value ()</span><br><span class="line">int32_t：arg[0]-&gt;Int32Value ()</span><br><span class="line"></span><br><span class="line">获得布尔值：</span><br><span class="line">bool：arg[0]-&gt;BooleanValue ()</span><br><span class="line"></span><br><span class="line">获得字符串：</span><br><span class="line">String::Utf8Value utf8_value(arg[0]-&gt;ToString());</span><br><span class="line">string&amp; str(*utf8_value);</span><br><span class="line"></span><br><span class="line">获得数组，对象</span><br><span class="line">Local&lt;Object&gt; lo(arg[0]-&gt;ToObject ());</span><br><span class="line"></span><br><span class="line">获得数组或是对象中的某一个值：</span><br><span class="line">Local&lt;Value&gt; ary0 = lo-&gt;Get(0); //获取数组中第一个元素的值，返回Local&lt;Value&gt;</span><br><span class="line">获得对象中的某一个值</span><br><span class="line">Local&lt;Value&gt; ary0 = lo-&gt;Get(String::New(&quot;m&quot;)); //获取对象中key字段为m的值，返回Local&lt;Value&gt;</span><br></pre></td></tr></table></figure>
+<p>6、一些常用的代码片段：</p>
+<p>6.1将node端的字符串传化为std::string类型：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void router::toCString(std::string&amp; str, Handle&lt;Value&gt; strp)&#123;</span><br><span class="line">      String::Utf8Value utf8_value(strp-&gt;ToString());//转化成v8::Utf8Value</span><br><span class="line">      str = *utf8_value;//转化为string</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>6.2将c++的std::string转化为char * 返回给node</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">std::string s;</span><br><span class="line">const char *sp = s.c_str();</span><br><span class="line">return scope.Close(String::New(sp));</span><br></pre></td></tr></table></figure>
+<p>6.3 c++的replace函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">void SimpleF::CSreplace(std::string&amp; s1,std::string&amp; s2,std::string&amp; s3)</span><br><span class="line">&#123;</span><br><span class="line"> std::string::size_type pos=0;</span><br><span class="line"> std::string::size_type a=s2.size();</span><br><span class="line"> std::string::size_type b=s3.size();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  while((pos=s1.find(s2,pos))!=std::string::npos)</span><br><span class="line">  &#123;</span><br><span class="line">   s1.replace(pos,a,s3);</span><br><span class="line">   pos+=b;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>6.4 c++linux下和windows下的正则表达式</p>
+<p>linux生成正则表达式（这里没有释放，因为要重复使用该正则）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;regex.h&gt;</span><br><span class="line">regex_t genRegex(std::string regstr)&#123;</span><br><span class="line"> regex_t preg;</span><br><span class="line"> const char *regex = regstr.c_str();</span><br><span class="line"></span><br><span class="line"> regcomp(&amp;preg, regex, REG_EXTENDED|REG_NOSUB);</span><br><span class="line"> return preg; </span><br><span class="line">&#125;</span><br><span class="line">linux正则匹配：</span><br><span class="line">bool match(regex_t preg,std::string&amp; str)&#123;</span><br><span class="line"> int z;</span><br><span class="line"> const char *buf = str.c_str();</span><br><span class="line"> const size_t nmatch = 1;</span><br><span class="line"> regmatch_t pm[nmatch];</span><br><span class="line"> z = regexec(&amp;preg, buf, nmatch, pm, 0);</span><br><span class="line"> return z != REG_NOMATCH;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>windows下的正则生成，同样没有释放内容，重复使用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;regex&gt;</span><br><span class="line">std::regex genRegex(std::string regstr)&#123;</span><br><span class="line"> std::regex pattern(regstr,std::regex_constants::extended);</span><br><span class="line"> return pattern; </span><br><span class="line">&#125;</span><br><span class="line">windows下正则匹配：</span><br><span class="line">bool match(std::regex pattern,std::string&amp; str)&#123;</span><br><span class="line"> std::match_results&lt;std::string::const_iterator&gt; result;</span><br><span class="line"> bool valid = std::regex_match(str,result,pattern);</span><br><span class="line"> return valid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>6.5 c++调用node端的函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Local&lt;Function&gt; cb = Local&lt;Function&gt;::Cast(args[0]);</span><br><span class="line">const unsigned argc = 1;</span><br><span class="line">Local&lt;Value&gt; argv[argc] = &#123; Local&lt;Value&gt;::New(String::New(&quot;hello world&quot;)) &#125;;</span><br><span class="line">cb-&gt;Call(Context::GetCurrent()-&gt;Global(), argc, argv);</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/01/24/js-ajax/" rel="next" title="用node搭建简单smtp服务器">
+                <i class="fa fa-chevron-left"></i> 用node搭建简单smtp服务器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/02/18/js-ajax/" rel="prev" title="SQL反模式（一）">
+                SQL反模式（一） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

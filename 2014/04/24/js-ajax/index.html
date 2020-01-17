@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="最近2个月一直在做一个Phonegap（现改名为cordova，其实我用的cordova来做的，但是叫惯了phonegap）的手机app项目，目前已经debug完毕，准备发布上线了，发现真印证了网上流传的一句话：">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Phonegap踩过的坑">
+<meta property="og:url" content="http://yoursite.com/2014/04/24/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="最近2个月一直在做一个Phonegap（现改名为cordova，其实我用的cordova来做的，但是叫惯了phonegap）的手机app项目，目前已经debug完毕，准备发布上线了，发现真印证了网上流传的一句话：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.851Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Phonegap踩过的坑">
+<meta name="twitter:description" content="最近2个月一直在做一个Phonegap（现改名为cordova，其实我用的cordova来做的，但是叫惯了phonegap）的手机app项目，目前已经debug完毕，准备发布上线了，发现真印证了网上流传的一句话：">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2014/04/24/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Phonegap踩过的坑 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/04/24/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Phonegap踩过的坑
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2014-04-24 12:58:31" itemprop="dateCreated datePublished" datetime="2014-04-24T12:58:31+08:00">2014-04-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2014/04/24/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2014/04/24/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近2个月一直在做一个Phonegap（现改名为cordova，其实我用的cordova来做的，但是叫惯了phonegap）的手机app项目，目前已经debug完毕，准备发布上线了，发现真印证了网上流传的一句话：</p>
+<a id="more"></a>
+<p>如果你恨一个人，让他去开发PhoneGap应用；如果你爱一个人，让他去开发PhoneGap应用。<br>具体是某健身连锁公司要做一个宣传公司品牌，方便用户查询课程，并且还有类似微博功能的兴趣圈等功能的app，大致罗列下这个app主要涉及的功能吧：<br>1、用户系统<br>包括用户注册，登录，签名，头像，相册，好友，动态等反正别人有的我们都有，老板就是照着微信的个人中心来规格化的，真给他跪。<br>2、微博系统<br>包括朋友圈及一些其他内容列表，可以评论，可以赞，可以发图片，总之微博有的我们几乎都要有<br>3、实时聊天<br>如果两个人是好友，则必须有可以实时聊天的，聊天可以发图片，可以发表情，可以发地理位置<br>4、其他<br>附近好友，新闻发布，通讯录，找好友等等其他一些琐碎的服务</p>
+<p>其实这个app真心算麻雀虽小，五脏俱全的，老板想做一个大而全的东西，同时又想5月份能上线，同时又想android和ios一起上，so只有phonegap适合他了。先总体谈谈phonegap制作app的优点吧：<br>1、一套代码，开发安卓和苹果的app<br>这个优势是native无法比拟的，只需要在项目目录的www文件夹里放入一套开发代码，就可以在不同平台build出app应用，开发效率直接提高一倍，而且特别是后期的debug阶段，这种优势更加凸显出来，逻辑代码只有一份，如果ui符合标准，那只需要debug一次即可将安卓和苹果平台的bug都搞定。<br>2、开发调试方便<br>免去每次打包，开启虚拟机的等待时间，安卓还特别慢，直接在chrome浏览器里即可调试大部分功能，这也是native无法做到的，包括查看本地的sqlite数据库等。<br>3、开发门槛低<br>毕竟HTML5+CSS开发门槛要比native学习oc和java两套语言要低的多，所以速成也并非难事</p>
+<p>感觉大方面的优点也就这么几个了，相信初次接触phonegap的朋友都会感受到，开发好简单，功能好强大，但是当你深入去开发一款比较复杂的线上app时，将不可避免的踩到很多坑，我在开发过程中，有些坑是通过google解决的，stackoverflow网站帮了我很多，有些坑至今无法解决，只能想其他办法绕过了，下面是一些我开发过程中遇到的坑和建议：</p>
+<p>1、页面切换闪白<br>很多有web开发经验的人都会使用页面跳转来进入不通的功能页面，但是在利用phonegap的时候尽量少这么做，因为这会带来不可避免的屏幕闪白页的现象，所以尽量将整个应用做成单页，我现在的做法是，登陆前登录注册是一个单页，登录后是一个大单页。</p>
+<p>2、iframe的坑<br>想要使用phonegap制作类似webview的功能，iframe就是再适合不过了，但是iframe在ios上会有一个坑，只会显示一个屏幕的高度，无法全部显示整个iframe，也没有滚动条。当然这个问题在stackoverflow上有很好的解决方法。</p>
+<p>3、获取相册的坑<br>这个问题一般在高端机器上不会出现，但是当把图片质量设置很高，在一些低端的机器上选择图片后容易内存不足而闪退，所以尽量保证在选区图片时质量调整为30左右<br>部分ios机器选区的图片后方向不正确，这个只需要在获取照片时设置如下即可<br>correctOrientation:true,</p>
+<p>4、定位的坑<br>首先ios上根本就没有这个问题，无论wifi或者3g都能够非常快速的定位到经纬度，但是android在wifi下面速度还算快，可是3g的时候就非常缓慢了，因为是直接去gps定位的，所以我们在写定位代码时得区分开来，ios一律使用“enableHighAccuracy: true”，安卓先使用“enableHighAccuracy: false”定位，如果超时失败，在使用“enableHighAccuracy: true”进行卫星定位，如果再失败，那就没办法了，提示用户吧。也可以参考我的另外一篇博客，使用百度地图sdk来定位，地址：<a href="http://snoopyxdy.blog.163.com/blog/static/601174402014420872345" target="_blank" rel="noopener">http://snoopyxdy.blog.163.com/blog/static/601174402014420872345</a></p>
+<p>5、下拉更新<br>很多app都有下拉更新，上拉加载更多这样的功能，但是在phonegap世界中，还是乖乖的在底部放一个加载更多的按钮，在顶部加一个刷新按钮比较好 ，在内容长过几个屏幕之后，这种上拉和下拉会成为ui的杀手，整个屏幕卡的不像样子。</p>
+<p>6、alert的坑<br>我们很多提示信息需要使用alert来体现，但是请一定使用phonegap的通知插件来做，不要使用原生的alert，否则标题将是”index.html”这样的丑陋的文字。</p>
+<p>7、页面切换效果<br>我主要使用了jqmobile的pagechange功能，其他的jqmobile功能几乎都没用到，如果你的应用页面像我那样比较多，建议还是老老实实的把切换效果关了吧，所谓的左右移入会出现底部滚动条，淡入淡出效果也不理想给人拖泥带水的感觉，还不如直接将效果设置为none来的干脆和快速</p>
+<p>8、加速Dom元素选择<br>目前这个应用在note2或者S4上的响应速度已经非常好了，就算在我华为的屌丝机上也算可以，我使用了大量的变量来取代每次的$选择器，保证获取dom元素的高效和快速</p>
+<p>9、websocket的坑<br>在我开发的过程中，这个坑算是最牛逼的了，我使用pomelo配合socket.io来制作聊天，其他手机一切正常，包括我的华为以及HTC，iphone4-5等，就发现note2和s4在进入聊天页面需要等待20秒左右，每次都是如此。真机打alert查询了半天，还是没有找到问题。于是上google搜索，发现还真有人和我遇到了一样的问题，原来是note2和s4不支持websocket，连接服务器等待timeout后，自动降级协议成为long-poll。但是我在note2上’alert(window.WebSocket)’时不是undefined，所以最后确定为，pomelo框架检查note2是否支持websocket时是true，但是真正要用到websocket的时候却发现无法使用，所以等timeout后才会自动降级，后来在一个websocket检测网站上测试，证实了我的说法。<br>但是虽然问题找到了，解决方案我却无能为力，于是只能android系统全部强制降级long-poll，ios优先使用websocket。</p>
+<p>10、返回页面滚动条的位置<br>相信很多app都有这样的需求，用户浏览一个列表，发现感兴趣的，点击进入了，看完内容点返回，用户还是希望停留在之前的那条列表信息那里，而不是返回列表顶部。<br>但是如果利用jqmobile的pagechange来切换页面，每次都会将document的滚动条返回到顶部，然后进行切换的，所以在列表页进入详细页必须记住document滚动条的高度，以便返回时滚到指定位置。<br>但是坑爹的来了，在ios中返回并且修改document滚动条的top值会出现闪白屏的问题，最终的解决方法是每个page自己维护滚动条位置，这样返回的时候也只是修改自己的page里面div的滚动条top值，ios下的闪白问题也解决了</p>
+<p>11、sqlite本地存储<br>sqlite我是作为本地存储，当网络出现状况时读取的，sqlite是不支持批量insert操作的，所以只能自己拼接sql语句然后执行。</p>
+<p>12、IOS下的问题<br>用phonegap开发的app，会存在ios下面整个页面能够被上下拖动的情况，这个只需要在config.xml中加入如下一行配置解决，整体拖不动，但是页面还是可以上下拖动的</p>
+<p><preference name="DisallowOverscroll" value="true"><br>ios下面还有input框或者页面双击变大的问题，也可以通过搜索google进行解决</preference></p>
+<p>总结下，phonegap不是银弹，一些比如新闻展示，和硬件交互不高，页面复杂度不是很大的行业展示类app很适合使用，开发成本和周期都要比native少很多，但是使用phonegap初期会觉得很爽，越到后面越觉得phonegap制约性太大，坑也比较多，所以长线项目尽量不要使用它。</p>
+<p>利用百度定位SDK解决安卓4.1.x等机器需要重启才能恢复定位功能的问题：</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/03/26/js-ajax/" rel="next" title="npm国内访问不了办法">
+                <i class="fa fa-chevron-left"></i> npm国内访问不了办法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/05/02/js-ajax/" rel="prev" title="phonegap android 无法定位和定位失败">
+                phonegap android 无法定位和定位失败 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

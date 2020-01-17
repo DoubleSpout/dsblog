@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这次要介绍的内容比较少，就一个——弱引用table 1.无法超越人类智慧的智能——自动内存管理的缺陷 我们都知道，Lua是具备自动内存管理的，好吧，也许有些朋友不知道。 我们只管创建对象，无须删除对象（当然，对于不要的对象你需要设置一下nil值），Lua会自动删除那些被认为是垃圾的对象。问题就出现在，什么对象才是垃圾对象，有些时候，我们很清楚某个对象是垃圾，但是，Lua却无法发现。">
+<meta name="keywords" content="lua">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Lua弱引用">
+<meta property="og:url" content="http://yoursite.com/2016/10/11/lua/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="这次要介绍的内容比较少，就一个——弱引用table 1.无法超越人类智慧的智能——自动内存管理的缺陷 我们都知道，Lua是具备自动内存管理的，好吧，也许有些朋友不知道。 我们只管创建对象，无须删除对象（当然，对于不要的对象你需要设置一下nil值），Lua会自动删除那些被认为是垃圾的对象。问题就出现在，什么对象才是垃圾对象，有些时候，我们很清楚某个对象是垃圾，但是，Lua却无法发现。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.848Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Lua弱引用">
+<meta name="twitter:description" content="这次要介绍的内容比较少，就一个——弱引用table 1.无法超越人类智慧的智能——自动内存管理的缺陷 我们都知道，Lua是具备自动内存管理的，好吧，也许有些朋友不知道。 我们只管创建对象，无须删除对象（当然，对于不要的对象你需要设置一下nil值），Lua会自动删除那些被认为是垃圾的对象。问题就出现在，什么对象才是垃圾对象，有些时候，我们很清楚某个对象是垃圾，但是，Lua却无法发现。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/11/lua/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Lua弱引用 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/11/lua/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Lua弱引用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-10-11 17:48:53" itemprop="dateCreated datePublished" datetime="2016-10-11T17:48:53+08:00">2016-10-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/lua/" itemprop="url" rel="index"><span itemprop="name">lua</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/11/lua/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2016/10/11/lua/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这次要介绍的内容比较少，就一个——弱引用table</p>
+<p>1.无法超越人类智慧的智能——自动内存管理的缺陷</p>
+<p>我们都知道，Lua是具备自动内存管理的，好吧，也许有些朋友不知道。</p>
+<p>我们只管创建对象，无须删除对象（当然，对于不要的对象你需要设置一下nil值），Lua会自动删除那些被认为是垃圾的对象。<br>问题就出现在，什么对象才是垃圾对象，有些时候，我们很清楚某个对象是垃圾，但是，Lua却无法发现。</p>
+<a id="more"></a>
+<p>比如这样一个例子：<br>复制代码 代码如下:</p>
+<pre><code>t = {};
+
+-- 使用一个table作为t的key值
+key1 = {name = &quot;key1&quot;};
+t[key1] = 1;
+key1 = nil;
+
+-- 又使用一个table作为t的key值
+key2 = {name = &quot;key2&quot;};
+t[key2] = 1;
+key2 = nil;
+
+-- 强制进行一次垃圾收集
+collectgarbage();
+
+for key, value in pairs(t) do
+    print(key.name .. &quot;:&quot; .. value);
+end
+</code></pre><p>这段代码有点复杂，智商低于250的可能会看不懂。<br>首先以一个table，叫做t。<br>然后创建一个新的table——key1，这个key1作为t的key值，给t新增了一个字段，赋值为1。<br>同样的，key2也作为t的一个key值。<br>接着，调用了collectgarbage函数，可以不管它，我们只要知道，它会让lua进行一次垃圾回收。<br>最后输出t的所有字段，输出结果如下：<br>复制代码 代码如下:</p>
+<p>[LUA-print] key1:1<br>[LUA-print] key2:1</p>
+<p>这很符合常理，也在我们的预计当中，虽然我们在给t赋值之后，key1和key2都赋值为nil了。<br>但是，已经添加到table中的key值是不会因此而被当做垃圾的。<br>换句话说，key1本身已经是nil值，但它曾经所指向的内容依然存放在t中。key2也是一样的情况。<br>所以我们最后还是能输出key1和key2的name字段。<br>2.颠覆你的认知——弱引用table<br>刚刚举例的只是正常情况，那么，如果我们把某个table作为另一个table的key值后，希望当table设为nil值时，另一个table的那一条字段也被删除。<br>应该如何实现？<br>这时候就要用到弱引用table了，弱引用table的实现也是利用了元表。<br>我们来看看下面的代码，和之前几乎一样，只是加了一句代码：<br>复制代码 代码如下:</p>
+<pre><code> t = {};
+
+-- 给t设置一个元表，增加__mode元方法，赋值为“k”
+setmetatable(t, {__mode = &quot;k&quot;});
+
+-- 使用一个table作为t的key值
+key1 = {name = &quot;key1&quot;};
+t[key1] = 1;
+key1 = nil;
+
+-- 又使用一个table作为t的key值
+key2 = {name = &quot;key2&quot;};
+t[key2] = 1;
+key2 = nil;
+
+-- 强制进行一次垃圾收集
+collectgarbage();
+
+for key, value in pairs(t) do
+    print(key.name .. &quot;:&quot; .. value);
+end
+</code></pre><p>留意，在t被创建后，立刻给它设置了元表，元表里有一个__mode字段，赋值为”k”字符串。<br>如果这个时候大家运行代码，会发现什么都没有输出，因为，t的所有字段都不存在了。</p>
+<p>这就是弱引用table的其中一种，给table添加__mode元方法，如果这个元方法的值包含了字符串”k”，就代表这个table的key都是弱引用的。<br>一旦其他地方对于key值的引用取消了（设置为nil），那么，这个table里的这个字段也会被删除。</p>
+<p>通俗地说，因为t的key被设置为弱引用，所以，执行t[key1] = 1后，t中确实存在这个字段。<br>随后，又执行了key1 = nil，此时，除了t本身以外，就没有任何地方对key1保持引用，所以t的key1字段也会被删除。<br>3.三种形式的弱引用<br>对于弱引用table，其实有三种形式：<br>1）key值弱引用，也就是刚刚说到的情况，只要其他地方没有对key值引用，那么，table自身的这个字段也会被删除。设置方法：setmetatable(t, {<strong>mode = “k”});<br>2）value值弱引用，情况类似，只要其他地方没有对value值引用，那么，table的这个value所在的字段也会被删除。设置方法：setmetatable(t, {</strong>mode = “v”});<br>3）key和value弱引用，规则一样，但是key和value都同时生效，任意一个起作用时都会导致table的字段被删除。设置方法：setmetatable(t, {__mode = “kv”});</p>
+<p>当然，这里所说的被删除，是指在Lua执行垃圾回收的时候，并不一定是立刻生效的。<br>我们刚刚只是为了测试，而强制执行了垃圾回收。<br>4.结束<br>好了，这次的内容比较少，其实书上有蛮多关于弱引用的例子的。<br>关于Lua的最基础部分，到这里算是结束了。<br>后面的内容是一些库的介绍，以及更深入的一些内容（C和Lua间调用、自定义类型、线程、内存管理）。<br>接下来可能会放缓文章更新速度，因为好多库的介绍，不知道有没有必要用文章记录下来。<br>可能而已~</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lua/" rel="tag"># lua</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/01/lua/" rel="next" title="关于openresty无法编译nginx-sticky-module问题">
+                <i class="fa fa-chevron-left"></i> 关于openresty无法编译nginx-sticky-module问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/20/go/" rel="prev" title="Go语言圣经笔记">
+                Go语言圣经笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

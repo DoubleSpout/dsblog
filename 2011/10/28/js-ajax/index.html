@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="nodejs的process是一个全局对象，他提供了一些方法和属性，node.js官方的API说的很简单，并没有把一些详细的应用方法和作用写出来，下面结合我自己的学习，做一下小结吧。">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="node.js(API解读) - process">
+<meta property="og:url" content="http://yoursite.com/2011/10/28/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="nodejs的process是一个全局对象，他提供了一些方法和属性，node.js官方的API说的很简单，并没有把一些详细的应用方法和作用写出来，下面结合我自己的学习，做一下小结吧。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.868Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="node.js(API解读) - process">
+<meta name="twitter:description" content="nodejs的process是一个全局对象，他提供了一些方法和属性，node.js官方的API说的很简单，并没有把一些详细的应用方法和作用写出来，下面结合我自己的学习，做一下小结吧。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2011/10/28/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>node.js(API解读) - process | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2011/10/28/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">node.js(API解读) - process
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2011-10-28 17:05:34" itemprop="dateCreated datePublished" datetime="2011-10-28T17:05:34+08:00">2011-10-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/javascript/" itemprop="url" rel="index"><span itemprop="name">javascript</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2011/10/28/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2011/10/28/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>nodejs的process是一个全局对象，他提供了一些方法和属性，node.js官方的API说的很简单，并没有把一些详细的应用方法和作用写出来，下面结合我自己的学习，做一下小结吧。<br><a id="more"></a></p>
+<h2 id="1、Event-‘exit’"><a href="#1、Event-‘exit’" class="headerlink" title="1、Event: ‘exit’"></a>1、Event: ‘exit’</h2><p>这是process的退出事件，官方示例很清楚，当process退出时触发。即我们按“ctrl+c”时触发。</p>
+<h2 id="2、Event-‘uncaughtException’"><a href="#2、Event-‘uncaughtException’" class="headerlink" title="2、Event: ‘uncaughtException’"></a>2、Event: ‘uncaughtException’</h2><p>这是process的异常事件，uncaughtException译为：未捕获的异常，可以利用这个函数来捕获整个进程运行时的异常，这里可以理解为“使本node.js进程中断的异常”，因为它的官方示例在异常函数下面的代码将不会执行。</p>
+<h2 id="3、Signal-Events"><a href="#3、Signal-Events" class="headerlink" title="3、Signal Events"></a>3、Signal Events</h2><p>这是process的自定义事件，可以为process对象自定义一些事件。这里官方示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">process.stdin.resume(); //这句话是为了不让控制台推出</span><br><span class="line">process.on(&apos;SIGINT&apos;, function () &#123; //SIGINT这个信号是系统默认信号，代表信号中断，就是ctrl+c</span><br><span class="line">  console.log(&apos;Got SIGINT.  Press Control-D to exit.&apos;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>官方API还说可以自定义名字来监听process事件，我们试一下，代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">process.on(&apos;SIGUSR1&apos;, function (d) &#123; //这里监听 SIGUSR1 事件</span><br><span class="line">      console.log(&apos;Bye-&apos;+d); //这里将输出Bye-Bye,然后推出进程</span><br><span class="line">      process.exit(0);</span><br><span class="line">    &#125;); </span><br><span class="line">  process.emit(&apos;SIGUSR1&apos;, &apos;Bye&apos;); //利用emit触发SIGUSR1，然后传参数为Bye</span><br></pre></td></tr></table></figure></p>
+<h2 id="4、process-stdout"><a href="#4、process-stdout" class="headerlink" title="4、process.stdout"></a>4、process.stdout</h2><p>官方的示例和代码很清楚，控制台输出流。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">console.log = function (d) &#123;</span><br><span class="line">  process.stdout.write(d + &apos;\n&apos;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h2 id="5、process-stdin"><a href="#5、process-stdin" class="headerlink" title="5、process.stdin"></a>5、process.stdin</h2><p>进程控制台输入流，官方代码看了不解，于是copy到linux系统里运行一下，就明白了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">process.stdin.resume();</span><br><span class="line">process.stdin.setEncoding(&apos;utf8&apos;);</span><br><span class="line">process.stdin.on(&apos;data&apos;, function (chunk) &#123;</span><br><span class="line">  process.stdout.write(&apos;data: &apos; + chunk);</span><br><span class="line">&#125;);</span><br><span class="line">process.stdin.on(&apos;end&apos;, function () &#123;</span><br><span class="line">  process.stdout.write(&apos;end&apos;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>输入的命令和输出:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ node test.js </span><br><span class="line">ffff</span><br><span class="line">data: ffff</span><br></pre></td></tr></table></figure></p>
+<h2 id="6、process-argv"><a href="#6、process-argv" class="headerlink" title="6、process.argv"></a>6、process.argv</h2><p>这是一个数组，数组里存放着启动这个node.js进程各个参数和命令代码，官方代码一目了然。</p>
+<h2 id="7、process-execPath"><a href="#7、process-execPath" class="headerlink" title="7、process.execPath"></a>7、process.execPath</h2><p>返回当前node.js进程的启动命令路径，也就是node.js安装目录下的node命令路径，是一个绝对路径<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ node test.js </span><br><span class="line">url: /usr/local/bin/node</span><br></pre></td></tr></table></figure></p>
+<h2 id="8、process-chdir-directory-和-process-cwd"><a href="#8、process-chdir-directory-和-process-cwd" class="headerlink" title="8、process.chdir(directory) 和 process.cwd()"></a>8、process.chdir(directory) 和 process.cwd()</h2><p>process.cwd() 返回当前进程的工作目录，process.chdir(directory)则改变进程的工作目录，如果改变失败将抛出一个异常。代码见官方API。</p>
+<p>举个例子：</p>
+<p>如果一个进程工作在 /red-hat/，现在创建在 “./“目录下创建一个foo.txt，则会在/red-hat/foo.txt创建，如果改变进程工作目录为/red/，则创建foo.txt会在/red/foo.txt创建。注意：node.js的require()不受这个限制,他是以当前文件的。在执行child_process.exec()方法时需要考虑这一点。</p>
+<h2 id="9、process-env"><a href="#9、process-env" class="headerlink" title="9、process.env"></a>9、process.env</h2><p>返回当前linux系统的信息，我可以输入一下代码来看系统信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">console.log(JSON.stringify(process.env));</span><br></pre></td></tr></table></figure></p>
+<h2 id="10、process-exit-code-0"><a href="#10、process-exit-code-0" class="headerlink" title="10、process.exit(code=0)"></a>10、process.exit(code=0)</h2><p>kill当前进程，退出本进程。</p>
+<h2 id="11、process-getgid-、process-setgid-id-、process-getuid-、process-setuid-id"><a href="#11、process-getgid-、process-setgid-id-、process-getuid-、process-setuid-id" class="headerlink" title="11、process.getgid()、process.setgid(id)、process.getuid()、process.setuid(id)"></a>11、process.getgid()、process.setgid(id)、process.getuid()、process.setuid(id)</h2><p>获取和设置进程的groupid和userid。</p>
+<h2 id="12、process-version、process-versions"><a href="#12、process-version、process-versions" class="headerlink" title="12、process.version、process.versions"></a>12、process.version、process.versions</h2><p>node.js的版本和node.js的版本对象</p>
+<h2 id="13、process-installPrefix"><a href="#13、process-installPrefix" class="headerlink" title="13、process.installPrefix"></a>13、process.installPrefix</h2><p>返回nodejs的安装前缀</p>
+<h2 id="14、process-kill-pid-signal-’SIGTERM’"><a href="#14、process-kill-pid-signal-’SIGTERM’" class="headerlink" title="14、process.kill(pid, signal=’SIGTERM’)"></a>14、process.kill(pid, signal=’SIGTERM’)</h2><p>发出一个kill信号给指定pid，如果signal不指定，则默认为“SIGTERM”，官方API特别提醒，这个kill信号只是一个信号，并不是linux下的kill命令，并不会真的将那个pid杀死，要想通过kill杀死指定pid，则需要在指定pid监听“SIGTERM”信号，然后执行process.exit(0)；即可。</p>
+<h2 id="15、process-pid、process-title、process-arch、process-platform"><a href="#15、process-pid、process-title、process-arch、process-platform" class="headerlink" title="15、process.pid、process.title、process.arch、process.platform"></a>15、process.pid、process.title、process.arch、process.platform</h2><p>进程id，进程名字，进程架构（如：X64），进程平台（如：linux）</p>
+<h2 id="16、process-memoryUsage"><a href="#16、process-memoryUsage" class="headerlink" title="16、process.memoryUsage()"></a>16、process.memoryUsage()</h2><p>进程的内存使用情况，API很清楚。</p>
+<h2 id="17、process-nextTick-callback"><a href="#17、process-nextTick-callback" class="headerlink" title="17、process.nextTick(callback)"></a>17、process.nextTick(callback)</h2><p>异步执行callback函数，注意，这比 “setTimeout(fn, 0) “ 要高效很多。当有一些比较耗时的操作可以用在process.nextTick(callback) 中，这样可以不阻塞整个函数执行。</p>
+<h2 id="18、process-umask-mask"><a href="#18、process-umask-mask" class="headerlink" title="18、process.umask([mask])"></a>18、process.umask([mask])</h2><p>设置进程的user mask值，什么是umask值呢？</p>
+<p>在linux系统有一个系统命令：$ umask，主要作用是修改系统默认的创建文件和文件夹的权限。</p>
+<p>注意这句话：Returns the old mask if mask argument is given, otherwise returns the current mask.</p>
+<p>当对process.umask()方法传递参数时，则返回旧的umask值，否则返回当前的umask值。</p>
+<p>这里如果我们设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var oldmask, newmask = 0644;</span><br><span class="line">oldmask = process.umask(newmask);</span><br><span class="line">console.log(&apos;Changed umask from: &apos; + oldmask.toString(8) + &apos; to &apos; + newmask.toString(8));</span><br><span class="line">输出022和0644，当umask = 022时，新建的目录权限是755，新建文件的权限是 644。具体可以参考linux umask手册。这里只是修改由本node.js进程创建的文件和目录的权限。</span><br></pre></td></tr></table></figure></p>
+<h2 id="19、process-uptime"><a href="#19、process-uptime" class="headerlink" title="19、process.uptime()"></a>19、process.uptime()</h2><p>官方给出结果是node进程运行的秒数</p>
+<h2 id="20、process-reallyExit-status"><a href="#20、process-reallyExit-status" class="headerlink" title="20、process.reallyExit(status)"></a>20、process.reallyExit(status)</h2><p>真实推出本进程，不触发‘exit’事件</p>
+<h2 id="21、process-kill-pid-sig"><a href="#21、process-kill-pid-sig" class="headerlink" title="21、process._kill(pid,sig)"></a>21、process._kill(pid,sig)</h2><p>用于给指定pid的进程发送指定信号（类似linux下的kill命令）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var pid=process.pid;</span><br><span class="line">process._kill(pid,9);</span><br></pre></td></tr></table></figure></p>
+<h2 id="22、process-binding-name"><a href="#22、process-binding-name" class="headerlink" title="22、process.binding(name)"></a>22、process.binding(name)</h2><p>这个方法用于返回指定名称的内置模块。例如下面的代码将打印node_net模块所有的可以调用的方法或变量。<br><code>var binding=process.binding(&#39;net&#39;);
+console.dir(binding);
+`</code></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2011/10/25/js-ajax/" rel="next" title="javascript闭包应用小实例">
+                <i class="fa fa-chevron-left"></i> javascript闭包应用小实例
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2011/11/01/js-ajax/" rel="prev" title="node.js(API解读) - file system模块">
+                node.js(API解读) - file system模块 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、Event-‘exit’"><span class="nav-number">1.</span> <span class="nav-text">1、Event: ‘exit’</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、Event-‘uncaughtException’"><span class="nav-number">2.</span> <span class="nav-text">2、Event: ‘uncaughtException’</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、Signal-Events"><span class="nav-number">3.</span> <span class="nav-text">3、Signal Events</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、process-stdout"><span class="nav-number">4.</span> <span class="nav-text">4、process.stdout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、process-stdin"><span class="nav-number">5.</span> <span class="nav-text">5、process.stdin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、process-argv"><span class="nav-number">6.</span> <span class="nav-text">6、process.argv</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7、process-execPath"><span class="nav-number">7.</span> <span class="nav-text">7、process.execPath</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8、process-chdir-directory-和-process-cwd"><span class="nav-number">8.</span> <span class="nav-text">8、process.chdir(directory) 和 process.cwd()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9、process-env"><span class="nav-number">9.</span> <span class="nav-text">9、process.env</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10、process-exit-code-0"><span class="nav-number">10.</span> <span class="nav-text">10、process.exit(code=0)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11、process-getgid-、process-setgid-id-、process-getuid-、process-setuid-id"><span class="nav-number">11.</span> <span class="nav-text">11、process.getgid()、process.setgid(id)、process.getuid()、process.setuid(id)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12、process-version、process-versions"><span class="nav-number">12.</span> <span class="nav-text">12、process.version、process.versions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13、process-installPrefix"><span class="nav-number">13.</span> <span class="nav-text">13、process.installPrefix</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14、process-kill-pid-signal-’SIGTERM’"><span class="nav-number">14.</span> <span class="nav-text">14、process.kill(pid, signal=’SIGTERM’)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15、process-pid、process-title、process-arch、process-platform"><span class="nav-number">15.</span> <span class="nav-text">15、process.pid、process.title、process.arch、process.platform</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16、process-memoryUsage"><span class="nav-number">16.</span> <span class="nav-text">16、process.memoryUsage()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#17、process-nextTick-callback"><span class="nav-number">17.</span> <span class="nav-text">17、process.nextTick(callback)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#18、process-umask-mask"><span class="nav-number">18.</span> <span class="nav-text">18、process.umask([mask])</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#19、process-uptime"><span class="nav-number">19.</span> <span class="nav-text">19、process.uptime()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20、process-reallyExit-status"><span class="nav-number">20.</span> <span class="nav-text">20、process.reallyExit(status)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#21、process-kill-pid-sig"><span class="nav-number">21.</span> <span class="nav-text">21、process._kill(pid,sig)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#22、process-binding-name"><span class="nav-number">22.</span> <span class="nav-text">22、process.binding(name)</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

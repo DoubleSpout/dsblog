@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="以下内容摘自深入学习mongodb一书另加上自己的一些实战经验。">
+<meta name="keywords" content="mongodb">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mongodb技巧（部分摘自深入学习mongodb，持续更新）">
+<meta property="og:url" content="http://yoursite.com/2012/05/15/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="以下内容摘自深入学习mongodb一书另加上自己的一些实战经验。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.849Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mongodb技巧（部分摘自深入学习mongodb，持续更新）">
+<meta name="twitter:description" content="以下内容摘自深入学习mongodb一书另加上自己的一些实战经验。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2012/05/15/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Mongodb技巧（部分摘自深入学习mongodb，持续更新） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2012/05/15/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Mongodb技巧（部分摘自深入学习mongodb，持续更新）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2012-05-15 14:51:24" itemprop="dateCreated datePublished" datetime="2012-05-15T14:51:24+08:00">2012-05-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/mongodb/" itemprop="url" rel="index"><span itemprop="name">mongodb</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2012/05/15/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2012/05/15/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>以下内容摘自深入学习mongodb一书另加上自己的一些实战经验。</p>
+<a id="more"></a>
+<h2 id="1、关于mongodb的分片："><a href="#1、关于mongodb的分片：" class="headerlink" title="1、关于mongodb的分片："></a>1、关于mongodb的分片：</h2><p>根据infoq上的视觉中国使用mongodb的经验，mongodb的分片要数据量达到5000万以上时才着手考虑，当应用过小或者还尚小时完全可以做双机热备，就是副本集，我们可以用代码来做负载均衡和容灾，毕竟搭建一个mongodb cluster 耗财和费时。</p>
+<h2 id="2、关于集群的mongos："><a href="#2、关于集群的mongos：" class="headerlink" title="2、关于集群的mongos："></a>2、关于集群的mongos：</h2><p>cluster需要多个mongos来做到，mongos就是整个集群的入口，如果我们的应用服务器有10台，建议每台应用服务器都启动一个mongos，让本机的应用连接本机的mongos来访问cluster。想要做的好点，可以将整个mongos列表整出来，让应用服务器优先访问本机的mongos，如果本机monogs挂了，可以去访问其他应用服务器的mongos，不过一般mongos不会单独挂，呵呵。</p>
+<h2 id="3、关于片键的选择"><a href="#3、关于片键的选择" class="headerlink" title="3、关于片键的选择"></a>3、关于片键的选择</h2><p>书中列举了几个片键选择的反面例子：</p>
+<p>a、根据大洲来做片键：世界上就5个大洲，也就是说最多只能分出来5个分片，如果压力过大，将无法新增分片服务器。</p>
+<p>b、根据_id或者时间戳来做片键：由于片键在不断更新，所以新的记录总是会落在指定的分片服务器上，而且由于长度的一直变化，分片服务器互相移动数据会相当频繁。</p>
+<p>好的建议，我们尽量要录入的记录平均分配到每个分片服务器，当有查询任务时，尽量减少磁盘和内从的交换，而且当有新的分片服务器加入后，最小的移动数据。</p>
+<p>基于上面3点，我们可以将一个自增长的粗粒度key作为主片键，还有一个随机散列的key作为第二片键。比如2012-5这个年月作为主片键，用户名或邮箱名作为第二片键，如果当前时间为2012-5，则用户录入数据时分根据用户名散列的录入到各个分片服务器。当有新的分配服务器加入后，每个分配服务器都会移动一小部分到新的分配服务器。当进入2012-6月后，2012-5月份的数据录入和访问都会下降很多，所以被交换进内存的概率也小了不少，分配服务器继续根据用户名或邮箱名进行切分。</p>
+<h2 id="4、关于集群key的唯一性"><a href="#4、关于集群key的唯一性" class="headerlink" title="4、关于集群key的唯一性"></a>4、关于集群key的唯一性</h2><p>在集群中可能存在这样的一个现象。</p>
+<p>比如：用户注册，我们要求邮箱是唯一的，是之前其他用户没有注册过的。由于我们根据上一条，将2012-6这类的年月作为主片键，将用户名作为第二片键。应用程序将用户输入的邮箱放入mongodb集群中查找，等待返回结果是否有相同的邮箱。同时另外一个用户也是用相同的邮箱名进行了注册。</p>
+<p>这样会出现一个问题，两个相同的邮箱用户都注册成功了。如何避免这类问题的出现呢？虽然这类问题出现的概率很小，但是我们尽量将唯一的标识，比如用户名或者邮箱作为片键，只要在一个数据块上，唯一索引就会生效了，避免了两个相同邮箱的用户了。</p>
+<h2 id="5、更新集群中的文档"><a href="#5、更新集群中的文档" class="headerlink" title="5、更新集群中的文档"></a>5、更新集群中的文档</h2><p>更新mongodb集群中的某一个文档面临的唯一索引的问题和上面是一样的，所以在做update操作时，第一个参数必须是分片的片键，这样可以让mongodb找到指定的数据块</p>
+<h2 id="6、范式和反范式"><a href="#6、范式和反范式" class="headerlink" title="6、范式和反范式"></a>6、范式和反范式</h2><p>在mysql里多表查询的速度必然比单表慢，在mongodb中也是如此，多个collection的查询也必然比单个collection慢，但是如果将原本多collection查询整合成单collection查询必然产生数据的冗余，这里就需要权衡性能和开发成本以及产生的副作用的利弊了。比如数据量更新很快的应用，可以使用反范式做数据冗余，因为很少有人将几天前的东西再拿出来反复看。当有些敏感的及时性的应用时，就必须使用范式，要保证每次用户看到的或是操作的都是最新即时的数据。<br>书上列举了一个购物车的例子：<br>用户下单以后，商品信息，用户资料等推荐使用反范式，就算以后商品价格有变动，改用户的购买记录不会有变动了，即是当时的成交价。</p>
+<h2 id="7、分页"><a href="#7、分页" class="headerlink" title="7、分页"></a>7、分页</h2><p>分页尽量使用查询索引key条件的范围，而不要使用skip。<br>比如我们要查第二页的数据，我们可以将第一页的最后一条_id作为查询条件，查询大于这个_id的limit(20)的记录，假设分页每页20条记录。</p>
+<h2 id="8、内嵌文档"><a href="#8、内嵌文档" class="headerlink" title="8、内嵌文档"></a>8、内嵌文档</h2><p>例如一些标签，简单的评论或者其他不怎么会大幅度改变的值的情况下，可以将此类数据作为父文档的内嵌文档。</p>
+<p>但是如果评论本身就是应用的热门，可能被搜索的价格很高或者增长幅度很大时，还是建议单独建立一个collection。</p>
+<h2 id="9、预填充数据"><a href="#9、预填充数据" class="headerlink" title="9、预填充数据"></a>9、预填充数据</h2><p>一些没有数据的key尽量也先填入默认值，当要更新这些数据时，mongodb不需要为其分配空间了。</p>
+<h2 id="10、内嵌数组还是内嵌文档"><a href="#10、内嵌数组还是内嵌文档" class="headerlink" title="10、内嵌数组还是内嵌文档"></a>10、内嵌数组还是内嵌文档</h2><p>当对顺序比较看中的，比如评论，就可以使用数组，数组还支持$eleMatch的复杂查询。另外如果知道整个数组的长度，并不是每次都去计算它，而是另外维护一个key，用来计算维护内嵌数组的length。</p>
+<p>当表示此文档的某一个属性时，则可以使用内嵌文档，因为不必为这些属性单独设立KEY了，比如游戏数据库中的角色攻击力，敏捷力，防御力等。</p>
+<h2 id="11、-where"><a href="#11、-where" class="headerlink" title="11、$where"></a>11、$where</h2><p>尽量少的使用$where,和find提升性能一样，尽量将第一个大幅减少数据集的查询条件放在前面。</p>
+<h2 id="12、GridFs"><a href="#12、GridFs" class="headerlink" title="12、GridFs"></a>12、GridFs</h2><p>尽量不要用GridFs处理小的2进制数据，小的2进制数据可以存放在文档中。</p>
+<p>##13、索引查询</p>
+<p>不必多说了，查询条件的第一个必须是索引</p>
+<h2 id="14、禁用索引"><a href="#14、禁用索引" class="headerlink" title="14、禁用索引"></a>14、禁用索引</h2><p>如果你的某次查询不想使用索引，可能要返回这个collection的大部分数据，只需如下写：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.foo.find().sort(&#123;&quot;$natural&quot;:1&#125;) 即可</span><br></pre></td></tr></table></figure></p>
+<h2 id="15、分级文档"><a href="#15、分级文档" class="headerlink" title="15、分级文档"></a>15、分级文档</h2><p>在可能的情况下，尽量减少文档的扁平结构，可以加速查询，因为mongodb搜索key也是需要时间的。可以将一些不常用的，分类作为内嵌文档存入父文档。</p>
+<h2 id="16、and和or查询要点"><a href="#16、and和or查询要点" class="headerlink" title="16、and和or查询要点"></a>16、and和or查询要点</h2><p>and查询要将匹配最少的条件放在第一，以此类推</p>
+<p>or查询要将匹配最多的条件放在第一，以此类推</p>
+<h2 id="17、安全写入"><a href="#17、安全写入" class="headerlink" title="17、安全写入"></a>17、安全写入</h2><p>开发过程中最好执行安全的写操作，这样可以避免很多错误，以及即时发现错误。</p>
+<h2 id="18、索引的建立顺序"><a href="#18、索引的建立顺序" class="headerlink" title="18、索引的建立顺序"></a>18、索引的建立顺序</h2><p>我们知道，MongoDB和传统数据库一样，都是采用B树作为索引的数据结构。对于树形的索引来说，保存热数据使用到的索引在存储上越集中，索引浪费掉的内存也越小。所以我们对比下面两种索引结构：</p>
+<p>1、 db.metrics.ensureIndex({ metric: 1, client: 1, date: 1})</p>
+<p>2、 db.metrics.ensureIndex({ date: 1, metric: 1, client: 1 })</p>
+<p>采用这两种不同的结构，在插入性能上的差别也很明显。</p>
+<p>当采用第一种结构时，数据量在2千万以下时，能够基本保持10k/s 的插入速度，而当数据量再增大，其插入速度就会慢慢降低到2.5k/s，当数据量再增大时，其性能可能会更低。</p>
+<p>而采用第二种结构时，插入速度能够基本稳定在10k/s。</p>
+<p>其原因是第二种结构将date字段放在了索引的第一位，这样在构建索引时，新数据更新索引时，不是在中间去更新的，只是在索引的尾巴处进行修改。那些插入时间过早的索引在后续的插入操作中几乎不需要进行修改。而第一种情况下，由于date字段不在最前面，所以其索引更新经常是发生在树结构的中间，导致索引结构会经常进行大规模的变化。</p>
+<p>（持续更新中）</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mongodb/" rel="tag"># mongodb</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2012/03/17/js-ajax/" rel="next" title="Mongodb实战：MapReduce计算更新频率">
+                <i class="fa fa-chevron-left"></i> Mongodb实战：MapReduce计算更新频率
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2012/05/16/js-ajax/" rel="prev" title="Mongodb Replica Sets 副本集架构实战(架设、扩充、容灾、修复、客户端代码连入)">
+                Mongodb Replica Sets 副本集架构实战(架设、扩充、容灾、修复、客户端代码连入) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、关于mongodb的分片："><span class="nav-number">1.</span> <span class="nav-text">1、关于mongodb的分片：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、关于集群的mongos："><span class="nav-number">2.</span> <span class="nav-text">2、关于集群的mongos：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、关于片键的选择"><span class="nav-number">3.</span> <span class="nav-text">3、关于片键的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、关于集群key的唯一性"><span class="nav-number">4.</span> <span class="nav-text">4、关于集群key的唯一性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、更新集群中的文档"><span class="nav-number">5.</span> <span class="nav-text">5、更新集群中的文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、范式和反范式"><span class="nav-number">6.</span> <span class="nav-text">6、范式和反范式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7、分页"><span class="nav-number">7.</span> <span class="nav-text">7、分页</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8、内嵌文档"><span class="nav-number">8.</span> <span class="nav-text">8、内嵌文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9、预填充数据"><span class="nav-number">9.</span> <span class="nav-text">9、预填充数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10、内嵌数组还是内嵌文档"><span class="nav-number">10.</span> <span class="nav-text">10、内嵌数组还是内嵌文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11、-where"><span class="nav-number">11.</span> <span class="nav-text">11、$where</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12、GridFs"><span class="nav-number">12.</span> <span class="nav-text">12、GridFs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14、禁用索引"><span class="nav-number">13.</span> <span class="nav-text">14、禁用索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15、分级文档"><span class="nav-number">14.</span> <span class="nav-text">15、分级文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16、and和or查询要点"><span class="nav-number">15.</span> <span class="nav-text">16、and和or查询要点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#17、安全写入"><span class="nav-number">16.</span> <span class="nav-text">17、安全写入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#18、索引的建立顺序"><span class="nav-number">17.</span> <span class="nav-text">18、索引的建立顺序</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

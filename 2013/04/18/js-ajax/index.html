@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="buffer是nodejs中存储长字符串以及二进制数据的存储介质，buffer我们在使用过程中到底要注意哪些问题？最近结合node的源码简单了解了一下buffer的工作机制。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅析node的buffer模块（一创建）">
+<meta property="og:url" content="http://yoursite.com/2013/04/18/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="buffer是nodejs中存储长字符串以及二进制数据的存储介质，buffer我们在使用过程中到底要注意哪些问题？最近结合node的源码简单了解了一下buffer的工作机制。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.884Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浅析node的buffer模块（一创建）">
+<meta name="twitter:description" content="buffer是nodejs中存储长字符串以及二进制数据的存储介质，buffer我们在使用过程中到底要注意哪些问题？最近结合node的源码简单了解了一下buffer的工作机制。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2013/04/18/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>浅析node的buffer模块（一创建） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/04/18/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浅析node的buffer模块（一创建）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2013-04-18 17:26:29" itemprop="dateCreated datePublished" datetime="2013-04-18T17:26:29+08:00">2013-04-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/04/18/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2013/04/18/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>buffer是nodejs中存储长字符串以及二进制数据的存储介质，buffer我们在使用过程中到底要注意哪些问题？最近结合node的源码简单了解了一下buffer的工作机制。</p>
+<a id="more"></a>
+<p>关于buffer大家可能都听说过8KB的故事，至于8KB的内容我的另外一篇文章有比较详细的介绍，包括一个典型的内存泄露的例子：<br>buffer.concat引出的bug</p>
+<p>打开0.10.4的源码，在lib目录下找到buffer.js，我们先概览一下整个文件的组成：<br>1、两个工具函数，clamp和toHex<br>2、SlowBuffer类，并且这个类的一些接口继承自buffer类<br>3、buffer类，定义并实现了node api文档上的接口函数</p>
+<p>本文只讨论buffer实例的创建，读取和写入将留到下两章讨论。<br>一、创建buffer实例<br>我们从创建一个buffer开始，看看暴露在接口之后的node是如何实现buffer功能的。<br>1、比如我们创建一个1KB的buffer，var buf = new Buffer(1024);<br>2、buffer类会根据传入的字符串或大小数字或字符数组的大小来分配新的buffer池或者使用旧的，字符串或大小数字或字符数组的大小以下简称buf大小<br>2.1、如果buf大小大于8KB，则buffer类将返回一个slowbuffer实例给buf存储<br>2.2、如果buf大小小于8KB并且还小于当前buffer池内剩余的空间，则将此buf实例存入当前buffer池，和其他buffer实例共享这个8KB的内存池。<br>2.3、如果buf大小不大于0，则将zerobuffer实例返回给buf，也就是说所有0大小的buffer实例都是一个。<br>3、如果传入的参数不是数字，也就是说是字符串或者字符数组，在创建buf实例时会将内容写入刚才分配的buffer内存中。<br>3.1、如果是字符串，则调用如下代码：之后我们再讨论this.write方法<br>if (type === ‘string’) {<br>        // We are a string<br>        this.length = this.write(subject, 0, encoding); //将字符串写入<br> }<br>3.2、如果传入的参数是buffer实例，则将copy这份buffer实例内容：如果传入的buffer实例是与其他buffer共享内存存储的话，则要根据偏移量进行copy，如果是独享的则不用，偏移量设置为0。之后再讨论buffer.copy的方法<br>else if (Buffer.isBuffer(subject)) {<br>        if (subject.parent)<br>          subject.parent.copy(this.parent,<br>                              this.offset,<br>                              subject.offset,<br>                              this.length + subject.offset);<br>        else<br>          subject.copy(this.parent, this.offset, 0, this.length);<br>}<br>3.3、如果是字符数组，则循环将buf实例的parent实例的偏移之后的内容刷入字符数组的内容，代码如下：<br>else if (isArrayIsh(subject)) {<br>        for (var i = 0; i &lt; this.length; i++)<br>          this.parent[i + this.offset] = subject[i];<br>      }<br>我们看一下isArrayIsh工具函数<br>function isArrayIsh(subject) {<br>  return Array.isArray(subject) ||<br>         subject &amp;&amp; typeof subject === ‘object’ &amp;&amp;<br>         typeof subject.length === ‘number’;<br>}<br>这个isArrayIsh接受2种数组<br>1、[‘a’,’b’,’c’,’d’]<br>2、{1:’a’,2:’b’,3:’c’,4:’d’,length:4}</p>
+<p>4.最后buffer类将调用C++接口，把数据刷入内存,其实是利用v8接口建立起内存地址和js对象之间的引用。<br>SlowBuffer.makeFastBuffer(this.parent, this, this.offset, this.length);</p>
+<p>目前为止，我们创建了一个新的buf实例，但是具体它是如何被创建和存储的呢？我们主要看如下代码：<br>当创建的buffer超过8KB时，buffer.js用如下代码创建一个buffer实例，<br>this.parent = new SlowBuffer(this.length);</p>
+<p>当小于8KB时则使用如下代码，创建一个空的8KB内存空间<br>function allocPool() {<br>  pool = new SlowBuffer(Buffer.poolSize);<br>  pool.used = 0;<br>}</p>
+<p>buffer类代码：<br>if (!pool || pool.length - pool.used &lt; this.length) allocPool();<br>      this.parent = pool;<br>可见，buffer实例的parent属性保存着slowbuffer实例，可以调用c++封装暴露出的接口。</p>
+<p>我们先看一下C++为slowerbuffer定义了多少接口：<br>static void Initialize(v8::Handle<a href="v8::Object" target="_blank" rel="noopener">v8::Object</a> target); //初始化函数<br>// copy free<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “binarySlice”, Buffer::BinarySlice);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “asciiSlice”, Buffer::AsciiSlice);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “base64Slice”, Buffer::Base64Slice);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “ucs2Slice”, Buffer::Ucs2Slice);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “hexSlice”, Buffer::HexSlice);<br>  // TODO NODE_SET_PROTOTYPE_METHOD(t, “utf16Slice”, Utf16Slice);<br>  // copy<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “utf8Slice”, Buffer::Utf8Slice);</p>
+<p>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “utf8Write”, Buffer::Utf8Write);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “asciiWrite”, Buffer::AsciiWrite);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “binaryWrite”, Buffer::BinaryWrite);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “base64Write”, Buffer::Base64Write);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “ucs2Write”, Buffer::Ucs2Write);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “hexWrite”, Buffer::HexWrite);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “readFloatLE”, Buffer::ReadFloatLE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “readFloatBE”, Buffer::ReadFloatBE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “readDoubleLE”, Buffer::ReadDoubleLE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “readDoubleBE”, Buffer::ReadDoubleBE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “writeFloatLE”, Buffer::WriteFloatLE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “writeFloatBE”, Buffer::WriteFloatBE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “writeDoubleLE”, Buffer::WriteDoubleLE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “writeDoubleBE”, Buffer::WriteDoubleBE);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “fill”, Buffer::Fill);<br>  NODE_SET_PROTOTYPE_METHOD(constructor_template, “copy”, Buffer::Copy);</p>
+<p>  NODE_SET_METHOD(constructor_template-&gt;GetFunction(),<br>                  “byteLength”,<br>                  Buffer::ByteLength);<br>  NODE_SET_METHOD(constructor_template-&gt;GetFunction(),<br>                  “makeFastBuffer”,<br>                  Buffer::MakeFastBuffer);</p>
+<p>大致定义了以上这么多接口可以供node调用，同时对buffer.cc还定义了setFastBufferConstructor函数，不过在buffer.js中没有用到它，是用来设置fast_buffer_constructor静态变量的，主要用于判断node的对象是否为Buffer类的实例</p>
+<p>当node调用 var buf = new Buffer()<br>会将poolsize发给buffer::new这个方法：<br>Handle<value> Buffer::New(const Arguments &amp;args) {<br>  if (!args.IsConstructCall()) { //如果不是构造函数调用，如果不是，则使用构造函数调用<br>    return FromConstructorTemplate(constructor_template, args);<br>  }</value></p>
+<p>  HandleScope scope;</p>
+<p>  if (!args[0]-&gt;IsUint32()) return ThrowTypeError(“Bad argument”);</p>
+<p>  size_t length = args[0]-&gt;Uint32Value();<br>  if (length &gt; Buffer::kMaxLength) {<br>    return ThrowRangeError(“length &gt; kMaxLength”);<br>  }<br>  new Buffer(args.This(), length);</p>
+<p>  return args.This();<br>}<br>对参数做了一些合法性验证之后，将实例化Buffer类，执行Buffer的构造函数：<br>Buffer::Buffer(Handle<object> wrapper, size_t length) : ObjectWrap() {<br>  Wrap(wrapper);</object></p>
+<p>  length_ = 0;<br>  callback_ = NULL;<br>  handle_.SetWrapperClassId(BUFFER_CLASS_ID);<br>//定义包装的对象ID，检查堆的运行情况，初始化时会去定义这个堆的id和回调函数</p>
+<p>  Replace(NULL, length, NULL, NULL);<br>}<br>Buffer类构造函数初始化了两个类成员，然后设定了 SetWrapperClassId ，最后调用replace函数申请内存空间<br>// if replace doesn’t have a callback, data must be copied<br>// const_cast in Buffer::New requires this<br>void Buffer::Replace(char <em>data, size_t length,<br>                     free_callback callback, void </em>hint) {<br>  HandleScope scope;</p>
+<p>  if (callback_) {//非初始化执行<br>    callback_(data_, callback_hint_);<br>  } else if (length_) {<br>    delete [] data_;<br>    V8::AdjustAmountOfExternalAllocatedMemory(<br>        -static_cast&lt;intptr_t&gt;(sizeof(Buffer) + length_));<br>  }</p>
+<p>  length_ = length;<br>  callback_ = callback;<br>  callback_hint_ = hint;</p>
+<p>  if (callback_) { //初始化不执行<br>    data_ = data;<br>  } else if (length_) { //初始化执行<br>    data_ = new char[length_]; //将data_指针指向char[length]<br>    if (data) //参数传递了<br>      memcpy(data_, data, length_); //从data内存指针拷贝length长度的字节到data_指针指向的内存中<br>    V8::AdjustAmountOfExternalAllocatedMemory(sizeof(Buffer) + length_); </p>
+<p>//调用V8调整外部内存大小的</p>
+<p>//文档上说注册更多的外部内存会让V8的GC更加活跃</p>
+<p>//当然从这点我们就可以发现，slowbuffer的创建确实会有消耗</p>
+<p>  } else {<br>    data_ = NULL;<br>  }</p>
+<p>  handle_-&gt;SetIndexedPropertiesToExternalArrayData(data_,<br>                                                   kExternalUnsignedByteArray,<br>                                                   length_);</p>
+<p>//SetIndexedPropertiesToExternalArrayData表示将js对象的内存地址通过V8做好关联，当js对象失去对这个地址的访问</p>
+<p>//v8引起将delete这个data_ 指针。</p>
+<p>  handle_-&gt;Set(length_symbol, Integer::NewFromUnsigned(length_));</p>
+<p>//关于这个handle_是在node_object_wrap.h文件中的ObjectWrap类定义的</p>
+<p>//v8::Persistent<a href="v8::Object" target="_blank" rel="noopener">v8::Object</a> handle_; // ro 至于 Persistent 和 handle 的区别，cnode上有一篇文章介绍的很详细，</p>
+<p>//简单点说就是：handle是栈，Persistent是堆</p>
+<p>//最后这行表示设置这个对象的属性length<br>//length_symbol 表示length ，见代码：</p>
+<p>// length_symbol = NODE_PSYMBOL(“length”);<br>}</p>
+<p>另外v8手册已经废弃了V8::AdjustAmountOfExternalAllocatedMemory，转而使用Isolate类<br>static intptr_t v8::V8::AdjustAmountOfExternalAllocatedMemory    (    intptr_t     change_in_bytes     )     [static]<br>Deprecated. Use Isolate::AdjustAmountOfExternalAllocatedMemory instead.</p>
+<p>测试环境：4CPU Linux 2.6.8 x64 8G Men</p>
+<p>测试1：<br>生成两种buffer，对比速度：<br>A、1024<em>4<br>B、1024</em>4+1<br>代码：<br>var time = 10<em>10000; //10万次<br>console.time(‘1024</em>4’)<br>for(var i=0;i&lt;time;i++)<br>    var x = new Buffer(1024<em>4);<br>console.timeEnd(‘1024</em>4’)</p>
+<p>console.time(‘1024<em>4+1’)<br>for(var j=0;j&lt;time;j++)<br>    var y = new Buffer(1024</em>4+1);<br>console.timeEnd(‘1024*4+1’)</p>
+<p>测试结果：<br>1024<em>4: 337ms<br>1024</em>4+1: 615ms<br>虽然只有1字节的改变，但是生成的速度却将近相差1倍。<br>当然这也算8KB的一个注意点，但是从中我们不难发现，重新申请一份额外的内存空间的消耗是挺大的。</p>
+<p>测试2：<br>我们如何避免频繁的生成slowbuffer将是性能上的一个重点<br>比如我们有10万个长度在1至2048之间不等的字符串我们需要保存，并且我们需要快速的读取其中的任意一个字符串出来。<br>测试代码：<br>var time = 10*10000;<br>var str = ‘1’;<br>var max = 2048;</p>
+<p>console.time(‘many buffer’)<br>var ary1=[]<br>for(var i=0;i&lt;time;i++){<br>    var tempi = Math.ceil(Math.random()*max)<br>    var tempstr = str<br>    while(tempi–){<br>        tempstr += str<br>    }<br>    ary1.push(new Buffer(tempstr))<br>}<br>console.timeEnd(‘many buffer’)</p>
+<p>console.time(‘one buffer’)<br>var ary_offset=[];<br>var ary_len=[];<br>var tempbuf = new Buffer(time<em>max)<br>var offset = 0;<br>for(var i=0;i&lt;time;i++){<br>    var len;<br>    var tempi = len = Math.ceil(Math.random()</em>max)<br>    var tempstr = str<br>    while(tempi–){<br>        tempstr += str<br>    }<br>    var end = offset+len</p>
+<pre><code>tempbuf.fill(tempstr, offset, end)
+    ary_offset.push(offset)
+    ary_len.push(end)
+offset = end
+</code></pre><p>}<br>console.timeEnd(‘one buffer’)</p>
+<p>console.time(‘many buffer read’)<br>for(var x=0;x&lt;100000;x++){<br>    ary1[x].toString(‘utf-8’)<br>}<br>console.timeEnd(‘many buffer read’)</p>
+<p>console.time(‘one buffer read’)<br>for(var y=0;y&lt;100000;y++){<br>    tempbuf.toString(‘utf-8’, ary_offset[y], ary_len[y])<br>}<br>console.timeEnd(‘one buffer read’)<br>测试结果：<br>many buffer: 4622ms<br>one buffer: 2942ms<br>many buffer read: 92ms<br>one buffer read: 91ms<br>结果表明这两种方法生成的速度相差比较大，但是遍历读取速度相当，可是消耗的内存第二种更大一些。<br>对于内存的消耗和执行的时间取舍我们要根据实际情况来取舍了。</p>
+<p>总结一下：<br>1、8KB的内存使用注意情况，不多说了，看我上面给出的链接有详细说明，第一个例子也说明了8KB的问题<br>2、可能创建buffer对于8KB的性能问题更突出一些，但是我们还是应当尽量避免大数量的创建buffer对象，<br>如果真的有必要创建很多buffer对象，不如创建一个大的buffer，然后记录每</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/03/30/js-ajax/" rel="next" title="buffer.concat引出的bug">
+                <i class="fa fa-chevron-left"></i> buffer.concat引出的bug
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/05/08/js-ajax/" rel="prev" title="浅析node的buffer模块（二写入）">
+                浅析node的buffer模块（二写入） <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

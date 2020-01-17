@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="众所周知，python本身是单线程的，python中的线程处理是由python解释器分配时间片的；但在python 3.0中吸收了开源模块，开始支持系统原生的进程处理——multiprocessing.">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python 多进程示例">
+<meta property="og:url" content="http://yoursite.com/2015/04/16/python/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="众所周知，python本身是单线程的，python中的线程处理是由python解释器分配时间片的；但在python 3.0中吸收了开源模块，开始支持系统原生的进程处理——multiprocessing.">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.873Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="python 多进程示例">
+<meta name="twitter:description" content="众所周知，python本身是单线程的，python中的线程处理是由python解释器分配时间片的；但在python 3.0中吸收了开源模块，开始支持系统原生的进程处理——multiprocessing.">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/04/16/python/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>python 多进程示例 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/04/16/python/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">python 多进程示例
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2015-04-16 14:32:52" itemprop="dateCreated datePublished" datetime="2015-04-16T14:32:52+08:00">2015-04-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/04/16/python/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2015/04/16/python/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>众所周知，python本身是单线程的，python中的线程处理是由python解释器分配时间片的；但在python 3.0中吸收了开源模块，开始支持系统原生的进程处理——multiprocessing.</p>
+<a id="more"></a>
+<p>注意：这个模块的某些函数需要操作系统的支持，例如，multiprocessing.synchronize模块在某些平台上引入时会激发一个ImportError</p>
+<p>1)Process<br>  要创建一个Process是很简单的。<br>from multiprocessing import Process<br>def f(name):<br>    print(‘hello’, name)<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>     p = Process(target=f, args=(‘bob’,))<br>     p.start()<br>     p.join()<br>  要获得一个Process的进程ID也是很简单的。<br>from multiprocessing import Process<br>import os<br>def info(title):<br>    print title<br>    print ‘module name:’, <strong>name</strong><br>    print ‘parent process:’, os.getppid()#这个测试不通过，3.0不支持<br>    print ‘process id:’, os.getpid()<br>def f(name):<br>    info(‘function f’)<br>    print ‘hello’, name<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    info(‘main line’)<br>    p = Process(target=f, args=(‘bob’,))<br>    p.start()<br>    p.join()<br>  创建进程：multiprocessing.Process([group[, target[, name[, args[, kargs]]]]])<br>  参数：<br>  group:    None,它的存在仅仅是为了与threading.Thread兼容<br>  target:   一般是函数<br>  name:     进程名<br>  args:     函数的参数<br>  kargs:    keywords参数</p>
+<p>  函数：<br>  run()                  默认的run()函数调用target的函数，你也可以在子类中覆盖该函数<br>  start()                启动该进程<br>  join([timeout])        父进程被停止，直到子进程被执行完毕。<br>                         当timeout为None时没有超时，否则有超时。<br>                         进程可以被join很多次，但不能join自己<br>  is_alive()<br>  terminate()            结束进程。<br>                         在Unix上使用的是SIGTERM<br>                         在Windows平台上使用TerminateProcess</p>
+<p>  属性：<br>  name                   进程名<br>  daemon                 守护进程<br>  pid                    进程ID<br>  exitcode               如果进程还没有结束，该值为None<br>  authkey                    </p>
+<p>2)Queue<br>  Queue类似于queue.Queue，一般用来进程间交互信息<br>  例子：<br>from multiprocessing import Process, Queue<br>def f(q):<br>    q.put([42, None, ‘hello’])<br> if <strong>name</strong> == ‘<strong>main</strong>‘:<br>     q = Queue()<br>     p = Process(target=f, args=(q,))<br>     p.start()<br>     print(q.get())    # prints “[42, None, ‘hello’]”<br>     p.join()<br>  注意：Queue是进程和线程安全的。<br>  Queue实现了queue.Queue的大部分方法，但task_done()和join()没有实现。<br>  创建Queue:multiprocessing.Queue([maxsize])<br>  函数：<br>  qsize()                             返回Queue的大小<br>  empty()                             返回一个boolean值表示Queue是否为空<br>  full()                              返回一个boolean值表示Queue是否满<br>  put(item[, block[, timeout]])<br>  put_nowait(item)<br>  get([block[, timeout]])<br>  get_nowait()<br>  get_no_wait()</p>
+<p>  close()                             表示该Queue不在加入新的元素<br>  join_thread()<br>  cancel_join_thread()</p>
+<p>3)JoinableQueue<br>  创建：multiprocessing.JoinableQueue([maxsize])<br>  task_done()<br>  join()</p>
+<p>4)Pipe<br>from multiprocessing import Process, Pipe<br>def f(conn):<br>    conn.send([42, None, ‘hello’])<br>    conn.close()<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    parent_conn, child_conn = Pipe()<br>    p = Process(target=f, args=(child_conn,))<br>    p.start()<br>    print(parent_conn.recv())   # prints “[42, None, ‘hello’]”<br>    p.join()<br>  multiprocessing.Pipe([duplex])      返回一个Connection对象</p>
+<p>5)异步化synchronization</p>
+<p>from multiprocessing import Process, Lock<br>def f(l, i):<br>    l.acquire()<br>    print(‘hello world’, i)<br>    l.release()<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    lock = Lock()<br>    for num in range(10):<br>        Process(target=f, args=(lock, num)).start()<br>6)Shared Memory<br>from multiprocessing import Process, Value, Array<br>def f(n, a):<br>    n.value = 3.1415927<br>    for i in range(len(a)):<br>        a[i] = -a[i]<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    num = Value(‘d’, 0.0)<br>    arr = Array(‘i’, range(10))<br>    p = Process(target=f, args=(num, arr))<br>    p.start()<br>    p.join()<br>    print(num.value)<br>    print(arr[:])<br>1&gt;Value<br>2&gt;Array</p>
+<p>7)Manager<br>from multiprocessing import Process, Manager<br>def f(d, l):<br>    d[1] = ‘1’<br>    d[‘2’] = 2<br>    d[0.25] = None<br>    l.reverse()<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    manager = Manager()<br>    d = manager.dict()<br>    l = manager.list(range(10))<br>    p = Process(target=f, args=(d, l))<br>    p.start()<br>    p.join()<br>    print(d)<br>    print(l)</p>
+<p>8)Pool<br>from multiprocessing import Pool<br>def f(x):<br>    return x<em>x<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    pool = Pool(processes=4)              # start 4 worker processes<br>    result = pool.apply_async(f, [10])     # evaluate “f(10)” asynchronously<br>    print result.get(timeout=1)           # prints “100” unless your computer is </em>very* slow<br>    print pool.map(f, range(10))          # prints “[0, 1, 4,…, 81]”<br>multiprocessing.Pool([processes[, initializer[, initargs]]])</p>
+<p>函数：<br>  apply(func[, args[, kwds]])<br>  apply_async(func[, args[, kwds[, callback]]])<br>  map(func,iterable[, chunksize])<br>  map_async(func,iterable[, chunksize[, callback]])<br>  imap(func, iterable[, chunksize])<br>  imap_unordered(func, iterable[, chunksize])<br>  close()<br>  terminate()<br>  join()</p>
+<p>from multiprocessing import Pool<br>def f(x):<br>    return x<em>x<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    pool = Pool(processes=4)              # start 4 worker processes<br>    result = pool.apply_async(f, (10,))   # evaluate “f(10)” asynchronously<br>    print(result.get(timeout=1))          # prints “100” unless your computer is </em>very<em> slow<br>    print(pool.map(f, range(10)))         # prints “[0, 1, 4,…, 81]”<br>    it = pool.imap(f, range(10))<br>    print(next(it))                       # prints “0”<br>    print(next(it))                       # prints “1”<br>    print(it.next(timeout=1))             # prints “4” unless your computer is </em>very* slow<br>    import time<br>    result = pool.apply_async(time.sleep, (10,))<br>    print(result.get(timeout=1))          # raises TimeoutError</p>
+<p>9)杂项<br>multiprocessing.active_children()          返回所有活动子进程的列表<br>multiprocessing.cpu_count()                返回CPU数目<br>multiprocessing.current_process()          返回当前进程对应的Process对象<br>multiprocessing.freeze_support()<br>multiprocessing.set_executable()</p>
+<p>10)Connection对象<br>send(obj)<br>recv()<br>fileno()<br>close()<br>poll([timeout])<br>send_bytes(buffer[, offset[, size]])<br>recv_bytes([maxlength])<br>recv_bytes_info(buffer[, offset])  </p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>from multiprocessing import Pipe<br>a, b = Pipe()<br>a.send([1, ‘hello’, None])<br>b.recv()<br>[1, ‘hello’, None]<br>b.send_bytes(‘thank you’)<br>a.recv_bytes()<br>‘thank you’<br>import array<br>arr1 = array.array(‘i’, range(5))<br>arr2 = array.array(‘i’, [0] <em> 10)<br>a.send_bytes(arr1)<br>count = b.recv_bytes_into(arr2)<br>assert count == len(arr1) </em> arr1.itemsize<br>arr2<br>array(‘i’, [0, 1, 2, 3, 4, 0, 0, 0, 0, 0])</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>最后放上一段多进程计算，并在主进程获取返回值的代码：</p>
+<h1 id="coding-utf-8"><a href="#coding-utf-8" class="headerlink" title="-- coding: utf-8 --"></a>-<em>- coding: utf-8 -</em>-</h1><p>from multiprocessing import Process, Value, Array</p>
+<p>def task(x):<br>    x.value = x.value * x.value</p>
+<p>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    proc_record = []<br>    value_list = []<br>    for i in range(0,32):<br>        x = Value(‘d’, i)<br>        p = Process(target = task, args=(x,))<br>        p.start()<br>        proc_record.append(p)<br>        value_list.append(x)</p>
+<pre><code>for p in proc_record:
+    p.join()
+
+for item in value_list:
+    print item.value
+</code></pre>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/04/14/js-ajax/" rel="next" title="linux常用命令">
+                <i class="fa fa-chevron-left"></i> linux常用命令
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/04/22/js-ajax/" rel="prev" title="thrift Tutorial 详解">
+                thrift Tutorial 详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#coding-utf-8"><span class="nav-number">1.</span> <span class="nav-text">-- coding: utf-8 --</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

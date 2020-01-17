@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前几天，公司一个业务部门的 Mongodb 数据库副本集（1主2从）出现写入和更新延迟现象，最慢的一次更新长达22秒，平均的更新和插入操作在15秒左右，上报到我们公共部门，希望能够得到解决。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分享一次 Mongodb 真实案例">
+<meta property="og:url" content="http://yoursite.com/2015/08/05/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="前几天，公司一个业务部门的 Mongodb 数据库副本集（1主2从）出现写入和更新延迟现象，最慢的一次更新长达22秒，平均的更新和插入操作在15秒左右，上报到我们公共部门，希望能够得到解决。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.881Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分享一次 Mongodb 真实案例">
+<meta name="twitter:description" content="前几天，公司一个业务部门的 Mongodb 数据库副本集（1主2从）出现写入和更新延迟现象，最慢的一次更新长达22秒，平均的更新和插入操作在15秒左右，上报到我们公共部门，希望能够得到解决。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/08/05/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>分享一次 Mongodb 真实案例 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/08/05/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">分享一次 Mongodb 真实案例
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2015-08-05 13:09:14" itemprop="dateCreated datePublished" datetime="2015-08-05T13:09:14+08:00">2015-08-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/08/05/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2015/08/05/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前几天，公司一个业务部门的 Mongodb 数据库副本集（1主2从）出现写入和更新延迟现象，最慢的一次更新长达22秒，平均的更新和插入操作在15秒左右，上报到我们公共部门，希望能够得到解决。</p>
+<a id="more"></a>
+<p>之前业务部门已经对这个 Mongodb 使用了一个多月，一直没出问题，又怎么会突然发生延迟这么长的故障呢？</p>
+<p>由于 Mongodb 中本写入的是重要的价格政策信息，所以这个故障已经影响正常线上业务了，于是我就担任救火队员，负责解决这个问题了。</p>
+<p>于是灾难开始了：<br>1、删除索引<br>我们在出问题的集合中发现了一个3个字段的组合索引，而这个组合索引并没有被查询使用到，为了加速插入，我们决定在主库删除这个不使用的索引，然后让它同步到从库上，因为删除索引通常很快。<br>删除很快，5分钟左右，就把几千万条记录的集合的索引删除了，在我们删除完索引之后，主库的写入速度有了一定下降。没有之前那么夸张的平均15秒了，下降到了4-5秒。</p>
+<p>2、恢复索引<br>这时Mongodb的集群出现报警，从库的读取性能急剧下降，外网业务频繁出现 504（time out）的错误。这时候我们其中的一个DBA同事以为我误删了那个索引引起的全表扫描，导致查询超时，于是他在主库上又将我刚才删除的索引重建了。<br>这时候更大的灾难降临了，在主库重建索引的时候，所有的主库写操作阻塞了，当主库创建完索引，将oplog同步到从库，从库创建完索引之后，两台从库在集群里的状态分别是：recovering和unreachable。<br>这时候整个Mongodb集群无法正常提供数据服务了，业务部门职能临时切换备用 sql 方案，勉强恢复对外提供服务，整个故障历时2小时。</p>
+<p>3、事故分析：<br>A、删除无用索引肯定会加快写入，但是为什么我删除了这个没有查询命中的索引，会让从库读取性能下降呢？<br>主库删除索引，同步到从库之后，从库开始删除索引，这时候从库是无法从主库那边拉取同步数据的，因为删除索引会有一个写锁，所以当从库删除完索引之后，主库有大量的更新开始同步到从库，这时候从库压力倍增，导致读取性能下降。</p>
+<p>B、恢复索引为什么会导致集群挂掉<br>DBA同事发现从库查询慢，以为是误删索引，其实并不是，而是由于之前从库删除索引停止同步引起的。<br>因为创建索引，会直接导致从库写入和读取的锁，并且耗时相比删除索引要长很久，所以两台从库就直接不提供服务了。<br>当从库创建完索引之后，从库和主库的数据不同步延迟相当大，大量的更新和外网的读取压力，导致整个Mongodb集群无法提供服务了。</p>
+<p>4、解决问题<br>由于目前业务数据骤增，所以我们需要重新审视 Mongodb副本集 是否还能继续为我们提供服务，在Mongodb无法对外提供的时候，我们只能依靠多台redis和sqlserver数据库临时上线，应付业务。</p>
+<p>A、在出故障的时候我们查看了Mongodb的状态，竟然有超过5000个连接，连接在主库上等待写操作。于是我们翻看了业务代码，发现10台服务器每台服务器的最大连接池设置了20000个，由于之前我们有测试Mongodb在大连接数下表现确实不佳，于是把代码改回默认的100个，继续跑数据，但是问题依旧，性能大约仍然在update操作  2000次/秒 左右。</p>
+<p>B、因为业务的特殊性，集合中存储的当天之后的65天的价格政策信息，而之前没有定期清理垃圾数据，于是我们将过期的政策清理掉，大约清理掉了30%的数据，以为能够恢复原来的写入性能，无奈业务增长太快，就算清除了30%的垃圾数据，还是远远的超过以前的数据量，这个方式宣告失败。</p>
+<p>C、翻阅网上Mongodb的资料，发现官方文档上有一些对于写操作的优化方案，文中提到使用SSD可以显著提升写操作的性能，最高可达20倍，于是折腾了运维，火急火燎的将3台Mongodb数据库机器全部加上SSD硬盘，由于换硬盘数据库要清楚，所以在换完硬盘前几小时写入性能非常高，但是当数据量上来之后，性能又跌回 2000次/秒，我们的数据量大约110G，内存当时配置了196G，所以SSD无法优化到写入操作。</p>
+<p>D、再次翻阅Mongodb官方资料，发现Mongodb的文档是基于 usePowerOf2Sizes 这个规则来申请内存和空间的，当文档初始化插入4KB时，Mongodb申请的空间大小为8KB，当文档涨到8KB后，则申请16KB，以此类推。文档的增涨会带来数据块的迁移，带来性能损失，如果是文档初始化很小，会逐渐增涨，并增涨到一个相对初始大小很多倍的场景，那么官方推荐调整 usePowerOf2Sizes  这个设置，来初始化给文档分配一定的空间。我们的业务场景和这个很像，初始化只有1KB，以后的多次更新，最多可以将文档更新到80K。于是我们将文档初始化占用的空间设置为96KB，防止因为不断的数据块迁移带来的性能损耗，可惜这个配置还是然并卵。</p>
+<p>E、无奈开始找其他出路，想到使用HBASE分布式kv存储方案来解决这个问题，了解到社区的@alsotang 正好非常熟悉HBASE这块，当天晚上就找 alsotang 讨论解决方案，发现HBASE的查询条件太死，无法像Mongodb那样满足业务场景，经过这几天折腾，我得出结论就是因为并发写锁导致的性能低下，于是 alsotang 给了我另外一个建议，批量写入，积攒大约几千条写的命令，批量插入。第二天的批量测试结果却是让人眼前一亮，性能从原来的2000次/秒 提升到了5000次/秒了，但是这样可能暂时能扛下来压力，过几个月业务增长之后，可能又存在瓶颈了。</p>
+<p>F、由于我们线上使用的是Mongodb2.6，所以存在写入的库级锁，会不会是因为这个导致的并发写入性能低下呢？抱着吃螃蟹的心态，将数据库升级到3.0，还是之前批量写入的代码，空库的写入性能能达到 40000次/秒，在单表6000万数据量下，批量写入也能达到 18000次/秒，而且3.0的内存占用比2.6要少很多。<br>但是由于改成批量写入，业务端代码改动比较大，所以我们测试了非批量写入的情况，写操作性能也能达到8000次/秒。</p>
+<p>G、最终我们还是决定一步到位，搭建了Mongodb3.0的集群，分6片存储之前单机Mongodb的数据，这样理论上能让我们的写性能翻5-6倍，就算不用批量写入，仍然可以达到40000次/秒，应该近几年业务是达不到这个指标的，而且一旦发现瓶颈，我们可以通过增加分片的方式提高集群性能。终于折腾了多天的Mongodb算是告一段落了，至于上线之后Mongodb3.0的坑是否会踩到，只能看脸了。</p>
+<p>事故就分析到这里，期间研究了一些Mongodb的优化方案，传送门：</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/08/03/python/" rel="next" title="pip错误error-Microsoft Visual C++ 9.0 is required">
+                <i class="fa fa-chevron-left"></i> pip错误error-Microsoft Visual C++ 9.0 is required
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/06/js-ajax/" rel="prev" title="Mongodb 实战优化">
+                Mongodb 实战优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

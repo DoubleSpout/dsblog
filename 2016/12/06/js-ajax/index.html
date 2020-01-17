@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="原文地址：http://es6.ruanyifeng.com/#README const的数组或者对象，只能保证内存地址不变，不能保证内容不变de  &amp;gt;const a = [];a.push(‘Hello’); // 可执行a.length = 0;    // 可执行a = [‘Dave’];    // 报错de&amp;gt;">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="es6 学习笔记(1)">
+<meta property="og:url" content="http://yoursite.com/2016/12/06/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="原文地址：http://es6.ruanyifeng.com/#README const的数组或者对象，只能保证内存地址不变，不能保证内容不变de  &amp;gt;const a = [];a.push(‘Hello’); // 可执行a.length = 0;    // 可执行a = [‘Dave’];    // 报错de&amp;gt;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="es6 学习笔记(1)">
+<meta name="twitter:description" content="原文地址：http://es6.ruanyifeng.com/#README const的数组或者对象，只能保证内存地址不变，不能保证内容不变de  &amp;gt;const a = [];a.push(‘Hello’); // 可执行a.length = 0;    // 可执行a = [‘Dave’];    // 报错de&amp;gt;">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/06/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>es6 学习笔记(1) | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/12/06/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">es6 学习笔记(1)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-12-06 10:29:05" itemprop="dateCreated datePublished" datetime="2016-12-06T10:29:05+08:00">2016-12-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/12/06/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2016/12/06/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>原文地址：<a href="http://es6.ruanyifeng.com/#README" target="_blank" rel="noopener">http://es6.ruanyifeng.com/#README</a></p>
+<p>const的数组或者对象，只能保证内存地址不变，不能保证内容不变<br>de  &gt;const a = [];<br>a.push(‘Hello’); // 可执行<br>a.length = 0;    // 可执行<br>a = [‘Dave’];    // 报错de&gt;</p>
+<a id="more"></a>
+<p>数组方式赋值<br>de  &gt;let [foo, [[bar], baz]] = [1, [[2], 3]];<br>foo // 1<br>bar // 2<br>baz // 3</p>
+<p>let [ , , third] = [“foo”, “bar”, “baz”];<br>third // “baz”</p>
+<p>let [x, , y] = [1, 2, 3];<br>x // 1<br>y // 3</p>
+<p>let [head, …tail] = [1, 2, 3, 4];<br>head // 1<br>tail // [2, 3, 4]</p>
+<p>let [x, y, …z] = [‘a’];<br>x // “a”<br>y // undefined<br>z // []de&gt;</p>
+<p>解构<br>de  &gt;function* fibs() {<br>  var a = 0;<br>  var b = 1;<br>  while (true) {<br>    yield a;<br>    [a, b] = [b, a + b];<br>  }<br>}</p>
+<p>var [first, second, third, fourth, fifth, sixth] = fibs();<br>sixth // 5<br>de&gt;<br>上面代码中，de &gt;fibsde&gt;是一个Generator函数，原生具有Iterator接口。解构赋值会依次从这个接口获取值。</p>
+<p>解构赋值允许指定默认值。</p>
+<p>de  &gt;var [foo = true] = [];<br>foo // true</p>
+<p>[x, y = ‘b’] = [‘a’]; // x=’a’, y=’b’<br>[x, y = ‘b’] = [‘a’, undefined]; // x=’a’, y=’b’de&gt;</p>
+<p>默认值可以引用解构赋值的其他变量，但该变量必须已经声明。</p>
+<p>de  &gt;let [x = 1, y = x] = [];     // x=1; y=1<br>let [x = 1, y = x] = [2];    // x=2; y=2<br>let [x = 1, y = x] = [1, 2]; // x=1; y=2<br>let [x = y, y = 1] = [];     // ReferenceErrorde&gt;</p>
+<p>对象的解构与数组有一个重要的不同。数组的元素是按次序排列的，变量的取值由它的位置决定；而对象的属性没有次序，变量必须与属性同名，才能取到正确的值。</p>
+<p>de  &gt;var { bar, foo } = { foo: “aaa”, bar: “bbb” };<br>foo // “aaa”<br>bar // “bbb”</p>
+<p>var { baz } = { foo: “aaa”, bar: “bbb” };<br>baz // undefinedde&gt;<br>果变量名与属性名不一致，必须写成下面这样。</p>
+<p>de  &gt;var { foo: baz } = { foo: ‘aaa’, bar: ‘bbb’ };<br>baz // “aaa”</p>
+<p>let obj = { first: ‘hello’, last: ‘world’ };<br>let { first: f, last: l } = obj;<br>f // ‘hello’<br>l // ‘world’de&gt;</p>
+<p>和数组一样，解构也可以用于嵌套结构的对象。</p>
+<p>de  &gt;var obj = {<br>  p: [<br>    ‘Hello’,<br>    { y: ‘World’ }<br>  ]<br>};</p>
+<p>var { p: [x, { y }] } = obj;<br>x // “Hello”<br>y // “World”<br>de&gt;<br>注意，这时de &gt;pde&gt;是模式，不是变量，因此不会被赋值。</p>
+<p>对象的解构赋值，可以很方便地将现有对象的方法，赋值到某个变量。</p>
+<p>de  &gt;let { log, sin, cos } = Math;de&gt;</p>
+<p>类似数组的对象都有一个de &gt;lengthde&gt;属性，因此还可以对这个属性解构赋值。<br>de  &gt;let {length : len} = ‘hello’;<br>len // 5de&gt;</p>
+<p>函数参数的解构也可以使用默认值。</p>
+<p>de  &gt;function move({x = 0, y = 0} = {}) {<br>  return [x, y];<br>}</p>
+<p>move({x: 3, y: 8}); // [3, 8]<br>move({x: 3}); // [3, 0]<br>move({}); // [0, 0]<br>move(); // [0, 0]de&gt;</p>
+<p>函数参数的默认值</p>
+<p>de  &gt;jQuery.ajax = function (url, {<br>  async = true,<br>  beforeSend = function () {},<br>  cache = true,<br>  complete = function () {},<br>  crossDomain = false,<br>  global = true,<br>  // … more config<br>}) {<br>  // … do stuff<br>};de&gt;</p>
+<p>遍历Map结构</p>
+<p>任何部署了Iterator接口的对象，都可以用de &gt;for…ofde&gt;循环遍历。Map结构原生支持Iterator接口，配合变量的解构赋值，获取键名和键值就非常方便。</p>
+<p>de  &gt;var map = new Map();<br>map.set(‘first’, ‘hello’);<br>map.set(‘second’, ‘world’);</p>
+<p>for (let [key, value] of map) {<br>  console.log(key + “ is “ + value);<br>}<br>// first is hello<br>// second is worldde&gt;</p>
+<p>ES6为字符串添加了遍历器接口（详见《Iterator》一章），使得字符串可以被de &gt;for…ofde&gt;循环遍历。</p>
+<p>de  &gt;for (let codePoint of ‘foo’) {<br>  console.log(codePoint)<br>}<br>// “f”<br>// “o”<br>// “o”de&gt;</p>
+<p>includes()：返回布尔值，表示是否找到了参数字符串。<br>startsWith()：返回布尔值，表示参数字符串是否在源字符串的头部。<br>endsWith()：返回布尔值，表示参数字符串是否在源字符串的尾部。<br>de  &gt;var s = ‘Hello world!’;</p>
+<p>s.startsWith(‘Hello’) // true<br>s.endsWith(‘!’) // true<br>s.includes(‘o’) // true<br>de&gt;<br>这三个方法都支持第二个参数，表示开始搜索的位置。</p>
+<p>de  &gt;var s = ‘Hello world!’;</p>
+<p>s.startsWith(‘world’, 6) // true<br>s.endsWith(‘Hello’, 5) // true<br>s.includes(‘Hello’, 6) // falsede&gt;</p>
+<p>ES7推出了字符串补全长度的功能。如果某个字符串不够指定长度，会在头部或尾部补全。de &gt;padStartde&gt;用于头部补全，de &gt;padEndde&gt;用于尾部补全。</p>
+<p>de  &gt;’x’.padStart(5, ‘ab’) // ‘ababx’<br>‘x’.padStart(4, ‘ab’) // ‘abax’</p>
+<p>‘x’.padEnd(5, ‘ab’) // ‘xabab’<br>‘x’.padEnd(4, ‘ab’) // ‘xaba’de&gt;</p>
+<p>de &gt;Number.isFinite()de&gt;用来检查一个数值是否为有限的（finite）。</p>
+<p>de  &gt;Number.isFinite(15); // true<br>Number.isFinite(0.8); // true<br>Number.isFinite(NaN); // false<br>Number.isFinite(Infinity); // false<br>Number.isFinite(-Infinity); // false<br>Number.isFinite(‘foo’); // false<br>Number.isFinite(‘15’); // false<br>Number.isFinite(true); // falsede&gt;</p>
+<p>ES6引入了de &gt;Number.MAX_SAFE_INTEGERde&gt;和de &gt;Number.MIN_SAFE_INTEGERde&gt;这两个常量，用来表示这个范围的上下限。</p>
+<p>de  &gt;Number.MAX_SAFE_INTEGER === Math.pow(2, 53) - 1<br>// true<br>Number.MAX_SAFE_INTEGER === 9007199254740991<br>// true</p>
+<p>Number.MIN_SAFE_INTEGER === -Number.MAX_SAFE_INTEGER<br>// true<br>Number.MIN_SAFE_INTEGER === -9007199254740991<br>// truede&gt;</p>
+<p>de &gt;Number.isSafeInteger()de&gt;则是用来判断一个整数是否落在这个范围之内。</p>
+<p>de  &gt;Number.isSafeInteger(‘a’) // false<br>Number.isSafeInteger(null) // false<br>Number.isSafeInteger(NaN) // false<br>Number.isSafeInteger(Infinity) // false<br>Number.isSafeInteger(-Infinity) // false</p>
+<p>Number.isSafeInteger(3) // true<br>Number.isSafeInteger(1.2) // false<br>Number.isSafeInteger(9007199254740990) // true<br>Number.isSafeInteger(9007199254740992) // false</p>
+<p>Number.isSafeInteger(Number.MIN_SAFE_INTEGER - 1) // false<br>Number.isSafeInteger(Number.MIN_SAFE_INTEGER) // true<br>Number.isSafeInteger(Number.MAX_SAFE_INTEGER) // true<br>Number.isSafeInteger(Number.MAX_SAFE_INTEGER + 1) // falsede&gt;</p>
+<p>de &gt;Math.truncde&gt;方法用于去除一个数的小数部分，返回整数部分。</p>
+<p>de  &gt;Math.trunc(4.1) // 4<br>Math.trunc(4.9) // 4<br>Math.trunc(-4.1) // -4<br>Math.trunc(-4.9) // -4<br>Math.trunc(-0.1234) // -0de&gt;</p>
+<p>de &gt;Array.ofde&gt;方法用于将一组值，转换为数组。</p>
+<p>de  &gt;Array.of(3, 11, 8) // [3,11,8]<br>Array.of(3) // [3]<br>Array.of(3).length // 1de&gt;</p>
+<p>数组实例的de &gt;copyWithinde&gt;方法，在当前数组内部，将指定位置的成员复制到其他位置（会覆盖原有成员），然后返回当前数组。也就是说，使用这个方法，会修改当前数组。<br>de  &gt;// 将3号位复制到0号位<br>[1, 2, 3, 4, 5].copyWithin(0, 3, 4)<br>// [4, 2, 3, 4, 5]</p>
+<p>// -2相当于3号位，-1相当于4号位<br>[1, 2, 3, 4, 5].copyWithin(0, -2, -1)<br>// [4, 2, 3, 4, 5]</p>
+<p>// 将3号位复制到0号位<br>[].copyWithin.call({length: 5, 3: 1}, 0, 3)<br>// {0: 1, 3: 1, length: 5}</p>
+<p>// 将2号位到数组结束，复制到0号位<br>var i32a = new Int32Array([1, 2, 3, 4, 5]);<br>i32a.copyWithin(0, 2);<br>// Int32Array [3, 4, 5, 4, 5]</p>
+<p>// 对于没有部署TypedArray的copyWithin方法的平台<br>// 需要采用下面的写法<br>[].copyWithin.call(new Int32Array([1, 2, 3, 4, 5]), 0, 3, 4);<br>// Int32Array [4, 2, 3, 4, 5]de&gt;</p>
+<p>数组实例的de &gt;findde&gt;方法，用于找出第一个符合条件的数组成员。它的参数是一个回调函数，所有数组成员依次执行该回调函数，直到找出第一个返回值为de &gt;truede&gt;的成员，然后返回该成员。如果没有符合条件的成员，则返回de &gt;undefinedde&gt;。</p>
+<p>de  &gt;[1, 4, -5, 10].find((n) =&gt; n &lt; 0)<br>// -5de&gt;<br>de &gt;fillde&gt;方法使用给定值，填充一个数组。</p>
+<p>de  &gt;[‘a’, ‘b’, ‘c’].fill(7)<br>// [7, 7, 7]</p>
+<p>new Array(3).fill(7)<br>// [7, 7, 7]de&gt;</p>
+<p>de &gt;Array.prototype.includesde&gt;方法返回一个布尔值，表示某个数组是否包含给定的值，与字符串的de &gt;includesde&gt;方法类似。该方法属于ES7，但Babel转码器已经支持。</p>
+<p>de  &gt;[1, 2, 3].includes(2);     // true<br>[1, 2, 3].includes(4);     // false<br>[1, 2, NaN].includes(NaN); // true<br>de&gt;<br>该方法的第二个参数表示搜索的起始位置，默认为0。如果第二个参数为负数，则表示倒数的位置，如果这时它大于数组长度（比如第二个参数为-4，但数组长度为3），则会重置为从0开始。</p>
+<p>de  &gt;[1, 2, 3].includes(3, 3);  // false<br>[1, 2, 3].includes(3, -1); // truede&gt;</p>
+<p>参数默认值可以与解构赋值的默认值，结合起来使用。</p>
+<p>de  &gt;function foo({x, y = 5}) {<br>  console.log(x, y);<br>}</p>
+<p>foo({}) // undefined, 5<br>foo({x: 1}) // 1, 5<br>foo({x: 1, y: 2}) // 1, 2<br>foo() // TypeError: Cannot read property ‘x’ of undefinedde&gt;</p>
+<p>下面是另一个对象的解构赋值默认值的例子。</p>
+<p>de  &gt;function fetch(url, { body = ‘’, method = ‘GET’, headers = {} }) {<br>  console.log(method);<br>}</p>
+<p>fetch(‘<a href="http://example.com&#39;" target="_blank" rel="noopener">http://example.com&#39;</a>, {})<br>// “GET”</p>
+<p>fetch(‘<a href="http://example.com&#39;" target="_blank" rel="noopener">http://example.com&#39;</a>)<br>// 报错<br>de&gt;<br>上面代码中，如果函数de &gt;fetchde&gt;的第二个参数是一个对象，就可以为它的三个属性设置默认值。</p>
+<p>上面的写法不能省略第二个参数，如果结合函数参数的默认值，就可以省略第二个参数。这时，就出现了双重默认值。</p>
+<p>de  &gt;function fetch(url, { method = ‘GET’ } = {}) {<br>  console.log(method);<br>}</p>
+<p>fetch(‘<a href="http://example.com&#39;" target="_blank" rel="noopener">http://example.com&#39;</a>)<br>// “GET”de&gt;</p>
+<p>再请问下面两种写法有什么差别？</p>
+<p>de  &gt;// 写法一<br>function m1({x = 0, y = 0} = {}) {<br>  return [x, y];<br>}</p>
+<p>// 写法二<br>function m2({x, y} = { x: 0, y: 0 }) {<br>  return [x, y];<br>}<br>de&gt;<br>上面两种写法都对函数的参数设定了默认值，区别是写法一函数参数的默认值是空对象，但是设置了对象解构赋值的默认值；写法二函数参数的默认值是一个有具体属性的对象，但是没有设置对象解构赋值的默认值。</p>
+<p>de  &gt;// 函数没有参数的情况<br>m1() // [0, 0]<br>m2() // [0, 0]</p>
+<p>// x和y都有值的情况<br>m1({x: 3, y: 8}) // [3, 8]<br>m2({x: 3, y: 8}) // [3, 8]</p>
+<p>// x有值，y无值的情况<br>m1({x: 3}) // [3, 0]<br>m2({x: 3}) // [3, undefined]</p>
+<p>// x和y都无值的情况<br>m1({}) // [0, 0];<br>m2({}) // [undefined, undefined]</p>
+<p>m1({z: 3}) // [0, 0]<br>m2({z: 3}) // [undefined, undefined]de&gt;</p>
+<p>指定了默认值以后，函数的de &gt;lengthde&gt;属性，将返回没有指定默认值的参数个数。也就是说，指定了默认值后，de &gt;lengthde&gt;属性将失真。</p>
+<p>de  &gt;(function (a) {}).length // 1<br>(function (a = 5) {}).length // 0<br>(function (a, b, c = 5) {}).length // 2<br>de&gt;<br>上面代码中，de &gt;lengthde&gt;属性的返回值，等于函数的参数个数减去指定了默认值的参数个数。比如，上面最后一个函数，定义了3个参数，其中有一个参数de &gt;cde&gt;指定了默认值，因此de &gt;lengthde&gt;属性等于de &gt;3de&gt;减去de &gt;1de&gt;，最后得到de &gt;2de&gt;。</p>
+<p>这是因为de &gt;lengthde&gt;属性的含义是，该函数预期传入的参数个数。某个参数指定默认值以后，预期传入的参数个数就不包括这个参数了。同理，rest参数也不会计入de &gt;lengthde&gt;属性。</p>
+<p>de  &gt;(function(…args) {}).length // 0<br>de&gt;<br>如果设置了默认值的参数不是尾参数，那么de &gt;lengthde&gt;属性也不再计入后面的参数了。</p>
+<p>de  &gt;(function (a = 0, b, c) {}).length // 0<br>(function (a, b = 1, c) {}).length // 1de&gt;</p>
+<p>如果参数的默认值是一个函数，该函数的作用域是其声明时所在的作用域。请看下面的例子。</p>
+<p>de  &gt;let foo = ‘outer’;</p>
+<p>function bar(func = x =&gt; foo) {<br>  let foo = ‘inner’;<br>  console.log(func()); // outer<br>}</p>
+<p>bar();<br>de&gt;<br>上面代码中，函数de &gt;barde&gt;的参数de &gt;funcde&gt;的默认值是一个匿名函数，返回值为变量de &gt;foode&gt;。这个匿名函数声明时，de &gt;barde&gt;函数的作用域还没有形成，所以匿名函数里面的de &gt;foode&gt;指向外层作用域的de &gt;foode&gt;，输出de &gt;outerde&gt;。</p>
+<p>下面是一个更复杂的例子。</p>
+<p>de  &gt;var x = 1;<br>function foo(x, y = function() { x = 2; }) {<br>  var x = 3;<br>  y();<br>  console.log(x);<br>}</p>
+<p>foo() // 3<br>de&gt;<br>上面代码中，函数de &gt;foode&gt;的参数de &gt;yde&gt;的默认值是一个匿名函数。函数de &gt;foode&gt;调用时，它的参数de &gt;xde&gt;的值为de &gt;undefinedde&gt;，所以de &gt;yde&gt;函数内部的de &gt;xde&gt;一开始是de &gt;undefinedde&gt;，后来被重新赋值de &gt;2de&gt;。但是，函数de &gt;foode&gt;内部重新声明了一个de &gt;xde&gt;，值为de &gt;3de&gt;，这两个de &gt;xde&gt;是不一样的，互相不产生影响，因此最后输出de &gt;3de&gt;。</p>
+<p>如果将de &gt;var x = 3de&gt;的de &gt;varde&gt;去除，两个de &gt;xde&gt;就是一样的，最后输出的就是de &gt;2de&gt;。</p>
+<p>de  &gt;var x = 1;<br>function foo(x, y = function() { x = 2; }) {<br>  x = 3;<br>  y();<br>  console.log(x);<br>}</p>
+<p>foo() // 2de&gt;</p>
+<p>ES6引入rest参数（形式为“…变量名”），用于获取函数的多余参数，这样就不需要使用arguments对象了。rest参数搭配的变量是一个数组，该变量将多余的参数放入数组中。</p>
+<p>de  &gt;function add(…values) {<br>  let sum = 0;</p>
+<p>  for (var val of values) {<br>    sum += val;<br>  }</p>
+<p>  return sum;<br>}</p>
+<p>add(2, 5, 3) // 10de&gt;</p>
+<p>可变参数调用<br>de  &gt;console.log(…[1, 2, 3])<br>// 1 2 3</p>
+<p>console.log(1, …[2, 3, 4], 5)<br>// 1 2 3 4 5</p>
+<p>[…document.querySelectorAll(‘div’)]<br>// [<div>, <div>, <div>]de&gt;</div></div></div></p>
+<p>Generator函数运行后，返回一个遍历器对象，因此也可以使用扩展运算符。</p>
+<p>de  &gt;var go = function*(){<br>  yield 1;<br>  yield 2;<br>  yield 3;<br>};</p>
+<p>[…go()] // [1, 2, 3]de&gt;</p>
+<p>ES6允许使用“箭头”（de &gt;=&gt;de&gt;）定义函数。</p>
+<p>de  &gt;var f = v =&gt; v;<br>de&gt;<br>上面的箭头函数等同于：</p>
+<p>de  &gt;var f = function(v) {<br>  return v;<br>};<br>de&gt;<br>如果箭头函数不需要参数或需要多个参数，就使用一个圆括号代表参数部分。</p>
+<p>de  &gt;var f = () =&gt; 5;<br>// 等同于<br>var f = function () { return 5 };</p>
+<p>var sum = (num1, num2) =&gt; num1 + num2;<br>// 等同于<br>var sum = function(num1, num2) {<br>  return num1 + num2;<br>};de&gt;</p>
+<p>如果是非尾递归的fibonacci 递归方法</p>
+<p>de  &gt;function Fibonacci (n) {<br>  if ( n &lt;= 1 ) {return 1};</p>
+<p>  return Fibonacci(n - 1) + Fibonacci(n - 2);<br>}</p>
+<p>Fibonacci(10); // 89<br>// Fibonacci(100)<br>// Fibonacci(500)<br>// 堆栈溢出了<br>de&gt;<br>如果我们使用尾递归优化过的fibonacci 递归算法</p>
+<p>de  &gt;function Fibonacci2 (n , ac1 = 1 , ac2 = 1) {<br>  if( n &lt;= 1 ) {return ac2};</p>
+<p>  return Fibonacci2 (n - 1, ac2, ac1 + ac2);<br>}</p>
+<p>Fibonacci2(100) // 573147844013817200000<br>Fibonacci2(1000) // 7.0330367711422765e+208<br>Fibonacci2(10000) // Infinity<br>de&gt;<br>由此可见，“尾调用优化”对递归操作意义重大，所以一些函数式编程语言将其写入了语言规格。ES6也是如此，第一次明确规定，所有ECMAScript的实现，都必须部署“尾调用优化”。这就是说，在ES6中，只要使用尾递归，就不会发生栈溢出，相对节省内存。</p>
+<p>除了属性简写，方法也可以简写。</p>
+<p>de  &gt;var birth = ‘2000/01/01’;</p>
+<p>var Person = {</p>
+<p>  name: ‘张三’,</p>
+<p>  //等同于birth: birth<br>  birth,</p>
+<p>  // 等同于hello: function ()…<br>  hello() { console.log(‘我的名字是’, this.name); }</p>
+<p>};de&gt;</p>
+<p>这种写法用于函数的返回值，将会非常方便。</p>
+<p>de  &gt;function getPoint() {<br>  var x = 1;<br>  var y = 10;<br>  return {x, y};<br>}</p>
+<p>getPoint()<br>// {x:1, y:10}de&gt;</p>
+<p>属性的赋值器（setter）和取值器（getter），事实上也是采用这种写法。</p>
+<p>de  &gt;var cart = {<br>  _wheels: 4,</p>
+<p>  get wheels () {<br>    return this._wheels;<br>  },</p>
+<p>  set wheels (value) {<br>    if (value &lt; this._wheels) {<br>      throw new Error(‘数值太小了！’);<br>    }<br>    this._wheels = value;<br>  }<br>}de&gt;</p>
+<p>ES6 允许字面量定义对象时，用方法二（表达式）作为对象的属性名，即把表达式放在方括号内。</p>
+<p>de  &gt;let propKey = ‘foo’;</p>
+<p>let obj = {<br>  [propKey]: true,<br>  [‘a’ + ‘bc’]: 123<br>};de&gt;</p>
+<p>（4）合并多个对象</p>
+<p>将多个对象合并到某个对象。</p>
+<p>de  &gt;const merge =<br>  (target, …sources) =&gt; Object.assign(target, …sources);<br>de&gt;<br>如果希望合并后返回一个新对象，可以改写上面函数，对一个空对象合并。</p>
+<p>de  &gt;const merge =<br>  (…sources) =&gt; Object.assign({}, …sources);de&gt;</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/29/go/" rel="next" title="谈谈go语言编程的并发安全">
+                <i class="fa fa-chevron-left"></i> 谈谈go语言编程的并发安全
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/12/09/lua/" rel="prev" title="lua比较高效的string.find">
+                lua比较高效的string.find <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

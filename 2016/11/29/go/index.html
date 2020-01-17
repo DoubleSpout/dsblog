@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前言其实golang的排序思路和C和C++有些差别。 C默认是对数组进行排序， C++是对一个序列进行排序， Go则更宽泛一些，待排序的可以是任何对象， 虽然很多情况下是一个slice(分片， 类似于数组)，或是包含 slice 的一个对象。">
+<meta name="keywords" content="go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解golang的基本类型排序与slice排序">
+<meta property="og:url" content="http://yoursite.com/2016/11/29/go/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="前言其实golang的排序思路和C和C++有些差别。 C默认是对数组进行排序， C++是对一个序列进行排序， Go则更宽泛一些，待排序的可以是任何对象， 虽然很多情况下是一个slice(分片， 类似于数组)，或是包含 slice 的一个对象。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.885Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解golang的基本类型排序与slice排序">
+<meta name="twitter:description" content="前言其实golang的排序思路和C和C++有些差别。 C默认是对数组进行排序， C++是对一个序列进行排序， Go则更宽泛一些，待排序的可以是任何对象， 虽然很多情况下是一个slice(分片， 类似于数组)，或是包含 slice 的一个对象。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/11/29/go/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>深入理解golang的基本类型排序与slice排序 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/11/29/go/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入理解golang的基本类型排序与slice排序
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-11-29 09:52:14" itemprop="dateCreated datePublished" datetime="2016-11-29T09:52:14+08:00">2016-11-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/go/" itemprop="url" rel="index"><span itemprop="name">go</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/11/29/go/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2016/11/29/go/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前言<br>其实golang的排序思路和C和C++有些差别。 C默认是对数组进行排序， C++是对一个序列进行排序， Go则更宽泛一些，待排序的可以是任何对象， 虽然很多情况下是一个slice(分片， 类似于数组)，或是包含 slice 的一个对象。</p>
+<a id="more"></a>
+<p>排序(接口)的三个要素：<br>      1、待排序元素个数 n ；<br>      2、第 i 和第 j 个元素的比较函数 cmp ；<br>      3、第 i 和 第 j 个元素的交换 swap ；<br>乍一看条件 3 是多余的， c 和 c++ 都不提供 swap 。 c 的 qsort 的用法： qsort(data, n, sizeof(int), cmp_int); data 是起始地址， n 是元素个数， sizeof(int) 是每个元素的大小， cmp_int 是一个比较两个 int 的函数。<br>c++ 的 sort 的用法： sort(data, data+n, cmp_int); data 是第一个元素的位置， data+n 是最后一个元素的下一个位置， cmp_int 是比较函数。<br>基本类型排序(int、float64 和 string)</p>
+<p>1、升序排序<br>对于 int 、 float64 和 string 数组或是分片的排序， go 分别提供了 sort.Ints() 、 sort.Float64s() 和 sort.Strings() 函数， 默认都是从小到大排序。<br>package main<br>import (<br>“fmt”<br>“sort”<br>)<br>func main() {<br>intList := [] int {2, 4, 3, 5, 7, 6, 9, 8, 1, 0}<br>float8List := [] float64 {4.2, 5.9, 12.3, 10.0, 50.4, 99.9, 31.4, 27.81828, 3.14}<br>stringList := [] string {“a”, “c”, “b”, “d”, “f”, “i”, “z”, “x”, “w”, “y”}<br>sort.Ints(intList)<br>sort.Float64s(float8List)<br>sort.Strings(stringList)<br>fmt.Printf(“%vn%vn%vn”, intList, float8List, stringList)<br>}<br>2、降序排序<br>int 、 float64 和 string 都有默认的升序排序函数， 现在问题是如果降序如何 ？<br> 有其他语言编程经验的人都知道，只需要交换 cmp 的比较法则就可以了， go 的实现是类似的，然而又有所不同。<br>go 中对某个 Type 的对象 obj 排序， 可以使用 sort.Sort(obj) 即可，就是需要对 Type 类型绑定三个方法 ： Len() 求长度、<br>Less(i,j) 比较第 i 和 第 j 个元素大小的函数、<br>Swap(i,j) 交换第 i 和第 j 个元素的函数。</p>
+<p>sort 包下的三个类型 IntSlice 、 Float64Slice 、 StringSlice 分别实现了这三个方法， 对应排序的是 [] int 、 [] float64 和 [] string 。如果期望逆序排序， 只需要将对应的 Less 函数简单修改一下即可。<br>go 的 sort 包可以使用 sort.Reverse(slice) 来调换 slice.Interface.Less ，也就是比较函数，所以， int 、 float64 和 string 的逆序排序函数可以这么写：<br>package main<br>import (<br>“fmt”<br>“sort”<br>)<br>func main() {<br>intList := [] int {2, 4, 3, 5, 7, 6, 9, 8, 1, 0}<br>float8List := [] float64 {4.2, 5.9, 12.3, 10.0, 50.4, 99.9, 31.4, 27.81828, 3.14}<br>stringList := [] string {“a”, “c”, “b”, “d”, “f”, “i”, “z”, “x”, “w”, “y”}<br>sort.Sort(sort.Reverse(sort.IntSlice(intList)))<br>sort.Sort(sort.Reverse(sort.Float64Slice(float8List)))<br>sort.Sort(sort.Reverse(sort.StringSlice(stringList)))<br>fmt.Printf(“%vn%vn%vn”, intList, float8List, stringList)<br>}</p>
+<p>3、深入理解排序<br>sort 包中有一个 sort.Interface 接口，该接口有三个方法 Len()  、 Less(i,j) 和 Swap(i,j) 。 通用排序函数 sort.Sort 可以排序任何实现了 sort.Inferface 接口的对象(变量)。<br>对于 [] int 、[] float64 和 [] string 除了使用特殊指定的函数外，还可以使用改装过的类型 IntSclice 、 Float64Slice 和 StringSlice ， 然后直接调用它们对应的 Sort() 方法；因为这三种类型也实现了 sort.Interface 接口， 所以可以通过 sort.Reverse 来转换这三种类型的 Interface.Less 方法来实现逆向排序， 这就是前面最后一个排序的使用。<br>下面使用了一个自定义(用户定义)的 Reverse 结构体， 而不是 sort.Reverse 函数， 来实现逆向排序。<br>package main<br>import (<br>“fmt”<br>“sort”<br>)<br>// 自定义的 Reverse 类型<br>type Reverse struct {<br>sort.Interface // 这样，Reverse可以接纳任何实现了sort.Interface的对象<br>}</p>
+<p>// Reverse 只是将其中的 Inferface.Less 的顺序对调了一下<br>func (r Reverse) Less(i, j int) bool {<br>return r.Interface.Less(j, i)<br>}</p>
+<p>func main() {<br>ints := []int{5, 2, 6, 3, 1, 4}<br>sort.Ints(ints) // 特殊排序函数，升序<br>fmt.Println(“after sort by Ints:t”, ints) doubles := []float64{2.3, 3.2, 6.7, 10.9, 5.4, 1.8}<br>sort.Float64s(doubles)<br>fmt.Println(“after sort by Float64s:t”, doubles)<br>// [1.8 2.3 3.2 5.4 6.7 10.9] </p>
+<p>strings := []string{“hello”, “good”, “students”, “morning”, “people”, “world”}<br>sort.Strings(strings) fmt.Println(“after sort by Strings:t”, strings)<br>// [good hello mornig people students world] </p>
+<p>ipos := sort.SearchInts(ints, -1)<br>// int 搜索 fmt.Printf(“pos of 5 is %d thn”, ipos) </p>
+<p>dpos := sort.SearchFloat64s(doubles, 20.1)<br>// float64 搜索 fmt.Printf(“pos of 5.0 is %d thn”, dpos) </p>
+<p>fmt.Printf(“doubles is asc ? %vn”, sort.Float64sAreSorted(doubles))<br>doubles = []float64{3.5, 4.2, 8.9, 100.98, 20.14, 79.32}<br>// sort.Sort(sort.Float64Slice(doubles))<br>// float64 排序方法 2 // </p>
+<p>fmt.Println(“after sort by Sort:t”, doubles)<br>// [3.5 4.2 8.9 20.14 79.32 100.98] </p>
+<p>(sort.Float64Slice(doubles)).Sort()<br>// float64 排序方法 3 </p>
+<p>fmt.Println(“after sort by Sort:t”, doubles)<br>// [3.5 4.2 8.9 20.14 79.32 100.98] </p>
+<p>sort.Sort(Reverse{sort.Float64Slice(doubles)})<br>// float64 逆序排序</p>
+<p>fmt.Println(“after sort by Reversed Sort:t”, doubles)<br> // [100.98 79.32 20.14 8.9 4.2 3.5]}</p>
+<p>sort.Ints / sort.Float64s / sort.Strings  分别来对整型/浮点型/字符串型slice进行排序。然后是有个测试是否有序的函数。还有分别对应的 search 函数，不过，发现搜索函数只能定位到如果存在的话的位置，不存在的话，位置是不对的。<br>关于一般的数组排序，程序中显示了，有 3 种方法！目前提供的三种类型 int，float64 和 string 呈现对称的，也就是你有的，对应的我也有。关于翻转排序或是逆向排序，就是用个翻转结构体，重写 Less() 函数即可。<br>上面的 Reverse 是个通用的结构体。<br>上面说了那么多， 只是对基本类型进行排序， 该到说说 struct 结构体类型的排序的时候了， 实际中这个用得到的会更多。<br>结构体类型的排序<br>结构体类型的排序是通过使用 sort.Sort(slice) 实现的， 只要 slice 实现了 sort.Interface 的三个方法就可以。 虽然这么说，但是排序的方法却有那么好几种。首先一种就是模拟排序 [] int 构造对应的 IntSlice 类型，然后对 IntSlice 类型实现 Interface 的三个方法。<br>1、模拟 IntSlice 排序<br>package mainimport ( “fmt” “sort”)<br>type Person struct {<br>Name string Age int}<br>// 按照 Person.Age 从大到小排序type PersonSlice [] Personfunc (a PersonSlice) Len() int {<br>// 重写 Len() 方法 return len(a)}<br>func (a PersonSlice) Swap(i, j int){<br>// 重写 Swap() 方法 a[i], a[j] = a[j], a[i]}<br>func (a PersonSlice) Less(i, j int) bool {<br>// 重写 Less() 方法， 从大到小排序 return a[j].Age &lt; a[i].Age}<br>func main() {<br>people := [] Person{<br>{<br>“zhang san”, 12}<br>, {<br>“li si”, 30}<br>, {<br>“wang wu”, 52}<br>, {<br>“zhao liu”, 26}<br>, }<br>fmt.Println(people) sort.Sort(PersonSlice(people)) // 按照 Age 的逆序排序 fmt.Println(people) sort.Sort(sort.Reverse(PersonSlice(people))) // 按照 Age 的升序排序 fmt.Println(people)}<br>这完全是一种模拟的方式，所以如果懂了 IntSlice 自然就理解这里了，反过来，理解了这里那么 IntSlice 那里也就懂了。<br>这种方法的缺点是：根据 Age 排序需要重新定义 PersonSlice 方法，绑定 Len 、 Less 和 Swap 方法， 如果需要根据 Name 排序， 又需要重新写三个函数； 如果结构体有 4 个字段，有四种类型的排序，那么就要写 3 × 4 = 12 个方法， 即使有一些完全是多余的， O__O”… 仔细思量一下，根据不同的标准 Age 或是 Name， 真正不同的体现在 Less 方法上，所以可以将 Less 抽象出来， 每种排序的 Less 让其变成动态的，比如下面一种方法。<br>2、封装成 Wrapper<br>package main<br>import (<br>“fmt”<br>“sort”<br>)<br>type Person struct {<br>Name string<br>Age int<br>}<br>type PersonWrapper struct {<br>//注意此处<br>people [] Person<br>by func(p, q * Person) bool<br>}<br>func (pw PersonWrapper) Len() int {<br>// 重写 Len() 方法<br>return len(pw.people)<br>}</p>
+<p>func (pw PersonWrapper) Swap(i, j int){<br>// 重写 Swap() 方法<br>pw.people[i], pw.people[j] = pw.people[j], pw.people[i]<br>}</p>
+<p>func (pw PersonWrapper) Less(i, j int) bool {<br>// 重写 Less() 方法<br>return pw.by(&amp;pw.people[i], &amp;pw.people[j])<br>}</p>
+<p>func main() {<br>people := [] Person{ {“zhang san”, 12}, {“li si”, 30}, {“wang wu”, 52}, {“zhao liu”, 26},}<br>fmt.Println(people)<br>sort.Sort(PersonWrapper{people, func (p, q *Person) bool {<br>return q.Age &lt; p.Age // Age 递减排序 }<br>})<br>fmt.Println(people) </p>
+<p>sort.Sort(PersonWrapper{people, func (p, q *Person) bool {<br>return p.Name &lt; q.Name<br>// Name 递增排序 }<br>})<br>fmt.Println(people)<br>}<br>这种方法将 [] Person 和比较的准则 cmp 封装在了一起，形成了 PersonWrapper 函数，然后在其上绑定 Len 、 Less 和 Swap 方法。 实际上 sort.Sort(pw) 排序的是 pw 中的 people， 这就是前面说的， go 的排序未必就是针对的一个数组或是 slice， 而可以是一个对象中的数组或是 slice 。</p>
+<p>3、进一步封装<br>感觉方法 2 已经很不错了， 唯一一个缺点是，在 main 中使用的时候暴露了 sort.Sort 的使用，还有就是 PersonWrapper 的构造。 为了让 main 中使用起来更为方便， me 们可以再简单的封装一下， 构造一个 SortPerson 方法， 如下：<br>package main<br>import (<br>“fmt”<br>“sort”<br>)<br>type Person struct {<br>Name string<br>Age int<br>}</p>
+<p>type PersonWrapper struct {<br>people [] Person<br>by func(p, q * Person) bool<br>}</p>
+<p>type SortBy func(p, q *Person) bool<br>func (pw PersonWrapper) Len() int {<br>// 重写 Len() 方法<br>return len(pw.people)<br>}</p>
+<p>func (pw PersonWrapper) Swap(i, j int){<br>// 重写 Swap() 方法<br>pw.people[i], pw.people[j] = pw.people[j], pw.people[i]<br>}</p>
+<p>func (pw PersonWrapper) Less(i, j int) bool {<br>// 重写 Less() 方法<br>return pw.by(&amp;pw.people[i], &amp;pw.people[j])<br>}</p>
+<p>// 封装成 SortPerson 方法<br>func SortPerson(people [] Person, by SortBy){<br>sort.Sort(PersonWrapper{people, by})<br>}</p>
+<p>func main() {<br>people := [] Person{<br>{<br>“zhang san”, 12},<br>{“li si”, 30},<br> {“wang wu”, 52},<br>{“zhao liu”, 26},<br>}</p>
+<p>fmt.Println(people) </p>
+<p>sort.Sort(PersonWrapper{people, func (p, q *Person) bool {<br>return q.Age &lt; p.Age<br>// Age 递减排序 }<br>})<br> fmt.Println(people) </p>
+<p>SortPerson(people, func (p, q *Person) bool {<br>return p.Name &lt; q.Name // Name 递增排序 })<br>fmt.Println(people)</p>
+<p>}<br>在方法 2 的基础上构造了 SortPerson 函数，使用的时候传过去一个 [] Person 和一个 cmp 函数。</p>
+<p>4、另一种思路<br>package main<br>import (<br>“fmt”<br>“sort”<br>)</p>
+<p>type Person struct {<br>Name string<br>Weight int<br>}</p>
+<p>type PersonSlice []Person<br>func(s PersonSlice) Len() int {<br>return len(s)<br>}</p>
+<p>func(s PersonSlice) Swap(i, j int) {<br>s[i], s[j] = s[j], s[i]<br>}</p>
+<p>type ByName struct{<br>PersonSlice<br>}</p>
+<p>// 将 PersonSlice 包装起来到 ByName 中<br>func(s ByName) Less(i, j int) bool {<br>return s.PersonSlice[i].Name &lt; s.PersonSlice[j].Name<br>}</p>
+<p>// 将 Less 绑定到 ByName 上</p>
+<p>type ByWeight struct{<br>PersonSlice<br>}</p>
+<p>// 将 PersonSlice 包装起来到 ByWeight 中<br>func (s ByWeight) Less(i, j int) bool {<br>return s.PersonSlice[i].Weight &lt; s.PersonSlice[j].Weight<br>}</p>
+<p>// 将 Less 绑定到 ByWeight 上</p>
+<p>func main() {<br>s := []Person{<br>{“apple”, 12},<br>{“pear”, 20},<br>{“banana”, 50},<br>{“orange”, 87},<br>{“hello”, 34},<br>{“world”, 43},<br>}</p>
+<p>sort.Sort(ByWeight{s})<br>fmt.Println(“People by weight:”)<br>printPeople(s)<br>sort.Sort(ByName{s})</p>
+<p>fmt.Println(“nPeople by name:”)<br>printPeople(s)</p>
+<p>}</p>
+<p>func printPeople(s []Person) {<br>for _, o := range s {<br>fmt.Printf(“%-8s (%v)n”, o.Name, o.Weight)<br>}<br>}<br>对结构体的排序， 暂时就到这里。 第一种排序对只根据一个字段的比较合适， 另外三个是针对可能根据多个字段排序的。方法 4 我认为每次都要多构造一个 ByXXX ， 颇为不便， 这样多麻烦，不如方法 2 和方法 3 来的方便，直接传进去一个 cmp。 方法2、 3 没有太大的差别， 3 只是简单封装了一下而已， 对于使用者来说， 可能会更方便一些，而且也会更少的出错。<br>总结<br>以上就是关于golang基本类型排序与slice排序的全部内容，希望这篇文章的内容对啊大家学习或者使用Golang能有所帮助，如果有疑问大家也可以留言交流，小编会尽快给大家回复的。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/go/" rel="tag"># go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/14/js-ajax/" rel="next" title="linux通过wireshark抓包HTTP">
+                <i class="fa fa-chevron-left"></i> linux通过wireshark抓包HTTP
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/29/go/" rel="prev" title="谈谈go语言编程的并发安全">
+                谈谈go语言编程的并发安全 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

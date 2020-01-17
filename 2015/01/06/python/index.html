@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1、判断一个字符串是否为数字：">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python cookbook 2nd 读书笔记">
+<meta property="og:url" content="http://yoursite.com/2015/01/06/python/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="1、判断一个字符串是否为数字：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.851Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python cookbook 2nd 读书笔记">
+<meta name="twitter:description" content="1、判断一个字符串是否为数字：">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2015/01/06/python/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Python cookbook 2nd 读书笔记 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/01/06/python/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Python cookbook 2nd 读书笔记
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2015-01-06 15:54:21" itemprop="dateCreated datePublished" datetime="2015-01-06T15:54:21+08:00">2015-01-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/01/06/python/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2015/01/06/python/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>1、判断一个字符串是否为数字：</p>
+<a id="more"></a>
+<p>str.isdigit()方法，将返回True后者False</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>‘aaa’.isdigit()<br>False<br>‘111’.isdigit()<br>True<br>‘111.11’.isdigit()<br>False</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>2、每次处理一个字符：<br>strList = list(string)<br>for c in strList:<br>    do_something(c)<br>可以使用set来检查两个字符串中的交集<br>可以使用 str.count(otherStr) 来计算other字符串出现过几次</p>
+<p>3、字符串和ascii码转换：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>print ord(‘a’)<br>97<br>print chr(97)<br>a<br>同样unicode也支持<br>print ord(u’发’)<br>21457<br>print unichr(21457)<br>发<br>另外需要注意 str 和 chr 的差别，str是直接格式专程string，char是根据int返回ascii</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>4、类型判断推荐使用 isinstance 方法<br>def isAString(anobj):<br>    return isinstance(anobj, basestring)</p>
+<p>5、去除字符串的空格：<br>string.lstrip()<br>string.rstrip()<br>string.strip()</p>
+<p>6、大小写：<br>将字符串转为大小写和首字母大写，upper(),lower(),title()<br>判断是否为大小写和首字母大写，isupper(),islower(),istitle()</p>
+<p>7、字符串切片操作：<br>str = str[3:8]<br>如果要获取5位一组的切片数组<br>list = [ str[k:k+5] for k in xrange(0, len(str), 5) ]<br>在小范围的情况下，range和xrange差不多，但是当值比较大，使用xrange效率高一些</p>
+<p>8、模拟三元运算：<br>condition and val1 or val2</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>x = True and 1 or 2<br>x<br>1<br>x = False and 1 or 2<br>x<br>2</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>9、使用re模块创建一个支持多个字符串匹配的正则表达式：<br>import re<br>rx = re.compile(‘|’.join(map(re.escape, adict)))</p>
+<p>10、检查文件的扩展名是否为制定的文件名：<br>s  ＝ ‘xxx.jpg’<br>s.endswith(‘.jpg’)<br>True</p>
+<p>11、unicode编码注意事项：<br>总结一句话，在接受外部的字符串时，应该将字符串转换为unicode对象，然后根据情况进行decode操作；在响应出去的时候也一样，先将字符串转为unicode然后再转成其他编码的字符串。总之unicode编码对象是一个通用的，中转编码对象。<br>创建unicode编码的字符串：<br>str = u’hello world’<br>将unicode字符串转为其他格式：<br>utf8string = unicodestring.encode(‘utf8’)<br>gbkstring = unicodestring.encode(‘gbk’)<br>将其他收到的外部字符串转换为unicode类型：<br>unicodestring = unicode(utf8string, ‘utf8’)<br>unicodestring = unicode(gbkstring, ‘gbk’)</p>
+<p>12、文件操作：<br>使用open方法返回一个文件处理对象，默认打开方式为r，表示以文本的形式打开，rb表示以2进制形式打开。w和wb表示以文本写和2进制写的形式打开文件。最后记得执行 close() 关闭文件。<br>逐行读取并处理文本文件：<br>for line in input:<br>    process(line)</p>
+<p>13、使用try和finally来处理文本：</p>
+<p>file_o = open(‘file.txt’)<br>try:<br>    all_the_text = file_o.read()<br>finally:<br>    file_o.close()<br>注意不要把open也放入try中，不然如果open出错，对于file_o来说时没有什么close的。<br>可以使用writelines把一个数组字符串写入文本<br>open(‘file’, ‘wb’).writelines(list_of_data_strings)<br>对于在文件追加内容使用a和ab这样的模式open文件</p>
+<p>14、读取文件返回制定的行内容：<br>如果我们打算只返回一个小文件的制定行，如下代码：<br>import linecache<br>thelline = linecache.getline(the_file_path, desired_line_number)<br>如果文件过大，我们需要把代码改成这样：<br>def getline(file_path, line_number):<br>    if line_number &lt; 1: return ‘’<br>    for cur_line_num, line in enumerate(open(file_path, ‘rU’)):<br>        if cur_line_num == line_number - 1 :  return line<br>    return ‘’</p>
+<p>15、string.format中使用大括号<br>只需要将大括号写2次就可以转义了，例如：<br>u’{<br>    {“code”:200,”status”:”ok”,”result”:{0}}<br>}’.format(str)</p>
+<p>16、获取命令行执行的输出：<br>import commands<br>status, output = commands.getstatusoutput(‘ps -ef|grep gunicorn’)<br>print ‘——-‘<br>print output<br>print ‘——-‘<br>print output.find(‘python2.7’)</p>
+<p>17、计算文件的行数<br>大文件循环计数方式：<br>count = -1<br>for count, line in enumerate(open(theFilePath, ‘rU’)):<br>    pass<br>count += 1<br>还有一种方式，计算换行符：<br>couont = 0<br>thefile = open(theFilePath, ‘rb’)<br>while True:<br>    buffer = thefile.read(8192*1024)<br>    if not buffer:<br>        break<br>    couont += buffer.count(‘\n’)<br>thefile.close()</p>
+<p>18、快速读取zip包中的文件：<br>import zipfile<br>z = zipfile.ZipFile(‘zipfile.zip’, ‘r’)<br>for filename in z.namelist()<br>    print ‘File:’,filename<br>    bytes = z.read(filename)<br>    print ‘has’, len(bytes), ‘bytes’</p>
+<p>19、利用python打包文件夹为tar<br>import tarfile, os<br>def make_tar(folder_to_backup, dest_folder, compression=’bz2’):<br>    if compression:<br>        dest_ext = ‘.’+compression<br>    else:<br>        dest_ext = ‘’<br>    arcname = os.path.basename(folder_to_backup)<br>    dest_name = ‘%s.tar%s’ % (arcname, dest_ext)<br>    dest_path = os.path.join(dest_folder, dest_name)<br>    if compression:<br>        dest_cmp = ‘:’ + compression<br>    else:<br>        dest_cmp = ‘’<br>    out = tarfile.TarFile.open(dest_path, ‘w’+dest_cmp)<br>    out.add(folder_to_backup, arcname)<br>    out.close()<br>    return dest_path</p>
+<p>20、使用glob来查找文件<br>glob.glob，一次返回所有查找对象<br>glob.iglob，返回一个可迭代对象，一次返回一个<br>for path in glob.glob(“C:\source\<em>.bak”):<br>    os.remove(path)<br>下面的代码返回当前目录的所有子目录中扩展名为.txt的文件<br>glob.glob(“</em>\*.txt”)<br>通配符的说明：<br>通配符       匹配                               示例</p>
+<ul>
+<li>0个或多个任意字符                  <em>.m</em>匹配扩展名以m开头的名称<br>？           任意单个字符                       ???匹配恰好包含3个字符的名称<br>[…]         方括号中列出的任意一个字符         [AEIOU]<em>匹配以大写的元音字母开头的名称<br>[!…]       不在方括号中出现的任意一个字符      </em>[!s]匹配不以s结尾的名称<br>iglob的应用：<br>import glob<br>#父目录中的.py文件<br>f = glob.iglob(r’../*.py’)<br>print f #<generator object="" iglob="" at="" 0x00b9ff80=""><br>for py in f:<br>print py  </generator></li>
+</ul>
+<p>21、计算昨天和明天的日期<br>考虑使用timedelta来处理<br>import datetime<br>today = datetime.date.today()<br>yesterday = today - datetime.timedelta(days=1)<br>tomorrow= today + datetime.timedelta(days=1)</p>
+<p>22、寻找上一个星期五<br>通过python标准库的datetime模块，轻松完成此任务<br>import datetime, calendar<br>lastFriday  = datetime.date.today()<br>oneDay = datetime.timedeltar(days=1)<br>while lastFriday.weekday() != calendar.FRIDAY:<br>    lastFriday -= oneday<br>print lastFriday.strftime(‘%A, %d-%b-%Y’)</p>
+<p>23、计算日期之间的时段<br>计算两个日期之间隔了几周<br>from dateutil import rrule<br>import datetime<br>def weeks_between(start_date, end_date):<br>    weeks = rrule.rrule(rrule.WEEKLY, dtstart = start_date, until = end_date)<br>    return weeks.count</p>
+<p>24、定时执行任务：<br>可以使用sched模块，针对处理定时任务：<br>import time, os, sys, sched<br>schedule = sched.scheduler(time.time, time.sleep)<br>def perform_command(cmd, inc):<br>    schedule.enter(inc, 0, perform_command, (cmd, inc))<br>    os.system(cmd)<br>def main(cmd, inc=60):<br>    schedule.enter(0, 0, perform_command, (cmd, inc))<br>    schedule.run()<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    main(‘echo ok’, 10)</p>
+<p>25、十进制数学计算：<br>十进制数字计算用来计算精确的数值，一般金融方面较多<br>import decimal<br>dl = decimal.Decimal(‘0.3’)<br>dl/3<br>(dl/3)*3</p>
+<p>26、对象拷贝：<br>import copy<br>new_list = copy.copy(exist_list)<br>new_list = copy.deepcopy(exist_list)<br>new_list = list(exist_list)<br>new_dict = dict(exist_dict)<br>new_set = set(exist_set)</p>
+<p>27、将列表中的每个值都加上23：<br>可以使用列表推导方式，对于旧数组中每个大于5的值加23<br>newList = [ x+ 23 for x in oldList if x &gt; 5]</p>
+<p>#复制列表<br>L = list(L)</p>
+<p>#将L中所有大于100的元素设置成100<br>L[:] = [min(x, 100) for x in L]</p>
+<p>#计算数组中所有元素之和<br>total = sum(x+ 23 for x in oldList if x &gt; 5)</p>
+<p>28、展开一个嵌套的序列<br>有如下序列，进行展开：<br>oneList = [1, 2, [3, [], 4 , [5, 6], 7, [8, ], ], 9]<br>def list_or_tuple(x):<br>    return isinstance(x, (list, tuple))<br>def flatten(sequence, to_expand=list_or_tuple):<br>    for item in sequence:<br>        if to_expand(item):<br>            for subitem in flatten(item, to_expand):<br>                yield subitem<br>        else:<br>            yield item<br>for x in flatten(oneList):<br>    print x<br>输出：1 2 3 4 5 6 7 8 9</p>
+<p>29、根据内嵌的数字，对数组进行排序：<br>比如对 foot1.txt，foot10.txt 这样的字符串进行排序<br>import re<br>re_digits = re.compile(‘r’(\d+)’)<br>def embedded_numbers(s):<br>    pieces = re_digits.split(s)        #分割字符串<br>    pieces[1::2] = map(int, pieces[1::2])    #将数字部分转为整数<br>    return pieces<br>def sort_strings_with_embedded_numbers(alist):<br>    aux = [(embedded_numbers(s), s) for s in alist]<br>    aux.sort()<br>    return [ s for _, s in aux]</p>
+<p>30、random.shuffle 对数组重新洗牌：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>import random<br>a = [1,2,3,4,5,6]<br>print random.shuffle(a)<br>None<br>a<br>[4, 3, 6, 5, 2, 1]<br>print random.shuffle(a)<br>None<br>a<br>[5, 6, 1, 3, 2, 4]<br>print random.shuffle(a)<br>None<br>a<br>[3, 4, 1, 5, 2, 6]</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>31、利用heapq模块查找数组中的最小的几个数：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>a = [5, 6, 1, 3, 2, 4]<br>heapq.nsmallest(2, a)<br>[1, 2]</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>32、利用bisect查找元素是否在list中，对于长数组高效：<br>import bisect<br>x_insert_point = bisect.bisect_right([1,2,3,4,5,6], 3)  #或者使用 bisect_left</p>
+<p>33、可排序的python字典：<br>可以使用 UserDict 类</p>
+<p>34、元类的定义：<br>def someClass(someBase):<br>    <strong>metaclass</strong> = type<br>    x = 23<br>someClass = type(‘someClass’, (Somebase,), {‘x’:23})</p>
+<p>35、把一个类作为常量：<br>可以通过_getattr__、<strong>setattr</strong>、<strong>delattr</strong>来进行封装：<br>class _const(object):<br>    class ConstError(TypeError): pass<br>    def <strong>setattr</strong>(self, name, value):<br>        if name in self.<strong>dict</strong><br>            raise self.ConstError, ‘Can<code>t rebind const(%s)&#39; % name
+        self.__dict__[name] = value
+    def __delattr__(self, name):
+        if name in self.__dict__
+            raise self.ConstError, &#39;Can</code>t unbind const(%s)’ % name<br>        raise NameError, name<br>import sys<br>sys.modules[<strong>name</strong>] = const() #文件名问const.py<br>这样任何代码都可以使用和绑定一次这个const<br>const.magic = 23</p>
+<p>36、单例：<br><strong>new</strong>：创建对象时调用，返回当前对象的一个实例<br><strong>init</strong>：创建完对象后调用，对当前对象的实例的一些初始化，无返回值<br>class Singleton(object):<br>    def <strong>new</strong>(cls, <em>args, **kwargs):<br>        if ‘_inst’ not in vars(cls):<br>            cls._inst = super(Singleton, cls).<strong>new</strong>(cls, </em>args, **kwargs)<br>        return cls._inst</p>
+<p>37、非单例模式，但是实例共享数据：<br>class  Borg(object):<br>    _shared_state = {}<br>    def <strong>new</strong>(cls, <em>a, **k):<br>        obj = object.<strong>new</strong>(cls, </em>a, **k)<br>        obj.<strong>dict</strong> = cls._shared_state<br>        return obj</p>
+<p>38、优化<strong>init</strong>函数：<br>很多<strong>init</strong>函数都是对变量的定义，这样只需要如下就可以优化一些代码<br>def attributesFromDict(d):<br>    self = d.pop(‘self’)<br>    for n,v in d.iteritems():<br>        setattr(self, n, v)<br>原本的赋值构造函数：<br>def <strong>init</strong>(self, foo, bar, baz, boom=1, bang=2):<br>    self.foo = foo<br>    self.bar = bar<br>    self.baz = baz<br>    self.boom = boom<br>    self.bang =bang<br>可以改写为：<br>def <strong>init</strong>(self, foo, bar, baz, boom=1, bang=2):<br>    attributesFromDict(locals())<br>不过我还是觉得的原来的直观</p>
+<p>39、继承中调用父类的构造函数，py中需要手动：<br>super(CurClass, self).<strong>init</strong>()</p>
+<p>40、终止线程：<br>python不允许线程杀死线程，所以每个线程必须周期的检查是否要被杀死：<br>import threading<br>class TestThread(threading.Thread):<br>    def <strong>init</strong>(self, name=’TestThread’):<br>        self._stopevent = threading.Event()<br>        self._sleepperiod = 1.0<br>        threading.Thread.<strong>init</strong>(self, name=name)</p>
+<pre><code>def run(self):
+    print &apos;%s starts &apos; % (self.getName(),)
+    count = 0
+    while not self._stopevent.isSet():
+        count += 1
+        print &apos;loop %d&apos; % (count, )
+        self._stopevent.wait(self.__sleepperiod)
+    print &apos;%s end&apos; % (self.getName(),)
+def join(self, timeout=None):
+    self._stopevent.set()
+    threading.Thread.join(self, timeout)
+</code></pre><p>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    testthread = TestThread()<br>    testthread.start()<br>    import time<br>    time.sleep(5.0)<br>    testthread.join()</p>
+<p>41、生成随机密码：<br>from random import choice<br>import string<br>def GenPasswd(length=8, chars=string.letters+string.digits):<br>    return ‘’.join([ choice(chars) for i in range(length)])</p>
+<p>42、简单的UDP服务器和客户端：<br>udp服务器代码：<br>import socket<br>port = 8081<br>s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</p>
+<p>#从给定的端口，从任何发送者，接受数据<br>s.bind((‘’, port))<br>print ‘waiting on port:’, port<br>while True:</p>
+<pre><code>#接收一个数据包（最大1024字节）
+data, addr = s.recvfrom(1024)
+print &apos;reveived:&apos;, data, &apos;from&apos;, addr
+</code></pre><p>对应的客户端代码：<br>import socket<br>port = 8081<br>host = ‘localhost’<br>s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)<br>s.sendto(‘holy guido it\’s working.’, (host,port))<br>在windows下可能需要这么发送数据<br>BUFFSIZE = 1024<br>while msg:<br>    bytes_sent =  s.sendto(msg[:BUFFSIZE], (host, port))<br>    msg = msg[bytes_sent:]</p>
+<p>13.11</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/12/30/js-ajax/" rel="next" title="解决mysql中表字符集gbk，列字符集Latin1，python查询乱码问题">
+                <i class="fa fa-chevron-left"></i> 解决mysql中表字符集gbk，列字符集Latin1，python查询乱码问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/01/07/python/" rel="prev" title="Python 深入理解yield">
+                Python 深入理解yield <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

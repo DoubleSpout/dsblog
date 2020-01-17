@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1、背景 为了更好的理解多线程的概念，先对进程，线程的概念背景做一下简单介绍。 早期的计算机系统都只允许一个程序独占系统资源，一次只能执行一个程序。在大型机年代，计算能力是一种宝贵资源。对于资源拥有方来说，最好的生财之道自然是将同一资源同时租售给尽可能多的用户。最理想的情况是垄断全球计算市场。所以不难理解为何当年IBM预测“全球只要有4台计算机就够了”。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++多线程编程（入门）">
+<meta property="og:url" content="http://yoursite.com/2013/09/07/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="1、背景 为了更好的理解多线程的概念，先对进程，线程的概念背景做一下简单介绍。 早期的计算机系统都只允许一个程序独占系统资源，一次只能执行一个程序。在大型机年代，计算能力是一种宝贵资源。对于资源拥有方来说，最好的生财之道自然是将同一资源同时租售给尽可能多的用户。最理想的情况是垄断全球计算市场。所以不难理解为何当年IBM预测“全球只要有4台计算机就够了”。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.845Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++多线程编程（入门）">
+<meta name="twitter:description" content="1、背景 为了更好的理解多线程的概念，先对进程，线程的概念背景做一下简单介绍。 早期的计算机系统都只允许一个程序独占系统资源，一次只能执行一个程序。在大型机年代，计算能力是一种宝贵资源。对于资源拥有方来说，最好的生财之道自然是将同一资源同时租售给尽可能多的用户。最理想的情况是垄断全球计算市场。所以不难理解为何当年IBM预测“全球只要有4台计算机就够了”。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2013/09/07/js-ajax/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>C++多线程编程（入门） | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/09/07/js-ajax/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">C++多线程编程（入门）
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2013-09-07 15:50:56" itemprop="dateCreated datePublished" datetime="2013-09-07T15:50:56+08:00">2013-09-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2013/09/07/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2013/09/07/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>1、背景</p>
+<p>为了更好的理解多线程的概念，先对进程，线程的概念背景做一下简单介绍。</p>
+<p>早期的计算机系统都只允许一个程序独占系统资源，一次只能执行一个程序。在大型机年代，计算能力是一种宝贵资源。对于资源拥有方来说，最好的生财之道自然是将同一资源同时租售给尽可能多的用户。最理想的情况是垄断全球计算市场。所以不难理解为何当年IBM预测“全球只要有4台计算机就够了”。</p>
+<a id="more"></a>
+<p>这种背景下，一个计算机能够支持多个程序并发执行的需求变得十分迫切。由此产生了进程的概念。进程在多数早期多任务操作系统中是执行工作的基本单元。进程是包含程序指令和相关资源的集合。每个进程和其他进程一起参与调度，竞争CPU，内存等系统资源。每次进程切换，都存在进程资源的保存和恢复动作，这称为上下文切换。<br>进程的引入可以解决支持多用户的问题，但是多进程系统也在如下方面产生了新的问题：<br>1.进程频繁切换引起的额外开销可能会严重影响系统性能。<br>2.进程间通信要求复杂的系统级实现。</p>
+<p>在程序功能日趋复杂的情况下，上述缺陷也就凸现出来。比如，一个简单的GUI程序，为了有更好的交互性，通常用一个任务支持界面交互，另一个任务支持后台运算。如果每个任务均由一个进程来实现，那会相当低效。对每个进程来说，系统资源看上去都是其独占的。比如内存空间，每个进程认为自己的内存空间是独有的。一次切换，这些独立资源都需要切换。<br>由此就演化出了利用分配给同一个进程的资源，尽量实现多个任务的方法。这也就引入了线程的概念。同一个进程内部的多个线程，共享的是同一个进程的所有资源。<br>比如，与每个进程独有自己的内存空间不同，同属一个进程的多个线程共享该进程的内存空间。例如在进程地址空间中有一个全局变量globalVar，若A线程将其赋值为1，则另一线程B可以看到该变量值为1。两个线程看到的全局变量globalVar是同一个变量。</p>
+<p>通过线程可以支持同一个应用程序内部的并发，免去了进程频繁切换的开销，另外并发任务间通信也更简单。<br>目前多线程应用主要用于两大领域：网络应用和嵌入式应用。为什么在这两个领域应用较多呢？因为多线程应用能够解决两大问题：<br>1.并发。<br>网络程序具有天生的并发性。比如网络数据库可能需要同时处理数以千计的请求。而由于网络连接的时延不确定性和不可<br>靠性，一旦等待一次网络交互，可以让当前线程进入睡眠，退出调度，处理其他线程。这样就能够有效利用系统资源，充分发挥系统处理能力。<br>2.实时。线程的切换是轻量级的，所以可以保证足够快。每当有事件发生，状态改变，都能有线程及时响应，而且每次线程内部处理的计算强度和复杂度都不大。在这种情况下，多线程实现的模型也是高效的。</p>
+<p>在有些语言中，对多线程或者并发的支持是直接内建在语言中的，比如Ada和VHDL。在C++里面，对多线程的支持由具体操作系统提供的函数接口支持。不同的系统中具体实现方法不同。后面所有例子只给出windows和Unix/Linux的实现。<br>在后面的实现中，考虑的是尽量封装隔离底层的多线程函数接口，屏蔽操作系统底层的线程实现具体细节，介绍的重点是多线程编程中较通用的概念。同时也尽量体现C++面向对象的一面。<br>最后，由于空闲时间有限，我只求示例代码能够明确表达自己的意思即可。至于代码的尽善尽美就只能有劳各位尽力以为之了。</p>
+<p>2、线程的创建<br>在一个线程的生存期内，可以在多种状态之间转换。不同操作系统可以实现不同的线程模型，定义许多不同的线程状态，每个状态还可以包含多个子状态。但大体说来，如下几种状态是通用的：<br>       就绪：参与调度，等待被执行。一旦被调度选中，立即开始执行。<br>       运行：占用CPU，正在运行中。<br>       休眠：暂不参与调度，等待特定事件发生。<br>       中止：已经运行完毕，等待回收线程资源（要注意，这个很容易误解，后面解释）。<br>线程存在于进程之中。进程内所有全局资源对于内部每个线程均是可见的。<br>进程内典型全局资源有如下几种：<br>1.代码区；这意味着当前进程空间内所有可见的函数代码，对于每个线程来说也是可见的。<br>2.静态存储区。<br>3.全局变量。<br>4.静态变量。<br>5.动态存储区；也就是堆空间。<br>线程内典型的局部资源有：<br>1.本地栈空间;存放本线程的函数调用栈，函数内部的局部变量等。<br>2.部分寄存器变量;例如本线程下一步要执行代码的指针偏移量。</p>
+<p>一个进程发起之后，会首先生成一个缺省的线程，通常称这个线程为主线程。C/C++程序中主线程就是通过main函数进入的线程。由主线程衍生的线程称为从线程，从线程也可以有自己的入口函数，作用相当于主线程的main函数。<br>这个函数由用户指定；Pthread和winapi中都是通过传入函数指针实现。在指定线程入口函数时，也可以指定入口函数的参数。<br>就像main函数有固定的格式要求一样，线程的入口函数一般也有固定的格式要求，参数通常都是void <em>类型，返回类型在<br>pthread中是void </em>, winapi中是unsigned int，而且都需要是全局函数。<br>最常见的线程模型中，除主线程较为特殊之外，其他线程一旦被创建，相互之间就是对等关系 (peer to peer)， 不存在隐含的层次关系。每个进程可以创建的最大线程数由具体实现决定。<br>为了更好的理解上述概念，下面通过具体代码来详细说明。<br>线程类接口定义<br>一个线程类无论具体执行什么任务，其基本的共性无非就是：<br>1.创建并启动线程<br>2.停止线程<br>另外还有就是能睡，能等，能分离执行（有点拗口，后面再解释）。还有其他的可以继续加…<br>将线程的概念加以抽象，可以为其定义如下的类：<br>文件 thread.h</p>
+<p>#ifndef <strong>THREAD</strong>H_</p>
+<p>#define <strong>THREAD</strong>H_<br>class Thread<br>{<br>public:<br>Thread();<br>virtual ~Thread();<br>int start (void <em> = NULL);<br>void stop();<br>void sleep (int);<br>void detach();<br>void </em> wait();<br>protected:<br>virtual void <em> run(void </em>) = 0;<br>private:<br>//这部分win和unix略有不同，先不定义，后面再分别实现。<br>//顺便提一下，我很不习惯写中文注释，这里为了更明白一<br>//点还是选用中文。<br>…<br>}; </p>
+<p>#endif<br>Thread::start()    //函数是线程启动函数，其输入参数是无类型指针。<br>Thread::stop()    //函数中止当前线程。<br>Thread::sleep()   //函数让当前线程休眠给定时间，单位为秒。<br>Thread::run()     //函数是用于实现线程类的线程函数调用。<br>Thread::detach()  //和thread::wait()函数涉及的概念略复杂一些。在稍后再做解释。<br>Thread类是一个基类，派生类可以重载自己的线程函数。下面是一个例子。<br>示例程序<br>代码写的都不够精致，暴力类型转换比较多，欢迎有闲阶级美化，谢过了先。<br>文件create.h</p>
+<p>#ifndef <strong>CREATOR</strong>H_</p>
+<p>#define <strong>CREATOR</strong>H_</p>
+<p>#include &lt;stdio.h&gt;</p>
+<p>#include “thread.h”<br>class Create: public Thread<br>{<br>protected:<br>void <em> run(void </em> param)<br>{<br>    char <em> msg = (char</em>) param;<br>    printf (“%s\n”, msg);<br>    //sleep(100); 可以试着取消这行注释，看看结果有什么不同。<br>    printf(“One day past.\n”);<br>    return NULL;<br>}<br>};</p>
+<p>#endif</p>
+<p>然后，实现一个main函数，来看看具体效果：<br>文件Genesis.cpp</p>
+<p>#include &lt;stdio.h&gt;</p>
+<p>#include “create.h”<br>int main(int argc, char** argv)<br>{<br>Create monday;<br>Create tuesday;</p>
+<p>printf(“At the first God made the heaven and the earth.\n”);<br>monday.start(“Naming the light, Day, and the dark, Night, the first day.”);<br>tuesday.start(“Gave the arch the name of Heaven, the second day.”);<br>printf(“These are the generations of the heaven and the earth.\n”);<br>return 0;<br>}<br>编译运行，程序输出如下：<br>At the first God made the heaven and the earth.<br>These are the generations of the heaven and the earth.</p>
+<p>令人惊奇的是，由周一和周二对象创建的子线程似乎并没有执行！这是为什么呢？别急，在最后的printf语句之前加上如下语句：<br>monday.wait();<br>tuesday.wait();<br>重新编译运行，新的输出如下：<br>At the first God made the heaven and the earth.<br>Naming the light, Day, and the dark, Night, the first day.<br>One day past.<br>Gave the arch the name of Heaven, the second day.<br>One day past.</p>
+<p>These are the generations of the heaven and the earth.<br>为了说明这个问题，需要了解前面没有解释的Thread::detach()和Thread::wait()两个函数的含义。<br>无论在windows中，还是Posix中，主线程和子线程的默认关系是：<br>无论子线程执行完毕与否，一旦主线程执行完毕退出，所有子线程执行都会终止。这时整个进程结束或僵死（部分线程保持一种终止执行但还未销毁的状态，而进程必须在其所有线程销毁后销毁，这时进程处于僵死状态），在第一个例子的输出中，可以看到子线程还来不及执行完毕，主线程的main()函数就已经执行完毕，从而所有子线程终止。<br>需要强调的是，线程函数执行完毕退出，或以其他非常方式终止，线程进入终止态（请回顾上面说的线程状态），但千万要记住的是，进入终止态后，为线程分配的系统资源并不一定已经释放，而且可能在系统重启之前，一直都不能释放。终止态的线程，仍旧作为一个线程实体存在与操作系统中。（这点在win和unix中是一致的。）而什么时候销毁线程，取决于线程属性。<br>通常，这种终止方式并非我们所期望的结果，而且一个潜在的问题是未执行完就终止的子线程，除了作为线程实体占用系统资源之外，其线程函数所拥有的资源（申请的动态内存，打开的文件，打开的网络端口等）也不一定能释放。所以，针对这个问题，主线程和子线程之间通常定义两种关系：<br>1.可会合(joinable)；这种关系下，主线程需要明确执行等待操作。在子线程结束后，主线程的等待操作执行完毕，子线程<br>和主线程会合。这时主线程继续执行等待操作之后的下一步操作。主线程必须会合可会合的子线程，Thread类中，这个操作通过在主线程的线程函数内部调用子线程对象的wait()函数实现。这也就是上面加上三个wait()调用后显示正确的原因。必须强调的是，即使子线程能够在主线程之前执行完毕，进入终止态，也必需显示执行会合操作，否则，系统永远不会主动销毁线程，分配给该线程的系统资源（线程id或句柄，线程管理相关的系统资源）也永远不会释放。<br>2.相分离(detached)；顾名思义，这表示子线程无需和主线程会合，也就是相分离的。这种情况下，子线程一旦进入终止态<br>，系统立即销毁线程，回收资源。无需在主线程内调用wait()实现会合。Thread类中，调用detach()使线程进入detached状态。这种方式常用在线程数较多的情况，有时让主线程逐个等待子线程结束，或者让主线程安排每个子线程结束的等待顺序，是很困难或者不可能的。所以在并发子线程较多的情况下，这种方式也会经常使用。缺省情况下，创建的线程都是可会合的。可会合的线程可以通过调用detach()方法变成相分离的线程。但反向则不行。<br>UNIX实现<br>文件 thread.h</p>
+<p>#ifndef <strong>THREAD</strong>H_</p>
+<p>#define <strong>THREAD</strong>H_<br>class Thread<br>{<br>public:<br>Thread();<br>virtual ~Thread();<br>int start (void <em> = NULL);<br>void stop();<br>void sleep (int);<br>void detach();<br>void </em> wait();<br>protected:<br>virtual void <em> run(void </em>) = 0;<br>private:<br>pthread_t handle;<br>bool started;<br>bool detached;<br>void <em> threadFuncParam;<br>friend void </em> threadFunc(void <em>);<br>};<br>//pthread中线程函数必须是一个全局函数，为了解决这个问题<br>//将其声明为静态，以防止此文件之外的代码直接调用这个函数。<br>//此处实现采用了称为Virtual friend function idiom 的方法。<br>Static void </em> threadFunc(void *); </p>
+<p>#endif<br>文件thread.cpp</p>
+<p>#include &lt;pthread.h&gt;</p>
+<p>#include &lt;sys/time.h&gt;</p>
+<p>#include “thread.h”<br>static void <em> threadFunc (void </em> threadObject)<br>{<br>Thread <em> thread = (Thread </em>) threadObject;<br>return thread-&gt;run(thread-&gt;threadFuncParam);<br>}<br>Thread::Thread()<br>{<br>started = detached = false;<br>}<br>Thread::~Thread()<br>{<br>stop();<br>}<br>bool Thread::start(void * param)<br>{<br>pthread_attr_t attributes;<br>pthread_attr_init(&amp;attributes);<br>if (detached)<br>{<br>    pthread_attr_setdetachstate(&amp;attributes, PTHREAD_CREATE_DETACHED);<br>}<br>threadFuncParam = param;<br>if (pthread_create(&amp;handle, &amp;attributes, threadFunc, this) == 0)<br>{<br>    started = true;<br>}<br>pthread_attr_destroy(&amp;attribute);<br>}</p>
+<p>void Thread::detach()<br>{<br>if (started &amp;&amp; !detached)<br>{<br>    pthread_detach(handle);<br>}<br>detached = true;<br>}<br>void <em> Thread::wait()<br>{<br>void </em> status = NULL;<br>if (started &amp;&amp; !detached)<br>{<br>    pthread_join(handle, &amp;status);<br>}<br>return status;<br>}<br>void Thread::stop()<br>{<br>if (started &amp;&amp; !detached)<br>{<br>    pthread_cancel(handle);<br>    pthread_detach(handle);<br>    detached = true;<br>}<br>}<br>void Thread::sleep(unsigned int milliSeconds)<br>{<br>timeval timeout = { milliSeconds/1000, millisecond%1000};<br>select(0, NULL, NULL, NULL, &amp;timeout);<br>}<br>小结<br>本节的主要目的是帮助入门者建立基本的线程概念，以此为基础，抽象出一个最小接口的通用线程类。在示例程序部分，初学者可以体会到并行和串行程序执行的差异。有兴趣的话，大家可以在现有线程类的基础上，做进一步的扩展和尝试。如果觉得对线程的概念需要进一步细化，大家可以进一步扩展和完善现有Thread类。<br>想更进一步了解的话，一个建议是，可以去看看其他语言，其他平台的线程库中，线程类抽象了哪些概念。比如Java, perl等跨平台语言中是如何定义的，微软从winapi到dotnet中是如何支持多线程的，其线程类是如何定义的。这样有助于更好的理解线程的模型和基础概念。<br>另外，也鼓励大家多动手写写代码，在此基础上尝试写一些代码，也会有助于更好的理解多线程程序的特点。比如，先开始的线程不一定先结束。线程的执行可能会交替进行。把printf替换为cout可能会有新的发现，等等。<br>每个子线程一旦被创建，就被赋予了自己的生命。管理不好的话，一只特例独行的猪是非常让人头痛的。<br>对于初学者而言，编写多线程程序可能会遇到很多令人手足无措的bug。往往还没到考虑效率，避免死锁等阶段就问题百出，而且很难理解和调试。这是非常正常的，请不要气馁，后续文章会尽量解释各种常见问题的原因，引导大家避免常见错误。目前能想到入门阶段常遇到的问题是：<br>1.内存泄漏，系统资源泄漏。<br>2.程序执行结果混乱，但是在某些点插入sleep语句后结果又正确了。<br>3.程序crash, 但移除或添加部分无关语句后，整个程序正常运行（假相）。<br>4.多线程程序执行结果完全不合逻辑，出于预期。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/09/06/go/" rel="next" title="golang并发示例（二）">
+                <i class="fa fa-chevron-left"></i> golang并发示例（二）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2013/09/07/js-ajax/" rel="prev" title="轻松理解吞吐量与延迟，信号量与互斥锁">
+                轻松理解吞吐量与延迟，信号量与互斥锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

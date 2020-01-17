@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.5.0" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.5.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.5.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.5.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.5.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="本文转载自灵雀云技术博客，原文链接：http://www.alauda.cn/2016/01/18/docker-1-9-network/ 作者简介：林帆，ThoughtWorks公司软件工程师及DevOps咨询师，具有丰富的持续交付和服务器运维自动化实践经验，专注于DevOps和容器技术领域。在InfoQ、CSDN网站和《程序员》杂志上发表有多篇相关领域文章，著有《CoreOS实践之路》一书。">
+<meta name="keywords" content="node.js">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker 1.9的新网络特性，以及Overlay详解">
+<meta property="og:url" content="http://yoursite.com/2016/08/10/js-ajax/index.html">
+<meta property="og:site_name" content="snoopyxdy的博客">
+<meta property="og:description" content="本文转载自灵雀云技术博客，原文链接：http://www.alauda.cn/2016/01/18/docker-1-9-network/ 作者简介：林帆，ThoughtWorks公司软件工程师及DevOps咨询师，具有丰富的持续交付和服务器运维自动化实践经验，专注于DevOps和容器技术领域。在InfoQ、CSDN网站和《程序员》杂志上发表有多篇相关领域文章，著有《CoreOS实践之路》一书。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-11-26T03:48:18.846Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker 1.9的新网络特性，以及Overlay详解">
+<meta name="twitter:description" content="本文转载自灵雀云技术博客，原文链接：http://www.alauda.cn/2016/01/18/docker-1-9-network/ 作者简介：林帆，ThoughtWorks公司软件工程师及DevOps咨询师，具有丰富的持续交付和服务器运维自动化实践经验，专注于DevOps和容器技术领域。在InfoQ、CSDN网站和《程序员》杂志上发表有多篇相关领域文章，著有《CoreOS实践之路》一书。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/08/10/js-ajax/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Docker 1.9的新网络特性，以及Overlay详解 | snoopyxdy的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">snoopyxdy的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">不要用执行上的勤奋来掩盖思考上的懒惰</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/08/10/js-ajax/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="snoopyxdy">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="snoopyxdy的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Docker 1.9的新网络特性，以及Overlay详解
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-08-10 22:29:27" itemprop="dateCreated datePublished" datetime="2016-08-10T22:29:27+08:00">2016-08-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-11-26 11:48:18" itemprop="dateModified" datetime="2018-11-26T11:48:18+08:00">2018-11-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/node-js/" itemprop="url" rel="index"><span itemprop="name">node.js</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/08/10/js-ajax/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2016/08/10/js-ajax/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文转载自灵雀云技术博客，原文链接：<a href="http://www.alauda.cn/2016/01/18/docker-1-9-network/" target="_blank" rel="noopener">http://www.alauda.cn/2016/01/18/docker-1-9-network/</a></p>
+<p>作者简介：林帆，ThoughtWorks公司软件工程师及DevOps咨询师，具有丰富的持续交付和服务器运维自动化实践经验，专注于DevOps和容器技术领域。在InfoQ、CSDN网站和《程序员》杂志上发表有多篇相关领域文章，著有《CoreOS实践之路》一书。</p>
+<a id="more"></a>
+<p>Docker在1.9版本中引入了一整套的自定义网络命令和跨主机网络支持。这是libnetwork项目从Docker的主仓库抽离之后的一次重大变化。不论你是否已经注意到了，Docker的网络新特性即将对用户的习惯产生十分明显的改变。<br>??</p>
+<p>libnetwork和Docker网络</p>
+<p>libnetwork项目从lincontainer和Docker代码的分离早在Docker 1.7版本就已经完成了（从Docker 1.6版本的网络代码中抽离）。在此之后，容器的网络接口就成为了一个个可替换的插件模块。由于这次变化进行的十分平顺，作为Docker的使用者几乎不会感觉到其中的差异，然而这个改变为接下来的一系列扩展埋下了很好的伏笔。</p>
+<p>概括来说，libnetwork所做的最核心事情是定义了一组标准的容器网络模型（Container Network Model，简称CNM），只要符合这个模型的网络接口就能被用于容器之间通信，而通信的过程和细节可以完全由网络接口来实现。</p>
+<p>Docker的容器网络模型最初是由思科公司员工Erik提出的设想，比较有趣的是Erik本人并不是Docker和libnetwork代码的直接贡献者。最初Erik只是为了扩展Docker网络方面的能力，设计了一个Docker网桥的扩展原型，并将这个思路反馈给了Docker社区。然而他的大胆设想得到了Docker团队的认同，并在与Docker的其他合作伙伴广泛讨论之后，逐渐形成了libnetwork的雏形。</p>
+<p>在这个网络模型中定义了三个的术语：Sandbox、Endpoint和Network。</p>
+<p>如上图所示，它们分别是容器通信中『容器网络环境』、『容器虚拟网卡』和『主机虚拟网卡/网桥』的抽象。</p>
+<p>Sandbox：对应一个容器中的网络环境，包括相应的网卡配置、路由表、DNS配置等。CNM很形象的将它表示为网络的『沙盒』，因为这样的网络环境是随着容器的创建而创建，又随着容器销毁而不复存在的；<br>Endpoint：实际上就是一个容器中的虚拟网卡，在容器中会显示为eth0、eth1依次类推；<br>Network：指的是一个能够相互通信的容器网络，加入了同一个网络的容器直接可以直接通过对方的名字相互连接。它的实体本质上是主机上的虚拟网卡或网桥。<br>这种抽象为Docker的1.7版本带来了十分平滑的过渡，除了文档中的三种经典『网络模式』被换成了『网络插件』，用户几乎感觉不到使用起来的差异。</p>
+<p>直到1.9版本的到来，Docker终于将网络的控制能力完全开放给了终端用户，并因此改变了连接两个容器通信的操作方式（当然，Docker为兼容性做足了功夫，所以即便你不知道下面所有的这些差异点，仍然丝毫不会影响继续用过去的方式使用Docker）。</p>
+<p>Docker 1.9中网络相关的变化集中体现在新的『docker network』命令上。</p>
+<p>de  &gt;$ docker network –help<br>Usage: docker network [OPTIONS]COMMAND [OPTIONS]<br>Commands:<br>ls List all networks<br>rm Remove a network<br>create Create a network<br>connect Connect container to anetwork<br>disconnect Disconnect container from anetwork<br>inspect Display detailed networkinformation<br>de&gt;<br>简单介绍一下这些命令的作用。</p>
+<p>1、docker network ls</p>
+<p>这个命令用于列出所有当前主机上或Swarm集群上的网络：</p>
+<p>de  &gt;$ docker network ls<br>NETWORK ID NAME DRIVER<br>6e6edc3eee42 bridge bridge<br>1caa9a605df7 none null<br>d34a6dec29d3 host host<br>de&gt;<br>在默认情况下会看到三个网络，它们是Docker Deamon进程创建的。它们实际上分别对应了Docker过去的三种『网络模式』：</p>
+<p>bridge：容器使用独立网络Namespace，并连接到docker0虚拟网卡（默认模式）<br>none：容器没有任何网卡，适合不需要与外部通过网络通信的容器<br>host：容器与主机共享网络Namespace，拥有与主机相同的网络设备<br>在引入libnetwork后，它们不再是固定的『网络模式』了，而只是三种不同『网络插件』的实体。说它们是实体，是因为现在用户可以利用Docker的网络命令创建更多与默认网络相似的网络，每一个都是特定类型网络插件的实体。</p>
+<p>02、docker network create / docker network rm</p>
+<p>这两个命令用于新建或删除一个容器网络，创建时可以用『–driver』参数使用的网络插件，例如：</p>
+<p>de  &gt;$ docker network create –driver=bridge br0<br>b6942f95d04ac2f0ba7c80016eabdbce3739e4dc4abd6d3824a47348c4ef9e54<br>de&gt;<br>现在这个主机上有了一个新的bridge类型的Docker网络：</p>
+<p>de  &gt;$ docker network ls<br>NETWORK ID NAME DRIVER<br>b6942f95d04a br0 bridge<br>…<br>de&gt;<br>Docker容器可以在创建时通过『–net』参数指定所使用的网络，连接到同一个网络的容器可以直接相互通信。</p>
+<p>当一个容器网络不再需要时，可以将它删除：</p>
+<p>de  &gt;$ docker network rm br0<br>de&gt;<br>03、docker network connect / docker network disconnect</p>
+<p>这两个命令用于动态的将容器添加进一个已有网络，或将容器从网络中移除。为了比较清楚的说明这一点，我们来看一个例子。</p>
+<p>参照前面的libnetwork容器网络模型示意图中的情形创建两个网络：</p>
+<p>de  &gt;$ docker network create –driver=bridge frontend<br>$ docker network create –driver=bridge backend<br>de&gt;<br>然后运行三个容器，让第一个容器接入frontend网络，第二个容器同时接入两个网络，三个容器只接入backend网络。首先用『–net』参数可以很容易创建出第一和第三个容器：</p>
+<p>de  &gt;$ docker run -td –name ins01 –net frontendindex.alauda.cn/library/busybox<br>$ docker run -td –name ins03 –net backendindex.alauda.cn/library/busybox<br>de&gt;<br>如何创建一个同时加入两个网络的容器呢？由于创建容器时的『–net』参数只能指定一个网络名称，因此需要在创建过后再用docker network connect命令添加另一个网络：</p>
+<p>de  &gt;$ docker run -td –name ins02 –net frontendindex.alauda.cn/library/busybox<br>$ docker network connect backend ins02<br>de&gt;<br>现在通过ping命令测试一下这几个容器之间的连通性：</p>
+<p>de  &gt;$ docker exec -it ins01 ping ins02<br>de&gt;<br>可以连通</p>
+<p>de  &gt;$ docker exec -it ins01 ping ins03<br>de&gt;<br>找不到名称为ins03的容器</p>
+<p>de  &gt;$ docker exec -it ins02 ping ins01<br>de&gt;<br>可以连通</p>
+<p>de  &gt;$ docker exec -it ins02 ping ins03<br>de&gt;<br>可以连通</p>
+<p>de  &gt;$ docker exec -it ins03 ping ins01<br>de&gt;<br>找不到名称为ins01的容器</p>
+<p>de  &gt;$ docker exec -it ins03 ping ins02<br>de&gt;<br>可以连通</p>
+<p>这个结果也证实了在相同网络中的两个容器可以直接使用名称相互找到对方，而在不同网络中的容器直接是不能够直接通信的。此时还可以通过docker networkdisconnect动态的将指定容器从指定的网络中移除：</p>
+<p>de  &gt;$ docker network disconnect backend ins02<br>$ docker exec -it ins02 ping ins03<br>de&gt;<br>找不到名称为ins03的容器</p>
+<p>可见，将ins02容器实例从backend网络中移除后，它就不能直接连通ins03容器实例了。</p>
+<p>04、docker network inspect</p>
+<p>最后这个命令可以用来显示指定容器网络的信息，以及所有连接到这个网络中的容器列表：</p>
+<p>de  &gt;$ docker network inspect bridge<br>[{<br>“Name”:”bridge”,<br>“Id”: “6e6edc3eee42722df8f1811cfd76d7521141915b34303aa735a66a6dc2c853a3”,<br>“Scope”: “local”,<br>“Driver”:”bridge”,<br>“IPAM”: {<br>“Driver”:”default”,<br>“Config”: [{“Subnet”: “172.17.0.0/16”}]<br>},<br>“Containers”: {<br>“3d77201aa050af6ec8c138d31af6fc6ed05964c71950f274515ceca633a80773”:{<br>“EndpointID”:”0751ceac4cce72cc11edfc1ed411b9e910a8b52fd2764d60678c05eb534184a4″,<br>“MacAddress”:”02:42:ac:11:00:02″,<br>“IPv4Address”: “172.17.0.2/16”,<br>“IPv6Address”:””<br>}<br>},<br>…<br>de&gt;<br>值得指出的是，同一主机上的每个不同网络分别拥有不同的网络地址段，因此同时属于多个网络的容器会有多个虚拟网卡和多个IP地址。</p>
+<p>由此可以看出，libnetwork带来的最直观变化实际上是：docker0不再是唯一的容器网络了，用户可以创建任意多个与docker0相似的网络来隔离容器之间的通信。然而，要仔细来说，用户自定义的网络和默认网络还是有不一样的地方。</p>
+<p>默认的三个网络是不能被删除的，而用户自定义的网络可以用『docker networkrm』命令删掉；<br>连接到默认的bridge网络连接的容器需要明确的在启动时使用『–link』参数相互指定，才能在容器里使用容器名称连接到对方。而连接到自定义网络的容器，不需要任何配置就可以直接使用容器名连接到任何一个属于同一网络中的容器。这样的设计即方便了容器之间进行通信，又能够有效限制通信范围，增加网络安全性；<br>在Docker 1.9文档中已经明确指出，不再推荐容器使用默认的bridge网卡，它的存在仅仅是为了兼容早期设计。而容器间的『–link』通信方式也已经被标记为『过时的』功能，并可能会在将来的某个版本中被彻底移除。<br>DOCKER的内置OVERLAY网络<br>内置跨主机的网络通信一直是Docker备受期待的功能，在1.9版本之前，社区中就已经有许多第三方的工具或方法尝试解决这个问题，例如Macvlan、Pipework、Flannel、Weave等。虽然这些方案在实现细节上存在很多差异，但其思路无非分为两种：二层VLAN网络和Overlay网络。</p>
+<p>简单来说，二层VLAN网络的解决跨主机通信的思路是把原先的网络架构改造为互通的大二层网络，通过特定网络设备直接路由，实现容器点到点的之间通信。这种方案在传输效率上比Overlay网络占优，然而它也存在一些固有的问题。</p>
+<p>这种方法需要二层网络设备支持，通用性和灵活性不如后者；<br>由于通常交换机可用的VLAN数量都在4000个左右，这会对容器集群规模造成限制，远远不能满足公有云或大型私有云的部署需求；<br>大型数据中心部署VLAN，会导致任何一个VLAN的广播数据会在整个数据中心内泛滥，大量消耗网络带宽，带来维护的困难。<br>相比之下，Overlay网络是指在不改变现有网络基础设施的前提下，通过某种约定通信协议，把二层报文封装在IP报文之上的新的数据格式。这样不但能够充分利用成熟的IP路由协议进程数据分发，而且在Overlay技术中采用扩展的隔离标识位数，能够突破VLAN的4000数量限制，支持高达16M的用户，并在必要时可将广播流量转化为组播流量，避免广播数据泛滥。因此，Overlay网络实际上是目前最主流的容器跨节点数据传输和路由方案。</p>
+<p>在Docker的1.9中版本中正式加入了官方支持的跨节点通信解决方案，而这种内置的跨节点通信技术正是使用了Overlay网络的方法。</p>
+<p>说到Overlay网络，许多人的第一反应便是：低效，这种认识其实是带有偏见的。Overlay网络的实现方式可以有许多种，其中IETF（国际互联网工程任务组）制定了三种Overlay的实现标准，分别是：虚拟可扩展LAN（VXLAN）、采用通用路由封装的网络虚拟化（NVGRE）和无状态传输协议（SST），其中以VXLAN的支持厂商最为雄厚，可以说是Overlay网络的事实标准。</p>
+<p>而在这三种标准以外还有许多不成标准的Overlay通信协议，例如Weave、Flannel、Calico等工具都包含了一套自定义的Overlay网络协议（Flannel也支持VXLAN模式），这些自定义的网络协议的通信效率远远低于IETF的标准协议[5]，但由于他们使用起来十分方便，一直被广泛的采用而造成了大家普遍认为Overlay网络效率低下的印象。然而，根据网上的一些测试数据来看，采用VXLAN的网络的传输速率与二层VLAN网络是基本相当的。</p>
+<p>解除了这些顾虑后，一个好消息是，Docker内置的Overlay网络是采用IETF标准的VXLAN方式，并且是VXLAN中普遍认为最适合大规模的云计算虚拟化环境的SDN Controller模式。</p>
+<p>到目前为止一切都是那么美好，大家是不是想动手尝试一下了呢？</p>
+<p>且慢，待我先稍泼些冷水。在许多的报道中只是简单的提到，这一特性的关键就是Docker新增的『overlay』类型网卡，只需要用户用『docker networkcreate』命令创建网卡时指定『–driver=overlay』参数就可以。看起来就像这样：</p>
+<p>de  &gt;$ docker network create –driver=overlay ovr0<br>de&gt;<br>但现实的情况是，直到目前为止，Docker的Overlay网络功能与其Swarm集群是紧密整合的，因此为了使用Docker的内置跨节点通信功能，最简单的方式就是采纳Swarm作为集群的解决方案。这也是为什么Docker 1.9会与Swarm1.0同时发布，并标志着Swarm已经Product-Ready。此外，还有一些附加的条件：</p>
+<p>所有Swarm节点的Linux系统内核版本不低于3.16<br>需要一个额外的配置存储服务，例如Consul、Etcd或ZooKeeper<br>所有的节点都能够正常连接到配置存储服务的IP和端口<br>所有节点运行的Docker后台进程需要使用『–cluster-store』和『-–cluster-advertise』参数指定所使用的配置存储服务地址<br>我们先不解释为什么必须使用Swarm，稍后大家很快就会发现原因。假设上述条件的1和3都是满足的，接下来就需要建立一个外部配置存储服务，为了简便起见暂不考虑高可用性，可以采用单点的服务。</p>
+<p>以Consul为例，用Docker来启动它，考虑到国内访问Docker Hub比较慢，建议采用『灵雀云』的Docker镜像仓库：</p>
+<p>de  &gt;$ docker run -d \<br>–restart=”always” \<br>–publish=”8500:8500″ \<br>–hostname=”consul” \<br>–name=”consul” \<br>index.alauda.cn/sequenceiq/consul:v0.5.0-v6 -server -bootstrap<br>de&gt;<br>如果使用Etcd，可以用下面的命令启动容器，同样可以用『灵雀云』的Docker镜像仓库：</p>
+<p>de  &gt;$ docker run -d \<br>–restart=”always” \<br>–publish=”2379:2379″ \<br>–name=”etcd” \<br>index.alauda.cn/googlecontainer/etcd:2.2.1 etcd \<br>-name etcd0-advertise-client-urls http://&lt;Etcd所在主机IP&gt;:2379 \<br>-listen-client-urls<a href="http://0.0.0.0:2379" target="_blank" rel="noopener">http://0.0.0.0:2379</a> -initial-cluster-state new<br>de&gt;<br>然后修改每个主机Docker后台进程启动脚本里的『DOCKER_OPTS』变量内容，如果是Consul加上下面这两项：</p>
+<p>de  &gt;–cluster-store=consul://&lt;Consul所在主机IP&gt;:8500 -–cluster-advertise=eth1:2376<br>de&gt;<br>如果是Etcd则加上：</p>
+<p>de  &gt;–cluster-store=etcd://&lt;Etcd所在主机IP&gt;:2379/store-–cluster-advertise=eth1:2376<br>de&gt;<br>然后重启每个主机的Docker后台进程，一切准备就绪。当然，由于修改和重启Docker后台进程本身是比较麻烦的事情，如果用户业务可能会使用到跨节点网络通信，建议在架设Docker集群的时候就事先准备配置存储服务，然后直接在添加主机节点时就可以将相应参数加入到Docker的启动配置中了。</p>
+<p>至于配置存储服务的运行位置，通常建议是与运行业务容器的节点分开，使用独立的服务节点，这样才能确保所有运行业务容器的节点是无状态的，可以被平等的调度和分配运算任务。</p>
+<p>接下来到了创建Overlay网络的时候，问题来了，我们要建的这个网络是横跨所有节点的，也就是说在每个节点都应该有一个名称、ID和属性完全一致的网络，它们之间还要相互认可对方为自己在不同节点的副本。如何实现这种效果呢？目前的Docker network命令还无法做到，因此只能借助于Swarm。</p>
+<p>构建Swarm集群的方法在这里不打算展开细说，只演示一下操作命令。为了简便起见，我们使用Swarm官方的公有token服务作为节点组网信息的存储位置，首先在任意节点上通过以下命令获取一个token：</p>
+<p>de  &gt;$ docker run –rm swarm create 6856663cdefdec325839a4b7e1de38e8<br>de&gt;<br>任意选择其中一个节点作为集群的Master节点，并在主机上运行Swarm Master服务：</p>
+<p>de  &gt;$ docker run -d -p 3375:2375 swarm manage token://&lt;前面获得的token字符串&gt;<br>de&gt;<br>在其他作为Docker业务容器运行的节点上运行Swarm Agent服务：</p>
+<p>de  &gt;    $ docker run -d swarm join –addr=&lt;当前主机IP&gt;:2375token://&lt;前面获得的token字符串&gt;<br>de&gt;<br>这样便获得了一个Swarm的集群。当然，我们也可以利用前面已经建立的Consul或Etcd服务替代官方的token服务，只需稍微修改启动参数即可，具体细节可以参考Swarm的文档。</p>
+<p>Swarm提供与Docker服务完全兼容的API，因此可以直接使用docker命令进行操作。注意上面命令中创建Master服务时指定的外部端口号3375，它就是用来连接Swarm服务的地址。现在我们就可以创建一个Overlay类型的网络了：<br>$ docker -H tcp://&lt;Master节点地址&gt;:3375network create –driver=overlay ovr0</p>
+<p>这个命令被发送给了Swarm服务，Swarm会在所有Agent节点上添加一个属性完全相同的Overlay类型网络。也就是说，现在任意一个Agent节点上执行『docker networkls』命令都能够看到它，并且使用『docker network inspect』命令查看它的信息时，将在每个节点上获得完全相同的内容。通过Docker连接到Swarm集群执行network ls命令就可以看到整个集群网络的全貌：</p>
+<p>de  &gt;$ docker -H tcp://&lt;Master节点地址&gt;:3375network ls<br>$ docker network ls<br>NETWORK ID NAME DRIVER<br>445ede8764da swarm-agent-1/bridge bridge<br>2b9c1c73cc5f swarm-agent-2/bridge bridge<br>…<br>90f6666a9c5f ovr0 overlay<br>de&gt;<br>在Swarm的网络里面，每个网络的名字都会加上节点名称作为前缀，但Overlay类型的网络是没有这个前缀的，这也说明了这类网络是被所有节点共有的。</p>
+<p>下面我们在Swarm中创建两个连接到Overlay网络的容器，并用Swarm的过滤器限制这两个容器分别运行在不同的节点上。</p>
+<p>de  &gt;$ docker -H tcp://&lt;Master节点地址&gt;:3375 run-td –name ins01 –net ovr0 –env=”constraint:node==swarm-agent-1″index.alauda.cn/library/busybox<br>$ docker -H tcp://&lt;Master节点地址&gt;:3375 run-td –name ins02 –net ovr0 –env=”constraint:node==swarm-agent-2″index.alauda.cn/library/busybox<br>de&gt;<br>然后从ins01容器尝试连接ins02容器：<br>$ docker -H tcp://&lt;Master节点地址&gt;:3375 exec-it ins01 ping ins02<br>可以连通<br>至此，我们就已经在Docker的Overlay网络上成功的进行了跨节点的数据通信。</p>
+<p>想简单点？用灵雀云吧</p>
+<p>不知大家发现了么有，不论是过去的Pipework、Flannel、Weave方式，还是Docker 1.9内置的Overlay网络，尽管所有的这些方案都宣传自己足够的简单易用，构建跨节点通信的容器依然是一件不得已而为之的事情。</p>
+<p>之所以这样说，是因为在现实应用场景中往往由于服务直接错综复杂的连接，需要相互通信的容器数量远远的超过的单个主机节点所能够承受的容量，这才使得我们不得不在现有的基础实施上自行维护一套服务机制，将容器间的通信扩展到多个节点上。但维护这些跨节点通信基础设施本身是不为企业带来实质的业务价值的！</p>
+<p>在当下，云基础设施迅速发展的大环境已经为许多企业创造了弯道超车的机遇：通过采用云平台，企业省去了自己购置和组建大规模网络和计算资源以及管理庞大运维团队的投入，只需专注于业务本身的创意和设计就能收获巨大的利润。与此同时，容器作为新一代的服务部署和调度工具被越来越广泛的采用，而解决容器通信问题本不应该成为企业需要关注的要点，现在却成为扩大服务规模时横在眼前无法忽视的阻碍。</p>
+<p>灵雀云作为容器云服务平台中的佼佼者，为容器的使用者屏蔽了容器运行节点的细节，使得用户完全感觉不到跨节点通信所带来的差异。那么如何在灵雀云中运行两个容器，并使之相互通信呢？</p>
+<p>首先安装灵雀的alauda命令行工具，使用『alauda login』命令登陆。</p>
+<p>de  &gt;$ alauda login<br>Username: fanlin<br>Password: <em>灵雀密码</em><br>[alauda] Successfully logged in as fanlin.<br>[alauda] OK<br>de&gt;<br>然后运行两个容器，前者运行Nginx服务，后者用于测试与前者的连接。</p>
+<p>de  &gt;$ alauda service run –publish=80/http web index.alauda.cn/library/nginx:1.9.9<br>[alauda] Creating and starting service “web”<br>[alauda] OK<br>$ alauda service run client index.alauda.cn/library/busybox:latest<br>[alauda] Creating and starting service “client”<br>[alauda] OK<br>de&gt;<br>尝试从client容器实例访问web容器实例提供的HTTP服务，注意灵雀云自动生成的地址格式。</p>
+<p>de  &gt;$ alauda service exec client wget -O- <a href="http://web-fanlin.myalauda.cn" target="_blank" rel="noopener">http://web-fanlin.myalauda.cn</a><br>Password for <a href="mailto:fanlin@exec.alauda.cn" target="_blank" rel="noopener">fanlin@exec.alauda.cn</a>:<br>…</p>
+<p><html></html></p>
+<p><head><meta name="generator" content="Hexo 3.8.0"></head></p>
+<p><title>Welcome to nginx!</title></p>
+<p><style><br>…<br>de&gt;<br>可以看到返回了Nginx默认首页的内容，证明这两个容器之间可以连通。除了建立单个的任务，还可以使用『alauda compose』命令快速建立多个容器组成的服务集合。<br>那么着两个容器分别是运行在哪个主机上的？管他呢，灵雀云已经将这些底层细节统统藏起来了，所以只管往云上继续创建更多的服务吧，再也不用担心主机资源耗尽，面对跨节点怎么通信的问题啦。</p>
+</style></p>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+       
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node-js/" rel="tag"># node.js</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/06/30/js-ajax/" rel="next" title="深入掌握 ECMAScript 6 异步编程">
+                <i class="fa fa-chevron-left"></i> 深入掌握 ECMAScript 6 异步编程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/29/js-ajax/" rel="prev" title="Mongodb单机打开oplog的配置和方式">
+                Mongodb单机打开oplog的配置和方式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">snoopyxdy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">289</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">snoopyxdy</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.5.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.5.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.5.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.5.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="http://wzhfile.static.xytang88.com/gitmint.browser.js?v=3"></script>
+    
+<!-- END LOCAL -->
+
+    
+      <style>
+        a.gitment-editor-footer-tip { display: none; }
+        .gitment-container.gitment-footer-container { display: none; }
+      </style>
+    
+
+    
+      <script type="text/javascript">
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'DoubleSpout',
+            repo: 'dsblog',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '202e5bcda8eacf79e44b6261326de2e79eff846e',
+            
+                client_id: '7d56dc5e01e83a1a44bb'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
